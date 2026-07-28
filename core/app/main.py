@@ -137,7 +137,7 @@ async def serve():
     host, port = server_address.split(":")
     _LOGGER.info("Starting gRPC server at %s...", server_address)
 
-    task_runtime_reconciler = asyncio.create_task(run_task_runtime_startup_reconciler())
+    task_runtime_reconciler = asyncio.create_task(run_task_runtime_startup_reconciler(task_runtime_stop))
     sandbox_pod_reaper = asyncio.create_task(run_sandbox_pod_reaper(task_runtime_stop))
     try:
         await server.start(host, int(port))

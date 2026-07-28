@@ -204,6 +204,22 @@ class ChatAgent:
                         len(prior_partial_messages),
                         exc_info=True,
                     )
+                    if self._tool_context is not None and self._tool_context.task_runtime_batch_ids:
+                        _LOGGER.warning(
+                            "chat_client_stream_retry_suppressed_after_task_submission "
+                            "agent_instance_id=%s conversation_id=%s turn_id=%s batch_ids=%s",
+                            self._agent_instance_id,
+                            conversation_id,
+                            options.turn_id,
+                            self._tool_context.task_runtime_batch_ids,
+                        )
+                        await queue.put(
+                            build_error_response(
+                                "Chat response generation stopped, but the submitted tasks are still running. "
+                                "Their progress and results remain available in the current plan."
+                            )
+                        )
+                        raise
                     error_text = f"Error with chat agent attempt {attempt}/{options.max_attempts}: {str(exc)}"
                     error_response = build_error_response(error_text)
                     error_message = Message(role="assistant", contents=[Content.from_text(error_text)])

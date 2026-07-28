@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Per-turn identity + plan-editor envelope passed into TaskManager.
+"""Per-submission identity + plan-editor envelope passed into TaskManager.
 
 Used by ``TaskManager.submit_prepared`` as the narrow per-turn context for a
 single chat turn. Trusted handoff — fields are validated upstream by the
@@ -29,6 +29,7 @@ Carries only what ``submit_prepared`` and its descendants reach for:
 * identity fields (``username`` / ``agent_*`` / ``project_id`` /
   ``conversation_id`` / ``turn_id``)
 * ``plan_editor`` — streaming channel for lifecycle / tool-call UI updates
+* ``submission_id`` — stable identity for one logical task submission
 * ``task_runtime_batch_ids`` — mutable list shared with the source
   ``ToolContext`` tracking the batches this turn created.
 
@@ -64,6 +65,12 @@ class TurnContext:
     """Live channel for streaming task lifecycle updates to the frontend plan
     UI. Manager writes; tools/skills do not own this reference."""
 
+    submission_id: str = ""
+    """Stable identity for one logical task submission across transport retries."""
+
+    submission_source: str = ""
+    """Stable producer identity included in replay fingerprint validation."""
+
     task_runtime_batch_ids: list[str] = field(default_factory=list)
     """Append-only list of batch ids submitted during this turn. Mutated by
     the orchestrator on every successful ``submit_prepared``. When constructed via
@@ -71,15 +78,22 @@ class TurnContext:
     ``ToolContext`` so mutations propagate."""
 
     @classmethod
-    def from_tool_context(cls, tc: ToolContext) -> TurnContext:
+    def from_tool_context(
+        cls,
+        tc: ToolContext,
+        *,
+        submission_id: str = "",
+        submission_source: str = "",
+    ) -> TurnContext:
         """Narrow the wide ``ToolContext`` used inside chat tools into the
         per-turn context required by ``TaskManager.submit_prepared``.
 
         Drops ``response_queue`` / ``all_tools`` — those belong to tool
         execution, not to task scheduling. ``task_runtime_batch_ids`` shares
         the list reference so mutations from inside the manager propagate
-        back to the caller. Coerces ``agent_instance_id`` ``None`` to ``0``
-        so downstream code does not need a null check on every read."""
+        back to the caller. ``submission_id`` can be narrowed to one delegate
+        invocation. Coerces ``agent_instance_id`` ``None`` to ``0`` so downstream
+        code does not need a null check on every read."""
         return cls(
             username=tc.username,
             agent_id=tc.agent_id,
@@ -88,6 +102,8 @@ class TurnContext:
             conversation_id=tc.conversation_id,
             turn_id=tc.turn_id,
             plan_editor=tc.plan_editor,
+            submission_id=submission_id or tc.submission_id,
+            submission_source=submission_source,
             task_runtime_batch_ids=tc.task_runtime_batch_ids,
         )
 

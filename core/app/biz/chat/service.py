@@ -286,6 +286,7 @@ class ChatService(ChatServiceBase):
             response_queue=response_queue,
             plan_editor=plan_editor,
             raw_user_message=chat_request.message.content,
+            submission_id=chat_request.submission_id,
         )
 
         sequence_id = 0

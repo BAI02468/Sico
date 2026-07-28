@@ -30,6 +30,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -820,6 +821,7 @@ func (s *Service) buildChatRequest(
 		Model:             resolveAgentModel(singleAgent),
 		AgentRole:         agentRole,
 		NeedUpdateTitle:   conversation.Title == DefaultConversationTitle,
+		SubmissionId:      uuid.NewString(),
 	}
 }
 

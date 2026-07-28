@@ -118,6 +118,7 @@ type ChatRequest struct {
 	AgentRole         string                 `protobuf:"bytes,15,opt,name=agent_role,json=agentRole,proto3" json:"agentRole,omitempty"`                            
 	ProjectName       string                 `protobuf:"bytes,16,opt,name=project_name,json=projectName,proto3" json:"projectName,omitempty"`                      
 	NeedUpdateTitle   bool                   `protobuf:"varint,17,opt,name=need_update_title,json=needUpdateTitle,proto3" json:"needUpdateTitle,omitempty"`       
+	SubmissionId      string                 `protobuf:"bytes,18,opt,name=submission_id,json=submissionId,proto3" json:"submissionId,omitempty"`                   
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -262,6 +263,13 @@ func (x *ChatRequest) GetNeedUpdateTitle() bool {
 		return x.NeedUpdateTitle
 	}
 	return false
+}
+
+func (x *ChatRequest) GetSubmissionId() string {
+	if x != nil {
+		return x.SubmissionId
+	}
+	return ""
 }
 
 type ChatDirectResponse struct {
@@ -1896,7 +1904,7 @@ var File_conversation_api_proto protoreflect.FileDescriptor
 
 const file_conversation_api_proto_rawDesc = "" +
 	"\n" +
-	"\x16conversation/api.proto\x12\x03api\x1a\x16conversation/msg.proto\x1a\x17conversation/plan.proto\x1a\x17conversation/chat.proto\x1a\x1fconversation/conversation.proto\x1a\x13common/common.proto\"\xda\x04\n" +
+	"\x16conversation/api.proto\x12\x03api\x1a\x16conversation/msg.proto\x1a\x17conversation/plan.proto\x1a\x17conversation/chat.proto\x1a\x1fconversation/conversation.proto\x1a\x13common/common.proto\"\xff\x04\n" +
 	"\vChatRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12+\n" +
 	"\amessage\x18\x02 \x01(\v2\x11.chat.ChatContentR\amessage\x12\x19\n" +
@@ -1917,7 +1925,8 @@ const file_conversation_api_proto_rawDesc = "" +
 	"\n" +
 	"agent_role\x18\x0f \x01(\tR\tagentRole\x12!\n" +
 	"\fproject_name\x18\x10 \x01(\tR\vprojectName\x12*\n" +
-	"\x11need_update_title\x18\x11 \x01(\bR\x0fneedUpdateTitle\"<\n" +
+	"\x11need_update_title\x18\x11 \x01(\bR\x0fneedUpdateTitle\x12#\n" +
+	"\rsubmission_id\x18\x12 \x01(\tR\fsubmissionId\"<\n" +
 	"\x12ChatDirectResponse\x12\x13\n" +
 	"\x04code\x18\xfd\x01 \x01(\x05R\x04code\x12\x11\n" +
 	"\x03msg\x18\xfe\x01 \x01(\tR\x03msg\"\xee\x01\n" +

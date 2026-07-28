@@ -60,6 +60,25 @@ class ToolContext(BaseModel):
     raw_user_message: str = ""
     task_runtime_batch_ids: list[str] = Field(default_factory=list)
     skill_loader: Any | None = None
+    submission_id: str = ""
+    task_submission_index: int = Field(default=0, exclude=True)
+
+    def next_task_submission_id(self) -> str:
+        """Allocate the next delegate slot in this chat request.
+
+        A backend-to-core replay constructs a fresh context and starts again at
+        slot zero; fingerprint validation rejects changed work in an existing
+        slot. ChatAgent suppresses whole-generation retries after any task batch
+        is submitted; retries before submission have no batch to duplicate. The
+        retry prompt's instruction not to rerun successful tools remains an
+        additional safeguard. Different delegate calls, including identical
+        calls requested twice by the user, therefore receive independent batch
+        identities.
+        """
+        root = self.submission_id.strip() or f"legacy:{self.conversation_id}:{self.turn_id}"
+        index = self.task_submission_index
+        self.task_submission_index += 1
+        return f"{root}:delegate:{index}"
 
     def replace_plan_editor(self, new_plan_editor: PlanEditor) -> "ToolContext":
         return ToolContext(
@@ -75,6 +94,8 @@ class ToolContext(BaseModel):
             raw_user_message=self.raw_user_message,
             task_runtime_batch_ids=self.task_runtime_batch_ids,
             skill_loader=self.skill_loader,
+            submission_id=self.submission_id,
+            task_submission_index=self.task_submission_index,
         )
 
 

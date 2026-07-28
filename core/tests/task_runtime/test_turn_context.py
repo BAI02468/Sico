@@ -47,6 +47,7 @@ def _make_tool_context(*, agent_instance_id: int | None = 7) -> ToolContext:
         conversation_id=200,
         response_queue=asyncio.Queue(),
         plan_editor=_FakePlanEditor(),
+        submission_id="request-1",
     )
 
 
@@ -61,6 +62,18 @@ def test_from_tool_context_copies_identity_fields() -> None:
     assert ctx.conversation_id == 200
     assert ctx.turn_id == 42
     assert ctx.plan_editor is tc.plan_editor
+    assert ctx.submission_id == "request-1"
+
+
+def test_from_tool_context_accepts_delegate_submission_scope() -> None:
+    ctx = TurnContext.from_tool_context(
+        _make_tool_context(),
+        submission_id="request-1:delegate",
+        submission_source="adapter:workbook",
+    )
+
+    assert ctx.submission_id == "request-1:delegate"
+    assert ctx.submission_source == "adapter:workbook"
 
 
 def test_from_tool_context_coerces_none_agent_instance_id_to_zero() -> None:

@@ -229,6 +229,11 @@ class ChatRequest(betterproto2.Message):
     @gotag: json:"needUpdateTitle,omitempty"
     """
 
+    submission_id: "str" = betterproto2.field(18, betterproto2.TYPE_STRING)
+    """
+    @gotag: json:"submissionId,omitempty"
+    """
+
 
 default_message_pool.register_message("api", "ChatRequest", ChatRequest)
 

@@ -24,11 +24,11 @@ from app.biz.task_runtime.config import (
     DEFAULT_BACKEND_POD_CONCURRENCY,
     _resolve_clamped_env,
     _resolve_positive_env,
+    _replay_run_materialization_timeout_seconds,
     _reuse_wait_timeout_seconds,
     _sandbox_release_attempts,
     _stale_run_after_ms,
     _task_runtime_heartbeat_interval_seconds,
-    _task_runtime_reconcile_interval_seconds,
 )
 
 
@@ -147,10 +147,16 @@ def test_stale_run_after_ms_allows_zero_floor(monkeypatch) -> None:
     assert _stale_run_after_ms() == 0
 
 
-def test_reconcile_interval_default(monkeypatch) -> None:
-    monkeypatch.delenv("TASK_RUNTIME_RECONCILE_INTERVAL_SECONDS", raising=False)
+def test_replay_materialization_timeout_default(monkeypatch) -> None:
+    monkeypatch.delenv("TASK_RUNTIME_REPLAY_MATERIALIZATION_TIMEOUT_SECONDS", raising=False)
 
-    assert _task_runtime_reconcile_interval_seconds() == 30
+    assert _replay_run_materialization_timeout_seconds() == 30
+
+
+def test_replay_materialization_timeout_clamps_to_floor(monkeypatch) -> None:
+    monkeypatch.setenv("TASK_RUNTIME_REPLAY_MATERIALIZATION_TIMEOUT_SECONDS", "0")
+
+    assert _replay_run_materialization_timeout_seconds() == 1
 
 
 def test_heartbeat_interval_clamps_to_floor(monkeypatch) -> None:

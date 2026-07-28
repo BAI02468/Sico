@@ -39,7 +39,7 @@ from pathlib import Path
 
 from .results import aggregate, batch_results, persist_stranded_result, stranded_result
 from .models import TERMINAL_BATCH_STATUSES, TERMINAL_STATUSES
-from .config import _stale_run_after_ms
+from .config import _stale_run_after_ms, _task_runtime_heartbeat_interval_seconds
 from .context import TurnContext
 from .models import (
     BatchRecord,
@@ -100,6 +100,11 @@ def _plan_context_for_batch(ctx: TurnContext | None, batch: BatchRecord, runs: l
     from app.tools.plan import PlanEditor
 
     task_runtime_batch_ids = list(ctx.task_runtime_batch_ids) if ctx is not None else [batch.batch_id]
+    runtime_metadata = batch.metadata.get("_task_runtime", {})
+    submission_id = str(runtime_metadata.get("submission_id", "")) if isinstance(runtime_metadata, dict) else ""
+    submission_source = str(runtime_metadata.get("submission_source", "")) if isinstance(runtime_metadata, dict) else ""
+    if not submission_id:
+        submission_id = f"legacy:{batch.parent_conversation_id}:{batch.parent_turn_id}:{batch.batch_id}"
 
     return TurnContext(
         username=run.username,
@@ -108,6 +113,8 @@ def _plan_context_for_batch(ctx: TurnContext | None, batch: BatchRecord, runs: l
         turn_id=batch.parent_turn_id,
         project_id=run.project_id,
         conversation_id=conversation_id,
+        submission_id=submission_id,
+        submission_source=submission_source,
         plan_editor=PlanEditor(
             agent_instance_id=run.agent_instance_id,
             username=run.username,
@@ -361,22 +368,45 @@ async def reconcile_stale_task_runtime_once(
     await manager.reconcile_stale_runs()
 
 
-async def run_task_runtime_startup_reconciler() -> None:
-    """One-shot reconciliation invoked at core startup.
+def _startup_reconcile_delay_seconds() -> float:
+    stale_after_ms = _stale_run_after_ms()
+    if stale_after_ms <= 0:
+        return 0.0
+    return stale_after_ms / 1000 + _task_runtime_heartbeat_interval_seconds()
 
-    Recovers batches orphaned by a previous crash or unclean shutdown. Unlike the
-    previous continuous loop, this runs exactly once — live-process orphans (e.g.
-    heartbeat loss while the submitter is still running) are now handled by the
-    submitter's heartbeat self-abort mechanism, eliminating the race where the
-    reconciler and a live submitter both finalize the same batch.
-    """
+
+async def _run_startup_reconcile_pass(stage: str) -> None:
     try:
         await reconcile_stale_task_runtime_once()
     except Exception:
-        _LOGGER.warning("task runtime startup reconciliation failed", exc_info=True)
+        _LOGGER.warning("task runtime startup reconciliation failed stage=%s", stage, exc_info=True)
+
+
+async def run_task_runtime_startup_reconciler(stop_event: asyncio.Event) -> None:
+    """Run an immediate and one delayed crash-recovery pass after startup.
+
+    The immediate pass handles old orphans. A replacement pod normally starts
+    before its predecessor's heartbeat crosses the stale threshold, so one
+    delayed pass runs after that threshold plus a heartbeat safety margin. This
+    deliberately is not a permanent sweep loop: live owners retain liveness via
+    heartbeat, and recovery never executes cases or emits a recovered chat
+    message (``RECONCILER_RECOVERY_MESSAGE_ENABLED`` remains disabled).
+    """
+    await _run_startup_reconcile_pass("immediate")
+    delay_seconds = _startup_reconcile_delay_seconds()
+    if delay_seconds <= 0 or stop_event.is_set():
+        return
+    try:
+        await asyncio.wait_for(stop_event.wait(), timeout=delay_seconds)
+        return
+    except TimeoutError:
+        pass
+    if stop_event.is_set():
+        return
+    await _run_startup_reconcile_pass("delayed")
 
 
 # Keep the old name as a deprecated alias so any external callers don't break.
 async def run_task_runtime_reconciler(stop_event: asyncio.Event) -> None:
     """Deprecated: use :func:`run_task_runtime_startup_reconciler` instead."""
-    await run_task_runtime_startup_reconciler()
+    await run_task_runtime_startup_reconciler(stop_event)

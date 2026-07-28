@@ -187,6 +187,12 @@ class RunCoordinator:
     # -- reuse path ---------------------------------------------------------
 
     async def _wait_for_existing_run(self, ctx: TurnContext, run: TaskRun) -> TaskResult:
+        # This path is an observer, not a replacement owner: claiming a queued
+        # run can allocate duplicate sandbox resources before fencing resolves,
+        # and a running external process cannot be resumed safely. If the owner
+        # died, its batch heartbeat expires and the stale reconciler persists a
+        # FAILED/BLOCKED result for us to observe. A local timeout is surfaced as
+        # BLOCKED rather than risking duplicate side effects.
         started_at = _now_ms()
         wait_timeout = _reuse_wait_timeout_seconds(run)
         deadline = time.monotonic() + wait_timeout

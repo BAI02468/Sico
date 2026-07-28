@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/go-sql-driver/mysql"
+	"gorm.io/gorm"
 )
 
 // Stable error message tokens. Python clients translate by gRPC status code
@@ -48,6 +49,9 @@ func IsDuplicateKey(err error) bool {
 func isDuplicateKey(err error) bool {
 	if err == nil {
 		return false
+	}
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return true
 	}
 
 	var mysqlErr *mysql.MySQLError

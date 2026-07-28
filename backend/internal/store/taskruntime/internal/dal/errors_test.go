@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-sql-driver/mysql"
+	"gorm.io/gorm"
 )
 
 func TestIsStaleTokenIdentifiesWrappedErrors(t *testing.T) {
@@ -44,6 +45,15 @@ func TestIsDuplicateKeyFallsBackOnMessage(t *testing.T) {
 	// classify it so the AlreadyExists mapping survives.
 	if !isDuplicateKey(errors.New("Error 1062 (23000): Duplicate entry 'x' for key 'uniq'")) {
 		t.Fatal("plain error with a 'Duplicate entry' message should be a duplicate key")
+	}
+}
+
+func TestIsDuplicateKeyHandlesTranslatedGORMError(t *testing.T) {
+	if !isDuplicateKey(gorm.ErrDuplicatedKey) {
+		t.Fatal("gorm.ErrDuplicatedKey should be a duplicate key")
+	}
+	if !isDuplicateKey(fmt.Errorf("create run: %w", gorm.ErrDuplicatedKey)) {
+		t.Fatal("wrapped gorm.ErrDuplicatedKey should be a duplicate key")
 	}
 }
 

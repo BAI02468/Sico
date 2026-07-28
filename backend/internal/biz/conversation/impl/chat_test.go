@@ -27,6 +27,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"sico-backend/internal/biz/agent"
 	singleagententity "sico-backend/internal/entity/agent/singleagent"
@@ -276,4 +278,13 @@ func TestReconnect(t *testing.T) {
 		require.Len(t, sentEvents, 1)
 		require.Equal(t, "done", sentEvents[0].Event)
 	})
+}
+
+func TestShouldRetryCoreStreamChatStopsAfterOutput(t *testing.T) {
+	connection := &ChatConnection{}
+	err := status.Error(codes.Unavailable, "core disconnected")
+
+	require.True(t, shouldRetryCoreStreamChat(err, 1, connection))
+	connection.sentSeq = 1
+	require.False(t, shouldRetryCoreStreamChat(err, 1, connection))
 }

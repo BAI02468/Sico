@@ -156,7 +156,13 @@ def _build_delegate_tool(adapters: dict[str, Adapter]) -> FunctionTool:
                 "details": {"kind": kind, "valid_kinds": valid_kinds},
             }
         adapter_input = AdapterInput(options_json=str(kwargs.get("options_json", "") or ""))
-        return await _run_adapter(adapter, tool_context, adapter_input)
+        submission_id = tool_context.next_task_submission_id()
+        return await _run_adapter(
+            adapter,
+            tool_context,
+            adapter_input,
+            submission_id=submission_id,
+        )
 
     return FunctionTool(
         name=_DELEGATE_TOOL_NAME,
@@ -171,6 +177,8 @@ async def _run_adapter(
     adapter: Adapter,
     tool_context: ToolContext,
     adapter_input: AdapterInput,
+    *,
+    submission_id: str,
 ) -> dict[str, Any]:
     # Imported lazily to avoid a circular import via ``app.biz.chat.service``.
     from app.biz.task_runtime.context import TurnContext
@@ -215,7 +223,11 @@ async def _run_adapter(
                 task.model_dump_json(indent=2),
             )
 
-    turn_ctx = TurnContext.from_tool_context(tool_context)
+    turn_ctx = TurnContext.from_tool_context(
+        tool_context,
+        submission_id=submission_id,
+        submission_source=f"adapter:{adapter.name}",
+    )
     manager = default_task_manager(turn_ctx)
     try:
         batch_result = await manager.submit_prepared(turn_ctx, prepared)
