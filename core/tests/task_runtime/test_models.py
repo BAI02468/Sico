@@ -40,21 +40,21 @@ def test_idempotency_key_ignores_task_id() -> None:
     first = _skill_task("a", args={"case": {"id": 1}})
     second = _skill_task("b", args={"case": {"id": 1}})
 
-    assert compute_idempotency_key(100, 1, 3, first) == compute_idempotency_key(100, 1, 3, second)
+    assert compute_idempotency_key("submission-1", 3, first) == compute_idempotency_key("submission-1", 3, second)
 
 
-def test_idempotency_key_changes_with_conversation_id() -> None:
-     task = _skill_task("t", args={"a": 1})
-     assert compute_idempotency_key(1, 1, 0, task) != compute_idempotency_key(2, 1, 0, task)
+def test_idempotency_key_changes_with_submission_id() -> None:
+    task = _skill_task("t", args={"a": 1})
+
+    assert compute_idempotency_key("submission-1", 0, task) != compute_idempotency_key("submission-2", 0, task)
 
 
 def test_idempotency_key_is_stable_across_retries() -> None:
     """parent_tool_call_id may change on retry; the key must not."""
     task = _skill_task("t1", title="Same task", skill_name="s", args={"a": 1})
 
-    # Both calls have identical inputs (conversation_id + turn_id + batch_item_index + task contents).
-    key_first = compute_idempotency_key(100, 7, 0, task)
-    key_retry = compute_idempotency_key(100, 7, 0, task)
+    key_first = compute_idempotency_key("submission-1", 0, task)
+    key_retry = compute_idempotency_key("submission-1", 0, task)
 
     assert key_first == key_retry
 
@@ -63,13 +63,13 @@ def test_idempotency_key_changes_with_args() -> None:
     a = _skill_task("t", title="T", skill_name="s", args={"x": 1})
     b = _skill_task("t", title="T", skill_name="s", args={"x": 2})
 
-    assert compute_idempotency_key(100, 1, 0, a) != compute_idempotency_key(100, 1, 0, b)
+    assert compute_idempotency_key("submission-1", 0, a) != compute_idempotency_key("submission-1", 0, b)
 
 
-def test_explicit_idempotency_key_is_used_verbatim() -> None:
+def test_explicit_idempotency_key_is_scoped_to_submission() -> None:
     task = _skill_task("t", title="T", skill_name="s", idempotency_key="caller-supplied-uuid-123")
 
-    assert compute_idempotency_key(100, 99, 99, task) == "caller-supplied-uuid-123"
+    assert compute_idempotency_key("submission-1", 99, task) != compute_idempotency_key("submission-2", 99, task)
 
 
 def test_explicit_idempotency_key_overrides_args_changes() -> None:
@@ -77,7 +77,52 @@ def test_explicit_idempotency_key_overrides_args_changes() -> None:
     a = _skill_task("t", title="T", skill_name="s", args={"x": 1}, idempotency_key="job-42")
     b = _skill_task("t", title="T", skill_name="s", args={"x": 999}, idempotency_key="job-42")
 
-    assert compute_idempotency_key(100, 1, 0, a) == compute_idempotency_key(100, 1, 0, b)
+    assert compute_idempotency_key("submission-1", 0, a) == compute_idempotency_key("submission-1", 0, b)
+
+    without_explicit_key = _skill_task("t", title="T", skill_name="s", args={"x": 1})
+    assert compute_idempotency_key("submission-1", 0, a) != compute_idempotency_key(
+        "submission-1",
+        0,
+        without_explicit_key,
+    )
+
+
+def test_tool_context_assigns_stable_delegate_submission_ids_by_request_order() -> None:
+    context = ToolContext(
+        username="alice@example.com",
+        agent_id="agent",
+        agent_instance_id=1,
+        turn_id=7,
+        project_id=1,
+        conversation_id=100,
+        response_queue=asyncio.Queue(),
+        plan_editor=FakePlanEditor(),
+        submission_id="request-1",
+    )
+
+    first = context.next_task_submission_id()
+    second = context.next_task_submission_id()
+    third = context.next_task_submission_id()
+
+    assert (first, second, third) == (
+        "request-1:delegate:0",
+        "request-1:delegate:1",
+        "request-1:delegate:2",
+    )
+
+    replay = ToolContext(
+        username="alice@example.com",
+        agent_id="agent",
+        agent_instance_id=1,
+        turn_id=7,
+        project_id=1,
+        conversation_id=100,
+        response_queue=asyncio.Queue(),
+        plan_editor=FakePlanEditor(),
+        submission_id="request-1",
+    )
+    assert replay.next_task_submission_id() == first
+    assert replay.next_task_submission_id() == second
 
 
 def test_task_spec_dispatch_accessors_expose_dispatch_payload() -> None:

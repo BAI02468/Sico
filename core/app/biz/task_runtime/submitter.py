@@ -32,47 +32,55 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import hashlib
+import json
 import logging
 import uuid
 from collections.abc import AsyncIterator, Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-
-from .results import aggregate, finalize_nonterminal_runs, safe_list_batch_runs
+from .config import (
+    _replay_run_materialization_timeout_seconds,
+    _resolve_docker_concurrency,
+    _resolve_k8s_pod_concurrency,
+    _reuse_wait_timeout_seconds,
+    _stale_run_after_ms,
+    _task_runtime_heartbeat_interval_seconds,
+)
 from .context import TurnContext
-from .models import PreparedTaskBatch
+from .execution_plan import BatchExecutionPlan, SandboxTypePlan
+from .executors.command_backend import RESOURCE_KEY_DOCKER, RESOURCE_KEY_K8S_POD, backend_resource_key
 from .models import (
+    TERMINAL_BATCH_STATUSES,
+    TERMINAL_STATUSES,
     BatchRecord,
     BatchResult,
     BatchResultDigest,
     BatchStatus,
+    ErrorClass,
     JoinStrategy,
     SkillDispatch,
     TaskResult,
     TaskRun,
     TaskSpec,
     TaskStatus,
+    PreparedTaskBatch,
     compute_idempotency_key,
 )
+from .playbook_retrieval import attach_playbook_hints
+from .policy import _resolve_policy
 from .progress_port import RuntimeProgressPort
+from .presentation.rendering.batch_view import _planned_batch_sizes, _with_result_snapshots
+from .results import aggregate, finalize_nonterminal_runs, safe_list_batch_runs, terminal_result_from_run
 from .run_coordinator import RunCoordinator
 from .sandbox_coordinator import SandboxCoordinator
-from .config import (
-    _resolve_docker_concurrency, _resolve_k8s_pod_concurrency,
-    _stale_run_after_ms, _task_runtime_heartbeat_interval_seconds
-)
-from .executors.command_backend import RESOURCE_KEY_DOCKER, RESOURCE_KEY_K8S_POD, backend_resource_key
-from .tool_catalog import RUN_COMMAND_TOOL_NAME
-from .playbook_retrieval import attach_playbook_hints
-from .presentation.rendering.batch_view import _planned_batch_sizes, _with_result_snapshots
-from .execution_plan import BatchExecutionPlan, SandboxTypePlan
 from .sandbox_types import SANDBOX_OSES
 from .scheduler import BatchScheduler
 from .state_machine import transition_batch
 from .store import IdempotencyCollisionError, RunStore, _write_json_atomic
 from .time_utils import now_ms as _now_ms
-from .policy import _resolve_policy
+from .tool_catalog import RUN_COMMAND_TOOL_NAME
 
 if TYPE_CHECKING:
     from .skill_loader import SkillLoader
@@ -88,6 +96,7 @@ RUNTIME_METADATA_KEY = "_task_runtime"
 # warning. One miss is self-healing (the next beat recovers); a sustained run
 # means queued siblings will eventually be swept, so surface the cause once.
 _HEARTBEAT_FAILURE_WARN_THRESHOLD = 3
+_REPLAY_RESULT_POLL_SECONDS = 1.0
 
 
 class _HeartbeatDeathError(Exception):
@@ -133,16 +142,48 @@ class Submitter:
         *,
         batch_metadata: dict[str, Any],
     ) -> BatchResult:
+        if not ctx.submission_id.strip():
+            raise ValueError("task runtime submission_id is required")
         self._normalize_skill_required_sandbox(prepared)
-        execution_plan = await self._plan_batch_execution(ctx, prepared)
+        # Fingerprint the normalized batch before any capacity planning, so fleet
+        # availability changes cannot invalidate an otherwise identical replay.
+        submission_fingerprint = _prepared_submission_fingerprint(prepared, ctx.submission_source)
         # chat and runtime are peers: chat prepares the batch, the runtime owns its
         # own execution subtree in the plan (parent umbrella node + child run nodes).
         await self._progress.ensure_delegate_tasks_plan(ctx, prepared)
         parent_tool_call_id = await self._progress.create_delegate_tasks_call(ctx, prepared)
-        batch = self._build_batch(ctx, prepared, parent_tool_call_id, execution_plan, metadata=batch_metadata)
-        await self._store.create_batch(batch)
-        self._save_prepared_input(batch.batch_id, prepared)
-        _record_context_batch_id(ctx, batch.batch_id)
+        # The lookup itself is inside the guard: a failing store read (backend
+        # down, RPC timeout) must not leave the parent step stuck in "running".
+        try:
+            existing_batch = await self._get_existing_batch(_batch_id_for_submission(ctx.submission_id))
+            if existing_batch is not None:
+                _validate_submission_fingerprint_value(existing_batch, submission_fingerprint)
+                batch = existing_batch.model_copy(update={"parent_tool_call_id": parent_tool_call_id})
+                _record_context_batch_id(ctx, batch.batch_id)
+                return await self._observe_replayed_batch(ctx, batch, parent_tool_call_id)
+        except Exception:
+            with contextlib.suppress(Exception):
+                await self._progress.mark_delegate_tasks_failed(ctx, parent_tool_call_id)
+            raise
+
+        execution_plan = await self._plan_batch_execution(ctx, prepared)
+        batch = self._build_batch(
+            ctx,
+            prepared,
+            parent_tool_call_id,
+            execution_plan,
+            submission_fingerprint=submission_fingerprint,
+            metadata=batch_metadata,
+        )
+        try:
+            batch, is_replay = await self._materialize_batch(ctx, prepared, batch)
+            _record_context_batch_id(ctx, batch.batch_id)
+            if is_replay:
+                return await self._observe_replayed_batch(ctx, batch, parent_tool_call_id)
+        except Exception:
+            with contextlib.suppress(Exception):
+                await self._progress.mark_delegate_tasks_failed(ctx, parent_tool_call_id)
+            raise
         runs: list[TaskRun] = []
         try:
             runs = await self._create_runs(ctx, prepared, batch, parent_tool_call_id)
@@ -152,7 +193,7 @@ class Submitter:
                     ctx,
                     runs,
                     batch=batch,
-                    join_strategy=prepared.batch.join_strategy,
+                    join_strategy=batch.join_strategy,
                     execution_plan=execution_plan,
                 )
             await self._sandbox.cleanup_batch(ctx, batch)
@@ -182,11 +223,160 @@ class Submitter:
             )
             raise
         except asyncio.CancelledError:
-            await self._mark_batch_cancelled(ctx, batch, parent_tool_call_id, "Task runtime interrupted before completion.")
+            await self._mark_batch_cancelled(
+                ctx,
+                batch,
+                parent_tool_call_id,
+                "Task runtime interrupted before completion.",
+            )
             raise
         except Exception:
             await self._mark_batch_failed(ctx, batch, parent_tool_call_id)
             raise
+
+    async def _materialize_batch(
+        self,
+        ctx: TurnContext,
+        prepared: PreparedTaskBatch,
+        batch: BatchRecord,
+    ) -> tuple[BatchRecord, bool]:
+        await self._store.create_batch(batch)
+        persisted_batch = await self._store.get_batch(batch.batch_id)
+        if _batch_materialization_token(persisted_batch) != _batch_materialization_token(batch):
+            _validate_submission_fingerprint_value(
+                persisted_batch,
+                _batch_submission_fingerprint(batch),
+            )
+            _LOGGER.info(
+                "task submission replay detected submission_id=%s batch_id=%s",
+                ctx.submission_id,
+                batch.batch_id,
+            )
+            replay = persisted_batch.model_copy(update={"parent_tool_call_id": batch.parent_tool_call_id})
+            return replay, True
+
+        self._save_prepared_input(batch.batch_id, prepared)
+        return batch, False
+
+    async def _observe_replayed_batch(
+        self,
+        ctx: TurnContext,
+        batch: BatchRecord,
+        parent_tool_call_id: int,
+    ) -> BatchResult:
+        """Observe the original owner without taking liveness or persistence ownership.
+
+        A replay never heartbeats, claims, finalizes, cleans up, or updates the
+        shared batch. If the original process died, the normal stale reconciler
+        settles queued/running runs and this observer reports those terminal
+        FAILED/BLOCKED results rather than risking duplicate side effects.
+        """
+        runs = await self._reuse_existing_batch_runs(ctx, batch, parent_tool_call_id)
+        await self._progress.publish_parent_batch_progress(ctx, batch, runs)
+        results = await self._wait_for_replayed_batch_results(ctx, batch, runs)
+        batch_result = aggregate(
+            batch,
+            results,
+            artifacts_root=str(self._batch_dir(batch.batch_id)),
+        )
+        observed_batch = batch.model_copy(
+            update={
+                "status": batch_result.status,
+                "counts": BatchResultDigest.from_result(batch_result).counts,
+                "ended_at": batch.ended_at or _now_ms(),
+            }
+        )
+        final_runs = _with_result_snapshots(
+            self._merge_run_snapshots(runs, await self._store.list_batch_runs(batch.batch_id)),
+            results,
+        )
+        await self._progress.publish_parent_batch_progress(ctx, observed_batch, final_runs)
+        await self._progress.mark_parent_step_terminal_if_settled(
+            ctx,
+            parent_tool_call_id,
+            observed_batch.status,
+        )
+        return batch_result
+
+    async def _wait_for_replayed_batch_results(
+        self,
+        ctx: TurnContext,
+        batch: BatchRecord,
+        runs: list[TaskRun],
+    ) -> list[TaskResult]:
+        """Poll batch state once per interval and fetch each terminal result once.
+
+        This avoids one polling loop per run (hundreds of reverse RPCs per
+        second for large workbooks). Transient list/detail failures leave the
+        affected runs pending until the next batch poll.
+        """
+        if not runs:
+            raise RuntimeError(f"replayed batch {batch.batch_id} has no materialized runs")
+        loop = asyncio.get_running_loop()
+        observed_at = _now_ms()
+        wait_timeout = max(_reuse_wait_timeout_seconds(run) for run in runs)
+        deadline = loop.time() + wait_timeout
+        templates = {run.run_id: run for run in runs}
+        current_runs = dict(templates)
+        pending = set(templates)
+        results: dict[str, TaskResult] = {}
+
+        while pending and loop.time() < deadline:
+            try:
+                stored_runs = await self._store.list_batch_runs(batch.batch_id)
+            except Exception:
+                _LOGGER.debug("replayed batch state read failed batch_id=%s", batch.batch_id, exc_info=True)
+            else:
+                for stored in stored_runs:
+                    template = templates.get(stored.run_id)
+                    if template is None or stored.run_id not in pending:
+                        continue
+                    current = stored.model_copy(
+                        update={
+                            "parent_tool_call_id": template.parent_tool_call_id,
+                            "plan_batch_call_id": template.plan_batch_call_id,
+                        }
+                    )
+                    current_runs[stored.run_id] = current
+                    if stored.status not in TERMINAL_STATUSES:
+                        continue
+                    try:
+                        detail = await self._store.get_task_detail(stored.run_id, "summary")
+                    except Exception:
+                        _LOGGER.debug(
+                            "replayed run result read failed run_id=%s",
+                            stored.run_id,
+                            exc_info=True,
+                        )
+                        continue
+                    result = detail.result or terminal_result_from_run(detail.run)
+                    results[stored.run_id] = result
+                    pending.remove(stored.run_id)
+                    with contextlib.suppress(Exception):
+                        await self._progress.mark_run_terminal(ctx, current, result)
+            if pending:
+                await asyncio.sleep(_REPLAY_RESULT_POLL_SECONDS)
+
+        ended_at = _now_ms()
+        for run_id in pending:
+            run = current_runs[run_id]
+            result = TaskResult(
+                run_id=run.run_id,
+                task_id=run.spec.task_id,
+                status=TaskStatus.BLOCKED,
+                title=run.spec.title,
+                summary=f"Timed out waiting for prior run {run.run_id} to finish.",
+                error_class=ErrorClass.TRANSIENT,
+                error_message=f"Timed out waiting for prior run after {wait_timeout}s.",
+                started_at=observed_at,
+                ended_at=ended_at,
+                duration_ms=ended_at - observed_at,
+            )
+            results[run_id] = result
+            with contextlib.suppress(Exception):
+                await self._progress.mark_run_terminal(ctx, run, result)
+
+        return [results[run.run_id] for run in runs]
 
     # -- batch-level liveness ----------------------------------------------
 
@@ -510,6 +700,7 @@ class Submitter:
         parent_tool_call_id: int,
         execution_plan: BatchExecutionPlan,
         *,
+        submission_fingerprint: str,
         metadata: dict[str, Any] | None = None,
     ) -> BatchRecord:
         now_ms = _now_ms()
@@ -520,8 +711,12 @@ class Submitter:
         # columns only carry the representative bucket, so the per-type breakdown
         # (which fleet got how many lanes in a mixed android/windows batch) lives
         # here for diagnostics.
+        runtime_meta = dict(batch_metadata.get(RUNTIME_METADATA_KEY, {}))
+        runtime_meta["submission_id"] = ctx.submission_id
+        runtime_meta["submission_source"] = ctx.submission_source
+        runtime_meta["submission_fingerprint"] = submission_fingerprint
+        runtime_meta["materialization_token"] = uuid.uuid4().hex
         if execution_plan.sandbox_plans:
-            runtime_meta = dict(batch_metadata.get(RUNTIME_METADATA_KEY, {}))
             runtime_meta["sandbox_plans"] = [
                 {
                     "sandbox_type": plan.sandbox_type,
@@ -531,9 +726,9 @@ class Submitter:
                 }
                 for plan in execution_plan.sandbox_plans
             ]
-            batch_metadata[RUNTIME_METADATA_KEY] = runtime_meta
+        batch_metadata[RUNTIME_METADATA_KEY] = runtime_meta
         return BatchRecord(
-            batch_id=f"batch-{uuid.uuid4().hex[:12]}",
+            batch_id=_batch_id_for_submission(ctx.submission_id),
             parent_conversation_id=ctx.conversation_id,
             parent_turn_id=ctx.turn_id,
             parent_tool_call_id=parent_tool_call_id,
@@ -577,7 +772,7 @@ class Submitter:
             project_id=ctx.project_id,
             spec=task,
             execution_policy=policy,
-            idempotency_key=compute_idempotency_key(ctx.conversation_id, ctx.turn_id, batch_item_index, task),
+            idempotency_key=compute_idempotency_key(ctx.submission_id, batch_item_index, task),
             executor=policy.executor,
             queued_at=_now_ms(),
         )
@@ -600,10 +795,6 @@ class Submitter:
             )
             run = self._build_run(ctx, batch, task, parent_tool_call_id, child_tool_call_id, batch_item_index)
             await self._progress.mark_run_queued(ctx, run)
-            existing = await self._reuse_existing_run(ctx, run)
-            if existing is not None:
-                runs.append(existing)
-                continue
             try:
                 await self._store.create_run(run)
             except IdempotencyCollisionError:
@@ -614,11 +805,6 @@ class Submitter:
                 winner = await self._store.lookup_idempotent(run.idempotency_key)
                 if winner is None:
                     raise
-                if not _should_reuse_idempotent_run(winner, run):
-                    run.idempotency_key = _rerun_idempotency_key(run.idempotency_key, run.run_id)
-                    await self._store.create_run(run)
-                    runs.append(run)
-                    continue
                 winner = _bind_reused_run_to_current_plan(winner, run)
                 winner._runtime_reuse = True
                 runs.append(winner)
@@ -626,22 +812,65 @@ class Submitter:
             runs.append(run)
         return runs
 
-    async def _reuse_existing_run(self, ctx: TurnContext, run: TaskRun) -> TaskRun | None:
-        if not run.idempotency_key:
-            return None
+    async def _get_existing_batch(self, batch_id: str) -> BatchRecord | None:
         try:
-            existing = await self._store.lookup_idempotent(run.idempotency_key)
-        except Exception:
-            _LOGGER.warning("idempotent lookup failed for key=%s", run.idempotency_key, exc_info=True)
+            return await self._store.get_batch(batch_id)
+        except FileNotFoundError:
             return None
-        if existing is None:
-            return None
-        if not _should_reuse_idempotent_run(existing, run):
-            run.idempotency_key = _rerun_idempotency_key(run.idempotency_key, run.run_id)
-            return None
-        existing = _bind_reused_run_to_current_plan(existing, run)
-        existing._runtime_reuse = True
-        return existing
+
+    async def _reuse_existing_batch_runs(
+        self,
+        ctx: TurnContext,
+        batch: BatchRecord,
+        parent_tool_call_id: int,
+    ) -> list[TaskRun]:
+        timeout_seconds = _replay_run_materialization_timeout_seconds()
+        deadline = asyncio.get_running_loop().time() + timeout_seconds
+        stored_runs: list[TaskRun] = []
+        while True:
+            stored_runs = await self._store.list_batch_runs(batch.batch_id)
+            if len(stored_runs) >= batch.total_count or batch.status in TERMINAL_BATCH_STATUSES:
+                break
+            if asyncio.get_running_loop().time() >= deadline:
+                break
+            await asyncio.sleep(0.1)
+            batch = await self._store.get_batch(batch.batch_id)
+
+        expected_indices = set(range(batch.total_count))
+        actual_indices = {run.batch_item_index for run in stored_runs}
+        if len(stored_runs) != batch.total_count or actual_indices != expected_indices:
+            missing_indices = sorted(expected_indices - actual_indices)
+            _LOGGER.warning(
+                "replayed task submission incomplete batch_id=%s expected=%d found=%d "
+                "missing_indices=%s timeout_seconds=%d",
+                batch.batch_id,
+                batch.total_count,
+                len(stored_runs),
+                missing_indices,
+                timeout_seconds,
+            )
+            raise RuntimeError(
+                f"replayed task submission {batch.batch_id} expected {batch.total_count} materialized runs, "
+                f"found {len(stored_runs)}"
+            )
+
+        rebound: list[TaskRun] = []
+        for run in sorted(stored_runs, key=lambda item: item.batch_item_index):
+            child_tool_call_id = await self._progress.add_task_sub_call(
+                ctx,
+                parent_tool_call_id=parent_tool_call_id,
+                task=run.spec,
+                sub_call_index=run.batch_item_index,
+            )
+            current = run.model_copy(
+                update={
+                    "parent_tool_call_id": parent_tool_call_id,
+                    "plan_batch_call_id": child_tool_call_id,
+                }
+            )
+            current._runtime_reuse = True
+            rebound.append(current)
+        return rebound
 
     # -- abort / termination writers ---------------------------------------
 
@@ -825,15 +1054,54 @@ def _bind_reused_run_to_current_plan(existing: TaskRun, current: TaskRun) -> Tas
     )
 
 
-def _should_reuse_idempotent_run(existing: TaskRun, current: TaskRun) -> bool:
-    if existing.parent_conversation_id != current.parent_conversation_id:
-        return False
-    if existing.status == TaskStatus.COMPLETED:
-        return True
-    return existing.parent_turn_id == current.parent_turn_id
+def _batch_id_for_submission(submission_id: str) -> str:
+    digest = hashlib.sha256(submission_id.encode("utf-8")).hexdigest()[:24]
+    return f"batch-{digest}"
 
 
-def _rerun_idempotency_key(key: str, run_id: str) -> str:
-    if not key:
-        return key
-    return f"{key}:rerun:{run_id}"
+def _batch_materialization_token(batch: BatchRecord) -> str:
+    runtime_metadata = batch.metadata.get(RUNTIME_METADATA_KEY, {})
+    if not isinstance(runtime_metadata, dict):
+        return ""
+    return str(runtime_metadata.get("materialization_token", ""))
+
+
+def _prepared_submission_fingerprint(prepared: PreparedTaskBatch, submission_source: str = "") -> str:
+    payload = {
+        "submission_source": submission_source,
+        "tasks": [_task_execution_fingerprint_payload(task) for task in prepared.batch.tasks],
+        "join_strategy": prepared.batch.join_strategy,
+    }
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _task_execution_fingerprint_payload(task: TaskSpec) -> dict[str, Any]:
+    return task.model_dump(
+        mode="json",
+        exclude={"display", "metadata"},
+        exclude_none=True,
+    )
+
+
+def _batch_submission_fingerprint(batch: BatchRecord) -> str:
+    runtime_metadata = batch.metadata.get(RUNTIME_METADATA_KEY, {})
+    if not isinstance(runtime_metadata, dict):
+        return ""
+    return str(runtime_metadata.get("submission_fingerprint", ""))
+
+
+def _validate_submission_fingerprint_value(existing: BatchRecord, incoming_fingerprint: str) -> None:
+    existing_fingerprint = _batch_submission_fingerprint(existing)
+    if existing_fingerprint and existing_fingerprint == incoming_fingerprint:
+        return
+    _LOGGER.warning(
+        "task submission replay diverged batch_id=%s existing_fingerprint=%s incoming_fingerprint=%s",
+        existing.batch_id,
+        existing_fingerprint[:12],
+        incoming_fingerprint[:12],
+    )
+    raise RuntimeError(
+        f"task submission replay diverged for batch {existing.batch_id}; "
+        "refusing to reuse results for regenerated tasks"
+    )

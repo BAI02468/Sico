@@ -341,6 +341,53 @@ class TestChat:
 
 
 @pytest.mark.asyncio
+async def test_chat_agent_does_not_retry_generation_after_task_batch_created(mocker: pytest_mock.MockerFixture):
+    tool_context = ToolContext(
+        username="alice@example.com",
+        agent_id="agent-1",
+        agent_instance_id=628,
+        turn_id=2,
+        project_id=0,
+        conversation_id=787,
+        response_queue=asyncio.Queue(),
+        plan_editor=PlanEditor(agent_instance_id=628, username="alice@example.com", turn_id=2, conversation_id=787),
+        submission_id="request-1",
+    )
+    agent = ChatAgent(
+        client=FailingStreamingClient(),
+        username="alice@example.com",
+        agent_instance_id=628,
+        mem_runner=SimpleNamespace(),
+        tool_context=tool_context,
+    )
+    attempts = 0
+
+    async def fail_after_batch(*args, **kwargs):
+        nonlocal attempts
+        attempts += 1
+        tool_context.task_runtime_batch_ids.append("batch-1")
+        raise ConnectionError("stream failed after delegate submission")
+
+    mocker.patch.object(agent, "_stream_one_attempt", side_effect=fail_after_batch)
+    response_queue: asyncio.Queue[ChatResponse | ChatResponseUpdate | None] = asyncio.Queue()
+
+    with pytest.raises(ConnectionError, match="stream failed after delegate submission"):
+        await agent.run_stream(
+            response_queue,
+            AgentFrameworkMessage(role="user", contents=[Content.from_text("run")]),
+            "system",
+            options=RunOptions(max_attempts=2),
+        )
+
+    assert attempts == 1
+    error_response = await response_queue.get()
+    assert error_response is not None
+    error_text = error_response.content.content.lower()
+    assert "submitted tasks are still running" in error_text
+    assert "attempt 1/2" not in error_text
+
+
+@pytest.mark.asyncio
 async def test_chat_agent_persists_conversation_json_for_pre_stream_failure(tmp_path, monkeypatch):
     monkeypatch.setattr(chat_agent_module.CHAT_FS, "_root", tmp_path)
     monkeypatch.setattr(chat_agent_module, "get_context_length", lambda _model: 128_000)

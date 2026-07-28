@@ -46,6 +46,7 @@ message ChatRequest {
   string agent_role = 15;          // @gotag: json:"agentRole,omitempty"
   string project_name = 16;         // @gotag: json:"projectName,omitempty"
   bool need_update_title = 17;      // @gotag: json:"needUpdateTitle,omitempty"
+  string submission_id = 18;        // @gotag: json:"submissionId,omitempty"
 }
 
 message ChatDirectResponse {

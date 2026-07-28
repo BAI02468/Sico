@@ -207,10 +207,9 @@ class TaskSpec(BaseModel):
     # hand-off). Gaps are allowed: distinct values are ordered ascending into
     # execution waves.
     stage: int = 0
-    # Optional caller-supplied idempotency key. When set, retrying with the
-    # exact same key (within the same turn) returns the prior run instead of
-    # creating a new one. When empty, the runtime derives a stable key from
-    # the task contents.
+    # Optional caller-supplied task identity within one logical submission.
+    # The runtime scopes it with the submission id and batch position, so a new
+    # user-requested submission still executes while transport replay reuses.
     idempotency_key: str = ""
 
     @field_validator("task_id", "title")
@@ -451,22 +450,23 @@ class BatchResultDigest(BaseModel):
         )
 
 
-def compute_idempotency_key(conversation_id: int, turn_id: int, batch_item_index: int, task: TaskSpec) -> str:
-    """Derive a stable idempotency key for a task within a conversation turn.
+def compute_idempotency_key(submission_id: str, batch_item_index: int, task: TaskSpec) -> str:
+    """Derive a stable task key within one logical submission.
 
-    The key intentionally excludes fields that change between retries (run/tool-call IDs,
-    timestamps, attempt counts). If the caller supplied an explicit ``task.idempotency_key``,
-    we trust it verbatim so callers can dedupe across turns. Otherwise we hash the
-    canonical contents of the task plus its position within the batch.
+    Transport retries preserve ``submission_id`` and therefore reuse existing
+    work. An intentional rerun receives a new submission id and executes again,
+    even when the task contents are unchanged.
     """
+    submission_id = submission_id.strip()
+    if not submission_id:
+        raise ValueError("submission_id is required")
+
     explicit = task.idempotency_key.strip()
-    if explicit:
-        return explicit
     payload = {
-        "conversation_id": conversation_id,
-        "turn_id": turn_id,
+        "schema_version": 2,
+        "submission_id": submission_id,
         "batch_item_index": batch_item_index,
-        "task": task.model_dump(
+        "task": {"explicit_idempotency_key": explicit} if explicit else task.model_dump(
             mode="json",
             exclude={"task_id", "idempotency_key", "metadata"},
             exclude_none=True,

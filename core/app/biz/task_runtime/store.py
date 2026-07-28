@@ -150,6 +150,8 @@ class FileRunStore:
 
     async def create_batch(self, batch: BatchRecord) -> None:
         batch_path = self.batch_dir(batch.batch_id)
+        if (batch_path / "batch.json").exists():
+            return
         batch_path.mkdir(parents=True, exist_ok=True)
         _write_json_atomic(batch_path / "batch.json", batch.model_dump(mode="json"))
 
