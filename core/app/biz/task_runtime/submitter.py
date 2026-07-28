@@ -152,17 +152,19 @@ class Submitter:
         # own execution subtree in the plan (parent umbrella node + child run nodes).
         await self._progress.ensure_delegate_tasks_plan(ctx, prepared)
         parent_tool_call_id = await self._progress.create_delegate_tasks_call(ctx, prepared)
-        existing_batch = await self._get_existing_batch(_batch_id_for_submission(ctx.submission_id))
-        if existing_batch is not None:
-            try:
+        # The lookup itself is inside the guard: a failing store read (backend
+        # down, RPC timeout) must not leave the parent step stuck in "running".
+        try:
+            existing_batch = await self._get_existing_batch(_batch_id_for_submission(ctx.submission_id))
+            if existing_batch is not None:
                 _validate_submission_fingerprint_value(existing_batch, submission_fingerprint)
                 batch = existing_batch.model_copy(update={"parent_tool_call_id": parent_tool_call_id})
                 _record_context_batch_id(ctx, batch.batch_id)
                 return await self._observe_replayed_batch(ctx, batch, parent_tool_call_id)
-            except Exception:
-                with contextlib.suppress(Exception):
-                    await self._progress.mark_delegate_tasks_failed(ctx, parent_tool_call_id)
-                raise
+        except Exception:
+            with contextlib.suppress(Exception):
+                await self._progress.mark_delegate_tasks_failed(ctx, parent_tool_call_id)
+            raise
 
         execution_plan = await self._plan_batch_execution(ctx, prepared)
         batch = self._build_batch(

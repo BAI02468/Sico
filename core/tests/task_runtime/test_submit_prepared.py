@@ -158,6 +158,19 @@ def _tool_executor(tmp_path: Path) -> ToolExecutor:
     )
 
 
+class _FailingBatchLookupStore(FileRunStore):
+    """Simulates a store read that fails for a reason other than "not found"."""
+
+    def __init__(self, root: Path) -> None:
+        super().__init__(root)
+        self.fail_batch_lookup = False
+
+    async def get_batch(self, batch_id: str):
+        if self.fail_batch_lookup:
+            raise ConnectionError(f"simulated backend outage for {batch_id}")
+        return await super().get_batch(batch_id)
+
+
 class _CountingExecutor:
     def __init__(self, inner: Executor) -> None:
         self.inner = inner
@@ -391,3 +404,26 @@ async def test_replayed_batch_result_wait_rejects_empty_runs(tmp_path: Path) -> 
 
     with pytest.raises(RuntimeError, match="has no materialized runs"):
         await manager.submitter._wait_for_replayed_batch_results(context, batch, [])
+
+
+@pytest.mark.asyncio
+async def test_submit_prepared_marks_parent_failed_when_replay_lookup_errors(tmp_path: Path) -> None:
+    store = _FailingBatchLookupStore(tmp_path / "turn" / "results")
+    executor = _CountingExecutor(_tool_executor(tmp_path))
+    manager = TaskManager(store, executor, max_concurrency=1)
+    prepared = PreparedTaskBatch(
+        batch=TaskBatchInput(tasks=(_echo_task("task-1", "hello"),), description="Replay batch."),
+    )
+    failed_parent_calls: list[int] = []
+
+    async def record_failure(_ctx, parent_tool_call_id: int) -> None:
+        failed_parent_calls.append(parent_tool_call_id)
+
+    manager.submitter._progress.mark_delegate_tasks_failed = record_failure
+    store.fail_batch_lookup = True
+
+    with pytest.raises(ConnectionError, match="simulated backend outage"):
+        await manager.submit_prepared(_turn_context("submission-1"), prepared)
+
+    assert len(failed_parent_calls) == 1
+    assert executor.run_count == 0

@@ -288,3 +288,65 @@ func TestShouldRetryCoreStreamChatStopsAfterOutput(t *testing.T) {
 	connection.sentSeq = 1
 	require.False(t, shouldRetryCoreStreamChat(err, 1, connection))
 }
+
+// unavailableThenOKChatClient fails the first failAttempts StreamChat calls with
+// codes.Unavailable and records the submission id carried by every attempt.
+type unavailableThenOKChatClient struct {
+	conversationrpc.ChatServiceClient
+	failAttempts  int
+	calls         int
+	submissionIDs []string
+}
+
+func (m *unavailableThenOKChatClient) StreamChat(
+	ctx context.Context,
+	in *conversationdto.ChatRequest,
+	opts ...grpc.CallOption,
+) (*conversationdto.ChatDirectResponse, error) {
+	m.calls++
+	m.submissionIDs = append(m.submissionIDs, in.GetSubmissionId())
+	if m.calls <= m.failAttempts {
+		return nil, status.Error(codes.Unavailable, "core is draining")
+	}
+	return &conversationdto.ChatDirectResponse{}, nil
+}
+
+func newTestChatRequest(service *Service) *conversationdto.ChatRequest {
+	return service.buildChatRequest(
+		context.Background(),
+		&conversationdto.ChatRequestHttp{AgentInstanceID: 1, Message: "hi"},
+		"alice",
+		&singleagentpb.SingleAgent{},
+		nil,
+		&conventity.Conversation{ID: 7},
+		3,
+		nil,
+		nil,
+	)
+}
+
+func TestBuildChatRequestAssignsUniqueSubmissionID(t *testing.T) {
+	service := newTestConversationService()
+
+	first := newTestChatRequest(service)
+	second := newTestChatRequest(service)
+
+	require.NotEmpty(t, first.GetSubmissionId())
+	require.NotEqual(t, first.GetSubmissionId(), second.GetSubmissionId())
+}
+
+func TestStreamChatRetryReusesSubmissionID(t *testing.T) {
+	chatClient := &unavailableThenOKChatClient{failAttempts: 1}
+	service := newTestConversationService()
+	service.chatClient = chatClient
+	chatReq := newTestChatRequest(service)
+
+	err := service.streamChatWithUnavailableRetry(context.Background(), &ChatConnection{}, chatReq)
+
+	require.NoError(t, err)
+	require.Equal(t, 2, chatClient.calls)
+	require.NotEmpty(t, chatClient.submissionIDs[0])
+	// A transport-level retry must keep the identity so core treats the second
+	// attempt as a replay of the same submission rather than a new one.
+	require.Equal(t, chatClient.submissionIDs[0], chatClient.submissionIDs[1])
+}
