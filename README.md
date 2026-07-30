@@ -16,6 +16,13 @@
 
 </div>
 
+## Recent Updates
+ 
+| Date | Type | Update |
+|------|------|--------|
+| **20260722** | Release | Released **Sico v0.3.0**, introducing multi-session chat, project context management and experience improvements. |
+| **20260708** | Model | Released **GELab-Zero-4B-preview-Sico-Evolution**, an open-source GUI foundation model on Hugging Face. |
+
 ## What is Sico?
 
 Sico — Symbiotic Intelligence for CO-evolution— is an open-source platform for building, managing, and evolving **Digital Workers**: structured AI labor units that co-evolve with human operators through real production work, particularly in BPO (Business Process Outsourcing) scenarios.
