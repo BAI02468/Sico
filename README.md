@@ -21,7 +21,7 @@
 | Date | Type | Update |
 |------|------|--------|
 | **20260722** | Release | Released **Sico v0.3.0**, introducing multi-session chat, project context management and experience improvements. |
-| **20260708** | Model | Released **GELab-Zero-4B-preview-Sico-Evolution**, an open-source GUI foundation model on Hugging Face. |
+| **20260708** | Model | Released [**GELab-Zero-4B-preview-Sico-Evolution**](https://huggingface.co/microsoft/GELab-Zero-4B-preview-Sico-Evolution), an open-source GUI foundation model on HuggingFace. |
 
 ## What is Sico?
 
