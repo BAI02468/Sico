@@ -31,16 +31,8 @@ Welcome to the Exgentic docs. Use the table below to find what you need.
 | [Quick Start](./observability/quickstart.md) | Set up OpenTelemetry tracing with Jaeger in five minutes |
 | [Semantic Conventions](./observability/semantic-conventions.md) | Full reference of every span and attribute Exgentic emits |
 
-## Maintainers
-
-| Document | Description |
-|----------|-------------|
-| [Releasing](./releasing.md) | Cut a release, publish to PyPI, and create a GitHub Release |
-
----
-
 ## Other resources
 
 - [README.md](../README.md) — project overview, quick start, CLI reference, and available benchmarks/agents
-- [DEVELOPMENT.md](../DEVELOPMENT.md) — local setup, running tests, linting, and the release process
+- [DEVELOPMENT.md](../DEVELOPMENT.md) — local setup, running tests, and linting
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — contribution workflow, legal requirements, and PR guidelines

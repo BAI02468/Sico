@@ -1,10 +1,11 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "exgentic"
-dynamic = ["version"]
+# Bundled AgentStream snapshot; not published independently from Sico.
+version = "0.0.0+agentstream"
 description = "Exgentic - General agent evaluation"
 authors = [{name = "Exgentic Team"}]
 license = {text = "Apache-2.0"}
@@ -64,14 +65,6 @@ dev = [
 
 [tool.hatch.metadata]
 allow-direct-references = true
-
-[tool.hatch.version]
-source = "vcs"
-tag-pattern = "^v(?P<version>.*)$"
-fallback-version = "0.0.0"
-
-[tool.hatch.build.hooks.vcs]
-version-file = "src/exgentic/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/exgentic"]

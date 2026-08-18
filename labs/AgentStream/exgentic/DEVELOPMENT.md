@@ -5,9 +5,9 @@ This guide covers setting up exgentic for local development, editing, and debugg
 ## Setup
 
 ```bash
-git clone https://github.com/Exgentic/exgentic.git
-cd exgentic
-uv sync
+git clone https://github.com/microsoft/Sico.git
+cd Sico/labs/AgentStream/exgentic
+uv sync --frozen
 ```
 
 ## Setup Benchmarks & Agents
@@ -119,11 +119,10 @@ export EXGENTIC_OTEL_ENABLED=true
 
 See [`OTEL_SEMANTIC_CONVENTIONS.md`](./OTEL_SEMANTIC_CONVENTIONS.md) for details.
 
-## Releases
+## Packaging
 
-- Release process guide: `docs/releasing.md`
-- Benchmark adapter design guide: `docs/adding-benchmarks.md`
-- Create and push a release tag: `scripts/release.sh 0.2.0 --push`
-- After PyPI publish succeeds, create the GitHub Release manually: `gh release create v0.2.0 --generate-notes --title "v0.2.0"`
-- Release versions come from Git tags via `hatch-vcs`
-- PyPI publishing uses GitHub Actions Trusted Publishing
+The bundled Exgentic component is installed from source for AgentStream and is
+not published independently from Sico. Do not create Exgentic release tags or
+publish this copy to PyPI from this repository.
+
+For benchmark adapter design guidance, see `docs/adding-benchmarks.md`.

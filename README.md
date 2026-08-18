@@ -219,6 +219,8 @@ sico/
 ├── proto/                # Protobuf definitions shared by all services
 ├── sandbox/              # Sandbox runtimes (Android emulator, ...)
 ├── examples/             # Runnable workflow examples (auth, LLM Hub, conversation, sandbox, ...)
+├── labs/
+│   └── AgentStream/      # Experimental streaming evaluation for self-evolving LLM agents
 ├── deploy/
 │   ├── docker/           # docker-compose stack
 │   └── kind/             # Kind + Helm setup

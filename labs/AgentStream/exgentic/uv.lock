@@ -680,6 +680,7 @@ wheels = [
 
 [[package]]
 name = "exgentic"
+version = "0.0.0+agentstream"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

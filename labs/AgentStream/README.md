@@ -50,7 +50,15 @@ Overall, we advocate that self-evolving agents should be evaluated under realist
 
 ## ⚡️ Getting Started
 
-AgentStream is built on the [`Exgentic`](./exgentic) framework, which is bundled in this repository. The five self-evolving agents live under [`exgentic/src/exgentic/agents`](./exgentic/src/exgentic/agents), and the benchmarks are orchestrated through `exgentic`'s installation and runner infrastructure.
+AgentStream is built on a locally adapted snapshot of the
+[Exgentic](https://github.com/Exgentic/exgentic) framework, bundled under
+[`exgentic`](./exgentic). This copy adds the self-evolving agents and streaming
+experiment runners used by AgentStream. AgentStream-specific changes to the
+snapshot are maintained in Sico, and the bundled package is not published
+independently from this repository. The five self-evolving agents live under
+[`exgentic/src/exgentic/agents`](./exgentic/src/exgentic/agents), and the
+benchmarks are orchestrated through `exgentic`'s installation and runner
+infrastructure.
 
 ### 1. Requirements
 

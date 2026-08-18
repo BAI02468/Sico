@@ -1,5 +1,14 @@
 <img src="misc/assets/exgentic_banner_black.png" alt="Exgentic Banner" width="100%"/>
 
+> [!NOTE]
+> This directory contains a locally adapted snapshot of the upstream
+> [Exgentic](https://github.com/Exgentic/exgentic) project used by
+> [AgentStream](../README.md). AgentStream-specific changes to this copy are
+> maintained in Sico, and it is not published as a separate Exgentic package
+> from this repository. Report issues with this bundled copy in the
+> [Sico issue tracker](https://github.com/microsoft/Sico/issues); report issues
+> with the original project to the upstream repository.
+
 <p align="center">
   <strong>Evaluate any agent on any benchmark in the simplest way possible</strong>
 </p>
@@ -24,8 +33,14 @@ Exgentic is a universal evaluation framework that enables standardized testing o
 ### Installation
 
 ```bash
-uv tool install exgentic
+git clone https://github.com/microsoft/Sico.git
+cd Sico/labs/AgentStream/exgentic
+uv sync --frozen
+source .venv/bin/activate
 ```
+
+The commands below assume that this local environment is active. Alternatively,
+prefix each command with `uv run`.
 
 ### API Credentials
 
@@ -71,11 +86,7 @@ exgentic evaluate --benchmark tau2 --agent tool_calling --subset retail --num-ta
 
 ### Python API
 
-To use exgentic as a library, install it first:
-
-```bash
-uv add exgentic   # or: pip install exgentic
-```
+After syncing the bundled environment above, use exgentic as a library:
 
 ```python
 from exgentic import evaluate
@@ -246,4 +257,7 @@ Apache License 2.0 — see [LICENSE](LICENSE).
 
 ## Support
 
-For questions and support, [open an issue](https://github.com/Exgentic/exgentic/issues) on GitHub.
+For questions about this bundled copy,
+[open an issue](https://github.com/microsoft/Sico/issues) in Sico. For the
+original Exgentic project, use the
+[upstream issue tracker](https://github.com/Exgentic/exgentic/issues).
