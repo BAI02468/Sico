@@ -24,6 +24,8 @@ Guidelines for editors:
 
 ### Added
 
+- **AgentStream:** add a streaming evaluation framework for self-evolving LLM agents under `labs/AgentStream`.
+
 ### Changed
 
 ### Deprecated
