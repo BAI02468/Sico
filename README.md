@@ -1,6 +1,6 @@
 <div align="center">
 
-![Sico](docs/images/newbrand.png)
+![Sico](docs/images/brand.png)
 
 **Sico: an infrastructure for symbiotic intelligence, where humans and Digital Workers co-evolve.**
 
