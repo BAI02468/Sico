@@ -95,7 +95,8 @@ def check_dependency_caps(pyproject_path: Path) -> list[str]:
 
 def main() -> int:
     """Main entry point."""
-    pyproject_path = Path("pyproject.toml")
+    project_root = Path(__file__).resolve().parents[2]
+    pyproject_path = project_root / "pyproject.toml"
 
     if not pyproject_path.exists():
         print("Error: pyproject.toml not found", file=sys.stderr)
@@ -104,7 +105,7 @@ def main() -> int:
     uncapped = check_dependency_caps(pyproject_path)
 
     if uncapped:
-        print("❌ Dependencies without upper version bounds found:", file=sys.stderr)
+        print("ERROR: Dependencies without upper version bounds found:", file=sys.stderr)
         print(file=sys.stderr)
         for dep in uncapped:
             print(f"  {dep}", file=sys.stderr)
@@ -116,7 +117,7 @@ def main() -> int:
         print("See SECURITY.md for the dependency management policy.", file=sys.stderr)
         return 1
 
-    print("✅ All dependencies have upper version bounds")
+    print("All dependencies have upper version bounds")
     return 0
 
 

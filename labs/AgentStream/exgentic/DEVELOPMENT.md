@@ -101,10 +101,13 @@ The test suite includes **replay tests** that re-run recorded benchmark sessions
 
 ## Linting
 
+These checks are not part of Sico's root CI. Contributors modifying the bundled
+AgentStream snapshot should run them manually from the Sico repository root.
+
 ```bash
-pip install pre-commit
-pre-commit install
-pre-commit run --all-files
+python -m pip install pre-commit
+pre-commit run --config labs/AgentStream/exgentic/.pre-commit-config.yaml \
+  --all-files --show-diff-on-failure
 ```
 
 ## OpenTelemetry Tracing

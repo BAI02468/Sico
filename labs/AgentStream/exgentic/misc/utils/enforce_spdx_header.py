@@ -12,11 +12,14 @@ from pathlib import Path
 
 HEADER_LINES = [
     "# SPDX-License-Identifier: Apache-2.0",
-    "# Copyright (C) 2026, The Exgentic organization and its contributors.",
+    "# Copyright (C) 2026, The AgentStream organization and its contributors.",
 ]
 HEADER_TEXT = "\n".join(HEADER_LINES) + "\n\n"
 
-COPYRIGHT_RE = re.compile(r"^# Copyright \(C\) (?P<year>\d{4}), The Exgentic organization and its contributors\.$")
+COPYRIGHT_RE = re.compile(
+    r"^# Copyright \(C\) \d{4}, The (?:Exgentic|AgentStream) organization and its contributors\.$"
+)
+APACHE_LICENSE_MARKER = 'Licensed under the Apache License, Version 2.0 (the "License")'
 
 SKIP_DIRS = {
     ".git",
@@ -35,16 +38,14 @@ def update_file(path: Path) -> bool:
     raw = path.read_bytes()
     original = raw.decode("utf-8", errors="surrogateescape")
     if not original:
-        path.write_text(HEADER_TEXT, encoding="utf-8")
-        return True
+        return False
 
     lines = original.splitlines()
     if len(lines) >= 2 and lines[0] == HEADER_LINES[0] and COPYRIGHT_RE.match(lines[1]):
-        if lines[1] != HEADER_LINES[1]:
-            lines[1] = HEADER_LINES[1]
-            updated = "\n".join(lines) + ("\n" if original.endswith("\n") else "")
-            path.write_text(updated, encoding="utf-8", errors="surrogateescape")
-            return True
+        return False
+
+    # Preserve complete Apache-2.0 notices carried by third-party source files.
+    if APACHE_LICENSE_MARKER in "\n".join(lines[:20]):
         return False
 
     updated = HEADER_TEXT + original
