@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "exgentic"
-# Bundled AgentStream snapshot; not published independently from Sico.
+# Bundled Exgentic snapshot used by AgentStream; not published independently from Sico.
 version = "0.0.0+agentstream"
 description = "Exgentic - General agent evaluation"
 authors = [{name = "Exgentic Team"}]

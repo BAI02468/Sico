@@ -114,7 +114,6 @@ def main() -> int:
             "All dependencies must have upper bounds (e.g., >=1.0.0,<2) to limit supply chain attack exposure.",
             file=sys.stderr,
         )
-        print("See SECURITY.md for the dependency management policy.", file=sys.stderr)
         return 1
 
     print("All dependencies have upper version bounds")

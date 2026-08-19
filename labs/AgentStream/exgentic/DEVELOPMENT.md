@@ -102,12 +102,11 @@ The test suite includes **replay tests** that re-run recorded benchmark sessions
 ## Linting
 
 These checks are not part of Sico's root CI. Contributors modifying the bundled
-AgentStream snapshot should run them manually from the Sico repository root.
+Exgentic snapshot should run them manually from the Sico repository root.
+Install [pre-commit](https://pre-commit.com/#install) for your platform, then run:
 
 ```bash
-python -m pip install pre-commit
-pre-commit run --config labs/AgentStream/exgentic/.pre-commit-config.yaml \
-  --all-files --show-diff-on-failure
+pre-commit run --config labs/AgentStream/exgentic/.pre-commit-config.yaml --all-files --show-diff-on-failure
 ```
 
 ## OpenTelemetry Tracing
@@ -120,7 +119,7 @@ export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 export EXGENTIC_OTEL_ENABLED=true
 ```
 
-See [`OTEL_SEMANTIC_CONVENTIONS.md`](./OTEL_SEMANTIC_CONVENTIONS.md) for details.
+See [OpenTelemetry semantic conventions](./docs/observability/semantic-conventions.md) for details.
 
 ## Packaging
 
