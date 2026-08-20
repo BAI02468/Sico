@@ -59,6 +59,9 @@ repos:
           - "**/build/**"
           - "-ignore"
           - "**/vendor/**"
+          # Separately licensed Apache-2.0 project
+          - "-ignore"
+          - "labs/AgentStream/**"
           # Generated protobuf / gRPC stubs
           - "-ignore"
           - "**/*.pb.go"

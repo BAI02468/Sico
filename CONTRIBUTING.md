@@ -1,8 +1,10 @@
 # Contributing to Sico
 
-Thanks for your interest in contributing! This project is MIT-licensed: by
-submitting a pull request you agree that your contribution will be distributed
-under the same terms.
+Thanks for your interest in contributing! Sico is MIT-licensed, except for
+[`labs/AgentStream`](labs/AgentStream), which is separately licensed under the
+Apache License 2.0. By submitting a pull request, you agree that your
+contribution will be distributed under the license applicable to the files you
+modify.
 
 ## Start here
 
@@ -53,9 +55,12 @@ service-specific commands, and troubleshooting notes.
 
 ## License headers
 
-Every new source file (Go, Python, TypeScript, JavaScript, proto, shell, YAML,
-Dockerfile, ...) must carry the MIT header. The pre-commit hook adds it
-automatically. Generated files are intentionally excluded; see the
+Every new source file outside `labs/AgentStream` (Go, Python, TypeScript,
+JavaScript, proto, shell, YAML, Dockerfile, ...) must carry the MIT header. The
+pre-commit hook adds it automatically. Files under `labs/AgentStream` instead
+use the Apache-2.0 SPDX header described in the
+[AgentStream contribution guide](labs/AgentStream/exgentic/CONTRIBUTING.md).
+Generated files are intentionally excluded; see the
 [Development guide](docs/development.md#license-headers) and
 [pre-commit configuration](.pre-commit-config.yaml) for the exact ignore list.
 

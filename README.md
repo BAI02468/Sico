@@ -219,6 +219,8 @@ sico/
 ├── proto/                # Protobuf definitions shared by all services
 ├── sandbox/              # Sandbox runtimes (Android emulator, ...)
 ├── examples/             # Runnable workflow examples (auth, LLM Hub, conversation, sandbox, ...)
+├── labs/
+│   └── AgentStream/      # Experimental streaming evaluation for self-evolving LLM agents
 ├── deploy/
 │   ├── docker/           # docker-compose stack
 │   └── kind/             # Kind + Helm setup
@@ -251,6 +253,8 @@ Contributions of all kinds are welcome: bug reports, feature ideas, documentatio
 ## License
 
 Sico is licensed under the [MIT License](LICENSE).
+
+The contents of [AgentStream](labs/AgentStream) are licensed separately under the [Apache License 2.0](labs/AgentStream/LICENSE).
 
 ## Trademarks
 
