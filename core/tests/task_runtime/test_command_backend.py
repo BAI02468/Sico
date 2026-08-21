@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import json
 import os
 import sys
 
@@ -143,6 +144,28 @@ async def test_local_backend_merges_env(tmp_path):
     )
     result = await LocalBackend().run(spec)
     assert result.stdout.strip() == "from-spec"
+
+
+@pytest.mark.asyncio
+async def test_local_backend_does_not_inherit_host_python_environment(monkeypatch, tmp_path):
+    host_venv = tmp_path / "core-venv"
+    host_venv_bin = host_venv / ("Scripts" if sys.platform == "win32" else "bin")
+    safe_bin = tmp_path / "system-bin"
+    monkeypatch.setenv("VIRTUAL_ENV", str(host_venv))
+    monkeypatch.setenv("UV_PROJECT_ENVIRONMENT", str(host_venv))
+    monkeypatch.setenv("PATH", os.pathsep.join((str(host_venv_bin), str(safe_bin))))
+    script = (
+        "import json, os; "
+        "print(json.dumps({key: os.environ.get(key) for key in "
+        "('VIRTUAL_ENV', 'UV_PROJECT_ENVIRONMENT', 'PATH')}))"
+    )
+
+    result = await LocalBackend().run(CommandSpec(argv=[sys.executable, "-c", script], cwd=str(tmp_path)))
+
+    child_env = json.loads(result.stdout)
+    assert child_env["VIRTUAL_ENV"] is None
+    assert child_env["UV_PROJECT_ENVIRONMENT"] is None
+    assert child_env["PATH"].split(os.pathsep) == [str(safe_bin)]
 
 
 @pytest.mark.asyncio

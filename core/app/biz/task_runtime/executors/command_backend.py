@@ -343,7 +343,7 @@ class LocalBackend:
 
     async def run(self, spec: CommandSpec) -> CommandResult:
         cwd = spec.cwd or _first_mount_host_path(spec) or os.getcwd()
-        env = {**os.environ, **spec.env}
+        env = _local_subprocess_env(spec.env)
         proc = await asyncio.create_subprocess_exec(
             *spec.argv,
             cwd=cwd,
@@ -355,6 +355,28 @@ class LocalBackend:
 
     def open_session(self, *, pod_name: str = "", image: str = "") -> CommandSession:
         return _StatelessSession(self)
+
+
+def _local_subprocess_env(overrides: dict[str, str]) -> dict[str, str]:
+    env = dict(os.environ)
+    inherited_venv_roots = {
+        value
+        for name in ("VIRTUAL_ENV", "UV_PROJECT_ENVIRONMENT")
+        if (value := env.pop(name, ""))
+    }
+    if path := env.get("PATH"):
+        inherited_executable_dirs = {
+            os.path.normcase(os.path.realpath(os.path.join(root, directory)))
+            for root in inherited_venv_roots
+            for directory in ("bin", "Scripts")
+        }
+        env["PATH"] = os.pathsep.join(
+            entry
+            for entry in path.split(os.pathsep)
+            if os.path.normcase(os.path.realpath(entry)) not in inherited_executable_dirs
+        )
+    env.update(overrides)
+    return env
 
 
 def _first_mount_host_path(spec: CommandSpec) -> str:
