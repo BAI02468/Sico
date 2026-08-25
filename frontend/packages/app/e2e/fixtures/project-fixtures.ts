@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { type Page } from "@playwright/test";
 import { makeOkEnvelope } from "@sico/shared/schemas/api.ts";
 
@@ -183,6 +161,25 @@ export async function mockWorkspaceSuccess(
 
   await mockEndpoint(page, "project", () => ({
     body: makeOkEnvelope({ ...project }),
+  }));
+  // Grant project_admin so the drawer's manage-gated affordances (Edit / the
+  // "…" actions menu with Delete / Add Knowledge) render. The RBAC migration
+  // (#373) made `ProjectWorkspaceContent` suspend on `useProjectPermissionSuspense`
+  // → GET /rbac/user_roles; without this mock the catch-all returns {}, fails the
+  // roles-envelope parse, and the permission query errors — wedging the whole
+  // workspace on its page-level "Loading project" skeleton.
+  await mockEndpoint(page, "rbac/user_roles", () => ({
+    body: makeOkEnvelope({
+      roles: [
+        {
+          roleCode: "project_admin",
+          scopeType: "project",
+          scopeId: 1,
+          userId: 1,
+        },
+      ],
+      total: 1,
+    }),
   }));
   await mockEndpoint(page, "knowledge/tags", () => ({
     body: makeOkEnvelope({ tags: knowledgeTags, total: knowledgeTags.length }),

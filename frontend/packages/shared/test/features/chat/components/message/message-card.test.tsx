@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import type { AxiosInstance } from "axios";
@@ -275,6 +253,51 @@ describe("MessageCard", () => {
     expect(html.indexOf('data-testid="agent-card"')).toBeLessThan(
       html.indexOf("<time"),
     );
+  });
+
+  it("replaces the ordinary Timestamp with scheduled-task metadata", () => {
+    const createdAt = new Date("2026-06-12T15:32:00").getTime();
+    const message: Message = {
+      ...human("scheduled prompt"),
+      turnId: 1,
+      createdAt,
+    };
+    render(<MessageCard message={message} showScheduledTaskMetadata />, {
+      wrapper: withStore(seed()),
+    });
+
+    const formattedTime = formatDateTime(createdAt);
+    expect(screen.getByText(formattedTime).parentElement).toHaveTextContent(
+      `Scheduled task · ${formattedTime}`,
+    );
+    expect(screen.getAllByText(formattedTime)).toHaveLength(1);
+  });
+
+  it("keeps the ordinary Timestamp when scheduled metadata is not selected", () => {
+    const createdAt = new Date("2026-06-12T15:32:00").getTime();
+    const message: Message = {
+      ...human("ordinary prompt"),
+      turnId: 1,
+      createdAt,
+    };
+    render(<MessageCard message={message} />, {
+      wrapper: withStore(seed()),
+    });
+
+    const time = screen.getByText(formatDateTime(createdAt));
+    expect(time.parentElement).not.toHaveTextContent("Scheduled task");
+  });
+
+  it("renders no incomplete scheduled metadata when createdAt is missing", () => {
+    render(
+      <MessageCard
+        message={{ ...human("scheduled prompt"), turnId: 1 }}
+        showScheduledTaskMetadata
+      />,
+      { wrapper: withStore(seed()) },
+    );
+
+    expect(screen.queryByText(/Scheduled task/)).not.toBeInTheDocument();
   });
 
   it("hides the Timestamp while the AI turn is still streaming", () => {

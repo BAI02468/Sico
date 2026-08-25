@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { toast } from "@sico/ui";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -90,7 +68,7 @@ describe("AddKnowledgeDialog", () => {
     );
 
     expect(toast.error).toHaveBeenCalledWith(
-      '"big.pdf" is larger than 10MB. Try a smaller file.',
+      '"big.pdf" exceeds the 10MB size limit.',
     );
   });
 
@@ -107,9 +85,7 @@ describe("AddKnowledgeDialog", () => {
       pdf("f.pdf"),
     ]);
 
-    expect(toast.error).toHaveBeenCalledWith(
-      "You can add up to 5 files at a time. Remove one to add another.",
-    );
+    expect(toast.error).toHaveBeenCalledWith("You can add up to 5 files.");
   });
 
   it("rejects a wrong-type file with the wrongType toast", () => {
@@ -126,7 +102,7 @@ describe("AddKnowledgeDialog", () => {
     });
 
     expect(toast.error).toHaveBeenCalledWith(
-      '"notes.txt" isn\'t a supported type. Use pdf, docx, or xlsx.',
+      '"notes.txt" has an unsupported file type.',
     );
   });
 

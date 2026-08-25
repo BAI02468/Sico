@@ -1,26 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-import { Button } from "@sico/ui";
 import { cn } from "@sico/ui/lib/utils.ts";
 import { ChevronDown, FileCode } from "lucide-react";
 import type { ReactElement } from "react";
@@ -35,8 +12,7 @@ type SkillCardHeaderProps = {
   expanded: boolean;
   onToggle: () => void;
   showControls: boolean;
-  saveDisabled: boolean;
-  onSave: () => void;
+  editable: boolean;
   versions: SkillVersion[];
   selectedVersion: string;
   onSelectVersion: (version: string) => void;
@@ -51,8 +27,7 @@ export function SkillCardHeader({
   expanded,
   onToggle,
   showControls,
-  saveDisabled,
-  onSave,
+  editable,
   versions,
   selectedVersion,
   onSelectVersion,
@@ -71,7 +46,7 @@ export function SkillCardHeader({
         <span className="bg-surface-icon-tile flex size-7 items-center justify-center rounded-md">
           <FileCode className="text-foreground-secondary size-4" />
         </span>
-        <span className="leading-display text-foreground-emphasis text-lg font-medium">
+        <span className="text-foreground-emphasis leading-display text-lg font-medium">
           {parsing ? "Parsing ..." : name}
         </span>
         {!parsing && (
@@ -85,16 +60,6 @@ export function SkillCardHeader({
       </button>
       {showControls && (
         <div className="flex items-center gap-1">
-          {expanded && (
-            <Button
-              variant="primary"
-              size="xs"
-              disabled={saveDisabled}
-              onClick={onSave}
-            >
-              {saveDisabled ? "Saved" : "Save"}
-            </Button>
-          )}
           {versions.length > 0 && (
             <VersionDropdown
               versions={versions}
@@ -103,6 +68,7 @@ export function SkillCardHeader({
             />
           )}
           <SkillActionsMenu
+            editable={editable}
             onReplace={onReplace}
             onDownloadZip={onDownloadZip}
             onDelete={onDelete}

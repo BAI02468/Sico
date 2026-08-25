@@ -1,28 +1,12 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { renderHook } from "@testing-library/react";
 import { createStore, Provider as JotaiProvider } from "jotai";
-import { act, type PropsWithChildren, type ReactElement } from "react";
+import {
+  act,
+  type PropsWithChildren,
+  type ReactElement,
+  startTransition,
+  Suspense,
+} from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { logoutAtom, userAtom } from "@/atoms/auth-atom";
@@ -31,6 +15,7 @@ import {
   type Conversation,
   conversationsAtom,
   lastActivityAtom,
+  pendingMessageAtom,
 } from "@/features/chat/atoms/chat-atom";
 import { HANDOFF_ABORT_REASON } from "@/features/chat/constants";
 import { useReconnect } from "@/features/chat/hooks/use-reconnect";
@@ -68,6 +53,18 @@ function wrapper(
 ): (props: PropsWithChildren) => ReactElement {
   return function Wrapper({ children }: PropsWithChildren): ReactElement {
     return <JotaiProvider store={store}>{children}</JotaiProvider>;
+  };
+}
+
+function suspenseWrapper(
+  store: ReturnType<typeof createStore>,
+): (props: PropsWithChildren) => ReactElement {
+  return function Wrapper({ children }: PropsWithChildren): ReactElement {
+    return (
+      <JotaiProvider store={store}>
+        <Suspense fallback={null}>{children}</Suspense>
+      </JotaiProvider>
+    );
   };
 }
 
@@ -187,13 +184,130 @@ afterEach(() => {
 });
 
 describe("useReconnect", () => {
-  it("fires exactly one unconditional probe on mount", () => {
+  it("does not probe or open a stream when disabled", () => {
+    const store = createStore();
+    renderHook(() => useReconnect(7, 42, { enabled: false }), {
+      wrapper: wrapper(store),
+    });
+
+    expect(openReconnectStream).not.toHaveBeenCalled();
+  });
+
+  it("tears down an active reconnect when disabled", async () => {
+    const store = createStore();
+    const onStreamEnd = vi.fn();
+    const { rerender } = renderHook(
+      ({ enabled }) => useReconnect(7, 42, { enabled, onStreamEnd }),
+      { initialProps: { enabled: true }, wrapper: wrapper(store) },
+    );
+
+    expect(openReconnectStream).toHaveBeenCalledOnce();
+    const stream = streamCalls[0];
+    expect(stream).toBeDefined();
+    if (!stream) {
+      throw new Error("Expected reconnect stream");
+    }
+
+    rerender({ enabled: false });
+    expect(stream.options.signal.aborted).toBe(true);
+    expect(onStreamEnd).toHaveBeenCalledOnce();
+
+    stream.deferred.resolve();
+    await flush();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(openReconnectStream).toHaveBeenCalledOnce();
+  });
+
+  it("ignores a disabled render that suspends before commit", () => {
+    const store = createStore();
+    const onStreamEnd = vi.fn();
+    const suspended = new Promise<never>(() => {});
+    const { rerender, unmount } = renderHook(
+      ({ enabled, shouldSuspend }) => {
+        const reconnect = useReconnect(7, 42, { enabled, onStreamEnd });
+        if (shouldSuspend) {
+          // oxlint-disable-next-line typescript-eslint/only-throw-error -- Suspense catches a pending thenable
+          throw suspended;
+        }
+        return reconnect;
+      },
+      {
+        initialProps: { enabled: true, shouldSuspend: false },
+        wrapper: suspenseWrapper(store),
+      },
+    );
+
+    act(() => {
+      startTransition(() => rerender({ enabled: false, shouldSuspend: true }));
+    });
+    unmount();
+
+    expect(onStreamEnd).not.toHaveBeenCalled();
+  });
+
+  it("probes on mount when there is no pending home send (direct-enter / refresh)", () => {
     const store = createStore();
     renderHook(() => useReconnect(7, 42), { wrapper: wrapper(store) });
 
     expect(openReconnectStream).toHaveBeenCalledTimes(1);
     expect(openReconnectStream).toHaveBeenCalledWith(
       { agentInstanceId: 7, conversationId: 42 },
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
+  it("does NOT probe on mount for a home-originated first send (matching parked pending)", () => {
+    const store = createStore();
+    store.set(pendingMessageAtom, {
+      agentInstanceId: 7,
+      conversationId: 42,
+      text: "hi",
+      attachments: [],
+    });
+    renderHook(() => useReconnect(7, 42), { wrapper: wrapper(store) });
+
+    // The fresh conversation has no backend turn to resume — the doomed probe
+    // that raced the live send is skipped.
+    expect(openReconnectStream).not.toHaveBeenCalled();
+  });
+
+  it("still probes when a stale park targets a different CONVERSATION (same agent)", () => {
+    const store = createStore();
+    // Parked for a different conversation — must not suppress THIS view's probe.
+    store.set(pendingMessageAtom, {
+      agentInstanceId: 7,
+      conversationId: 999,
+      text: "hi",
+      attachments: [],
+    });
+    renderHook(() => useReconnect(7, 42), { wrapper: wrapper(store) });
+
+    expect(openReconnectStream).toHaveBeenCalledTimes(1);
+  });
+
+  it("still probes when a stale park targets a different AGENT (same conversation)", () => {
+    const store = createStore();
+    // A park for another agent must not gate this agent's probe.
+    store.set(pendingMessageAtom, {
+      agentInstanceId: 999,
+      conversationId: 42,
+      text: "hi",
+      attachments: [],
+    });
+    renderHook(() => useReconnect(7, 42), { wrapper: wrapper(store) });
+
+    expect(openReconnectStream).toHaveBeenCalledTimes(1);
+  });
+
+  it("probes on a sico-v1 mount (conversationId undefined — the home never parks)", () => {
+    const store = createStore();
+    // sico (v1) has no conversation id and never parks a home send, so the gate
+    // is inert (pending is null) and the mount probes as before.
+    renderHook(() => useReconnect(7), { wrapper: wrapper(store) });
+
+    expect(openReconnectStream).toHaveBeenCalledTimes(1);
+    expect(openReconnectStream).toHaveBeenCalledWith(
+      { agentInstanceId: 7, conversationId: undefined },
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });

@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@sico/ui";
 import { cn } from "@sico/ui/lib/utils.ts";
 import { LayoutGrid, MousePointer2 } from "lucide-react";
@@ -52,13 +31,66 @@ function originOf(url: string | null): string {
   }
 }
 
-const COPY = {
-  takeOver: "Take over",
-  stopTakeOver: "Stop take over",
-  takingOver: "You are taking over",
-  unavailable: "This device's live view is unavailable.",
-  manageApps: "Manage apps",
-} as const;
+type SandboxCopy = {
+  takeOver: string;
+  stopTakeOver: string;
+  takingOver: string;
+  unavailable: string;
+  manageApps: string;
+};
+
+function renderHeaderActions({
+  isEmulator,
+  onManageApps,
+  copy,
+  takeOver,
+  takeOverLabel,
+  toggleTakeOver,
+}: {
+  isEmulator: boolean;
+  onManageApps?: () => void;
+  copy: SandboxCopy;
+  takeOver: boolean;
+  takeOverLabel: string;
+  toggleTakeOver: () => void;
+}): JSX.Element {
+  return (
+    <div className="flex items-center gap-1">
+      {isEmulator && onManageApps ? (
+        <Button
+          type="button"
+          variant="subtle"
+          size="icon-xs"
+          aria-label={copy.manageApps}
+          onClick={onManageApps}
+        >
+          <LayoutGrid />
+        </Button>
+      ) : null}
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              type="button"
+              variant="subtle"
+              size="icon-xs"
+              className={cn(
+                takeOver &&
+                  "bg-primary-100 text-primary-600 hover:bg-primary-100 hover:text-primary-600",
+              )}
+              aria-label={takeOverLabel}
+              aria-pressed={takeOver}
+              onClick={toggleTakeOver}
+            >
+              <MousePointer2 />
+            </Button>
+          }
+        />
+        <TooltipContent>{takeOverLabel}</TooltipContent>
+      </Tooltip>
+    </div>
+  );
+}
 
 export type SandboxInstanceProps = {
   sandboxes: Sandbox[];
@@ -86,16 +118,10 @@ export function SandboxInstance({
   onViewAll,
   onManageApps,
 }: SandboxInstanceProps): JSX.Element {
+  const { t } = useLingui();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const isEmulator = selected.type === SandboxType.emulator;
-  // Gate the backend-provided VNC url before it reaches `src`. It's a same-
-  // origin relative path (proxied to the backend), so `safeVncUrl` allows same-
-  // origin + absolute https; `null` → a blocked message instead of a live frame.
   const safeVncUrl = gateVncUrl(selected.vncUrl);
-  // Scope the take-over postMessage to the frame's own origin instead of "*".
-  // Derived from the already-gated https url; if it somehow can't be parsed we
-  // fall back to "*" so the emulator handshake still works (the payload is a
-  // non-secret boolean).
   const targetOrigin = originOf(safeVncUrl);
   const { takeOver, toggleTakeOver, exitTakeOver } = useTakeOver(
     iframeRef,
@@ -103,12 +129,6 @@ export function SandboxInstance({
     targetOrigin,
   );
 
-  // Overlay a spinner on the live frame until it loads. Switching device swaps
-  // `vncUrl` on this same instance (no remount), so reset the flag in render the
-  // moment the url changes — the new frame shows its spinner again rather than
-  // flashing the prior device's last paint. Key on the GATED url (what actually
-  // reaches `src`), so a cosmetic-only change to the raw value doesn't drop the
-  // spinner with no fresh `onLoad` to clear it.
   const [loaded, setLoaded] = useState(false);
   const [prevUrl, setPrevUrl] = useState(safeVncUrl);
   if (safeVncUrl !== prevUrl) {
@@ -125,7 +145,27 @@ export function SandboxInstance({
     [exitTakeOver, onSelect],
   );
 
-  const takeOverLabel = takeOver ? COPY.stopTakeOver : COPY.takeOver;
+  const copy: SandboxCopy = {
+    takeOver: t({ id: "chat.sandboxInstance.takeOver", message: "Take over" }),
+    stopTakeOver: t({
+      id: "chat.sandboxInstance.stopTakeOver",
+      message: "Stop take over",
+    }),
+    takingOver: t({
+      id: "chat.sandboxInstance.takingOver",
+      message: "You are taking over",
+    }),
+    unavailable: t({
+      id: "chat.sandboxInstance.unavailable",
+      message: "This device's live view is unavailable.",
+    }),
+    manageApps: t({
+      id: "chat.sandboxInstance.manageApps",
+      message: "Manage apps",
+    }),
+  };
+
+  const takeOverLabel = takeOver ? copy.stopTakeOver : copy.takeOver;
 
   return (
     <div className="bg-surface-basic flex h-full flex-col">
@@ -142,45 +182,14 @@ export function SandboxInstance({
             <SandboxStatus status={selected.status} />
           </div>
         }
-        actionsSlot={
-          <div className="flex items-center gap-1">
-            {isEmulator && onManageApps ? (
-              <Button
-                type="button"
-                variant="subtle"
-                size="icon-xs"
-                aria-label={COPY.manageApps}
-                onClick={onManageApps}
-              >
-                <LayoutGrid />
-              </Button>
-            ) : null}
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="subtle"
-                    size="icon-xs"
-                    // Active take-over is highlighted in the same primary the badge and
-                    // device border use — a soft primary-100 fill with a primary-600
-                    // glyph, so all three read as one "in control" state (legacy parity).
-                    className={cn(
-                      takeOver &&
-                        "bg-primary-100 text-primary-600 hover:bg-primary-100 hover:text-primary-600",
-                    )}
-                    aria-label={takeOverLabel}
-                    aria-pressed={takeOver}
-                    onClick={toggleTakeOver}
-                  >
-                    <MousePointer2 />
-                  </Button>
-                }
-              />
-              <TooltipContent>{takeOverLabel}</TooltipContent>
-            </Tooltip>
-          </div>
-        }
+        actionsSlot={renderHeaderActions({
+          isEmulator,
+          onManageApps,
+          copy,
+          takeOver,
+          takeOverLabel,
+          toggleTakeOver,
+        })}
       />
       <DeviceScreen
         selected={selected}
@@ -190,8 +199,8 @@ export function SandboxInstance({
         loaded={loaded}
         onLoad={() => setLoaded(true)}
         iframeRef={iframeRef}
-        takingOverLabel={COPY.takingOver}
-        unavailableLabel={COPY.unavailable}
+        takingOverLabel={copy.takingOver}
+        unavailableLabel={copy.unavailable}
       />
     </div>
   );

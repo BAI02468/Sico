@@ -1,31 +1,12 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { ApiClientProvider } from "@sico/shared";
+import { chatKeys } from "@sico/shared/features/chat/index.ts";
+import { AgentStatusSchema } from "@sico/shared/features/digital-worker/index.ts";
 import { persistLoginPayload } from "@sico/shared/utils/auth-storage.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
   createRouter,
+  isNotFound,
   type RegisteredRouter,
   RouterProvider,
 } from "@tanstack/react-router";
@@ -37,6 +18,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import axios, { AxiosError, type AxiosInstance } from "axios";
+import { createStore } from "jotai";
 import {
   afterEach,
   beforeEach,
@@ -95,7 +77,7 @@ function renderAgentRoute(initialAgentId = "7"): { router: RegisteredRouter } {
     history: createMemoryHistory({
       initialEntries: [`/digital-worker/${initialAgentId}`],
     }),
-    context: { queryClient, apiClient },
+    context: { queryClient, apiClient, store: createStore() },
   });
   render(
     <QueryClientProvider client={queryClient}>
@@ -107,9 +89,41 @@ function renderAgentRoute(initialAgentId = "7"): { router: RegisteredRouter } {
   return { router: router as unknown as RegisteredRouter };
 }
 
-// Unit test for the layout route's only real logic: the loader's
-// `Number.isFinite` guard around the fire-and-forget prefetches (agent detail +
-// the sidebar conversation list). The generated loader context type is complex,
+function getBeforeLoad(): Extract<
+  NonNullable<typeof Route.options.beforeLoad>,
+  CallableFunction
+> {
+  const beforeLoad = Route.options.beforeLoad;
+  if (typeof beforeLoad !== "function") {
+    throw new Error("digital worker route beforeLoad must be a function");
+  }
+  return beforeLoad;
+}
+
+describe("/_authed/digital-worker/$agentId beforeLoad", () => {
+  it.each(["abc", "0", "-1", "1.5", String(Number.MAX_SAFE_INTEGER + 1)])(
+    "throws notFound() for invalid agentId %s",
+    (agentId) => {
+      try {
+        Reflect.apply(getBeforeLoad(), undefined, [{ params: { agentId } }]);
+        throw new Error("expected notFound()");
+      } catch (error) {
+        expect(isNotFound(error)).toBe(true);
+      }
+    },
+  );
+
+  it("allows a positive safe integer agentId", () => {
+    expect(
+      Reflect.apply(getBeforeLoad(), undefined, [
+        { params: { agentId: "42" } },
+      ]),
+    ).toBeUndefined();
+  });
+});
+
+// Unit test for the layout route's loader prefetches (agent detail + the
+// sidebar conversation list). The generated loader context type is complex,
 // so we narrow `Route.options` to a callable shape — the same pattern the
 // sibling `project.$projectId` overload test uses for `beforeLoad`. The fake
 // `queryClient` exposes only the two prefetch methods the loader calls;
@@ -149,16 +163,9 @@ describe("/_authed/digital-worker/$agentId loader", () => {
     expect(context.queryClient.prefetchInfiniteQuery).toHaveBeenCalledTimes(1);
     expect(context.queryClient.prefetchInfiniteQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ["conversations", "list", { agentInstanceId: 7 }],
+        queryKey: chatKeys.conversationList(7),
       }),
     );
-  });
-
-  it("skips prefetch for a non-numeric agentId", () => {
-    const context = makeContext();
-    opts.loader({ context, params: { agentId: "abc" } });
-    expect(context.queryClient.prefetchQuery).not.toHaveBeenCalled();
-    expect(context.queryClient.prefetchInfiniteQuery).not.toHaveBeenCalled();
   });
 });
 
@@ -230,7 +237,11 @@ describe("/_authed/digital-worker/$agentId agent-detail error boundary", () => {
     fetchAgentDetailMock.mockImplementation(
       (_apiClient: AxiosInstance, agentId: number) =>
         agentId === 9
-          ? Promise.resolve({ id: 9, name: "Healthy Agent" })
+          ? Promise.resolve({
+              id: 9,
+              name: "Healthy Agent",
+              status: AgentStatusSchema.enum.ACTIVE,
+            })
           : Promise.reject(axiosErrorNoResponse()),
     );
 
@@ -255,33 +266,5 @@ describe("/_authed/digital-worker/$agentId agent-detail error boundary", () => {
     expect(
       screen.queryByText("Check your connection and try again."),
     ).not.toBeInTheDocument();
-  });
-
-  it("resets the boundary on a non-numeric agent switch (raw-string resetKeys, not NaN-coerced)", async () => {
-    // Both "bad" and "worse" coerce to NaN via Number(), so a
-    // resetKeys={[Number(agentId)]} would treat the two navs as the SAME key
-    // (Object.is(NaN, NaN) === true) and leave the reused boundary stuck on the
-    // stale fallback. Keying on the raw string param distinguishes them, so the
-    // boundary resets + onReset clears the cached query error and the subtree
-    // re-attempts the load. Always-reject: the fallback text is present either
-    // way, so the refetch (call-count bump) is the only signal — same pattern as
-    // the "Try again" test above.
-    fetchAgentDetailMock.mockRejectedValue(axiosErrorNoResponse());
-
-    const { router } = renderAgentRoute("bad");
-
-    await screen.findByText("Check your connection and try again.");
-    const before = fetchAgentDetailMock.mock.calls.length;
-
-    await act(async () => {
-      await router.navigate({
-        to: "/digital-worker/$agentId",
-        params: { agentId: "worse" },
-      });
-    });
-
-    await waitFor(() => {
-      expect(fetchAgentDetailMock.mock.calls.length).toBeGreaterThan(before);
-    });
   });
 });

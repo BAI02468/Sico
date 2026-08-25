@@ -1,61 +1,26 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-import {
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@sico/ui";
 import { cn } from "@sico/ui/lib/utils.ts";
-import { ArrowDown, ArrowUp, Info, type LucideIcon, X } from "lucide-react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import type * as React from "react";
 
-import { type AssetActionKind, AssetRow } from "./asset-row";
 import { renderRowDialogs } from "./asset-row-actions";
-import { renderAssetSkeletonCells } from "./asset-row-skeleton";
 import { AssetsEmpty } from "./assets-empty";
-import {
-  CREATOR_MAX,
-  PIN_HEAD_LEFT,
-  PIN_HEAD_RIGHT,
-  PIN_RIGHT,
-} from "./pinned-columns";
+import { AssetsTableBody } from "./assets-table-body";
 import { useAssetRowActions } from "../hooks/use-asset-row-actions";
 import { useAssetsPoll } from "../hooks/use-assets-poll";
 import { useSuspenseAssetsInfiniteQuery } from "../hooks/use-assets-query";
 import {
-  HINT_COPY,
-  type HintTab,
   resolveHintTab,
   useDismissedHints,
 } from "../hooks/use-dismissed-hints";
 import { useExtractionResultToast } from "../hooks/use-extraction-toasts";
 import { useTableScrollEdges } from "../hooks/use-table-scroll-edges";
 import type { AssetSearch } from "../schemas/asset-search";
-import type { AssetCategory, AssetRow as AssetRowData } from "../types";
+import type {
+  AssetCategory,
+  AssetCreator,
+  AssetRow as AssetRowData,
+} from "../types";
+import { sameIdentity } from "../utils/same-identity";
 
 export type AssetsTableRowsProps = {
   projectId: number;
@@ -70,18 +35,13 @@ export type AssetsTableRowsProps = {
    * keeping column widths aligned and the table from reflowing on resolve.
    */
   isFetchingNextPage?: boolean;
+  /** asset.manage — may delete ANY asset (admin). */
+  canManageAsset: boolean;
+  /** asset.manage.own — may delete OWN assets (member). */
+  canManageAssetOwn: boolean;
+  /** Current user's email, for the per-row `.own` delete check. */
+  userEmail: string | null;
 };
-
-// How many skeleton rows to append while the next page loads. Matches a
-// typical page size visually without dominating the viewport.
-const LOADING_MORE_ROW_COUNT = 3;
-
-// CREATED TIME renders separately as a sort toggle, so it is excluded here.
-const PLAIN_HEADERS = ["ASSET NAME", "TYPE", "CREATOR"] as const;
-
-// Full column span for the in-table hint bar: the plain headers + CREATED TIME +
-// ACTIONS. Derived so it can't drift from the header row.
-const COLUMN_COUNT = PLAIN_HEADERS.length + 2;
 
 // Centering wrapper for the empty state — the surrounding `bg-surface-basic …
 // rounded-2xl` scroll card is the persistent shell in `AssetsTable`, so this is
@@ -98,6 +58,21 @@ const CENTER = "flex min-h-0 flex-1 items-center justify-center";
 // so the table shrinks to its content and `CENTER` takes the rest. Scoped to the
 // container (Table's own `className` lands on the inner <table>).
 const EMPTY_TABLE = "[&_[data-slot=table-container]]:flex-none";
+
+// The `.own` delete check: does `userEmail` own this asset? A Knowledge doc is
+// uploaded by a user (match `creatorUsername`); a Deliverable/Experience is
+// produced by a DW, so the OWNER is the human operator who ran it
+// (`operatorUsername`, per the PRD "DW Operator may delete"). Fails CLOSED on an
+// unknown identity or an older row that predates the backend operator field —
+// `sameIdentity` returns false on a null/empty candidate or user.
+export function ownsAsset(
+  creator: AssetCreator,
+  userEmail: string | null,
+): boolean {
+  return creator.kind === "user"
+    ? sameIdentity(creator.username, userEmail)
+    : sameIdentity(creator.operatorUsername, userEmail);
+}
 
 // Free-text filter + createdAt sort applied to the ALREADY-LOADED rows. The
 // category split now lives in the route (one endpoint per path), so there is no
@@ -131,167 +106,6 @@ function selectVisibleRows(
   );
 }
 
-// The full-width definition-hint bar (Figma `message bar`), rendered as the
-// first body row under the column headers: a leading Info glyph + bold label +
-// regular description + a dismiss button. Only the two derived tabs reach here
-// (resolveHintTab gates it). Plain helper (no hooks) so `renderAssetsTable`
-// stays under the line ceiling.
-function renderHintRow(
-  hintTab: HintTab,
-  onDismissHint: (tab: HintTab) => void,
-): React.JSX.Element {
-  const { label, description } = HINT_COPY[hintTab];
-  return (
-    // The sunken tint lives on the ROW (an opaque resting fill), so the
-    // pinned dismiss cell — whose `PIN_RIGHT` carries `bg-inherit` — adopts the
-    // same fill as the content cell instead of falling through to the table's
-    // white and reading half-grey at rest. `hover:bg-surface-sunken` cancels
-    // TableRow's built-in `hover:bg-primary-50`: the hint is non-interactive, so
-    // it must not react to hover.
-    <TableRow className="bg-surface-sunken hover:bg-surface-sunken h-11">
-      <TableCell
-        colSpan={COLUMN_COUNT - 1}
-        className="h-11 max-w-none bg-inherit px-6"
-      >
-        <div className="flex items-center gap-2 text-sm">
-          <Info className="text-icon-secondary size-4 shrink-0" />
-          <p className="text-foreground-secondary flex-1">
-            <span className="text-foreground-primary font-medium">{label}</span>{" "}
-            {description}
-          </p>
-        </div>
-      </TableCell>
-      {/* The dismiss lives in its OWN cell pinned to the ACTIONS column (same
-          `PIN_RIGHT` as the row menu), so × lines up with the per-row ··· and
-          stays visible when the table scrolls horizontally instead of floating
-          off the right edge of a full-span cell. */}
-      <TableCell className={cn("h-11 px-2 text-right", PIN_RIGHT)}>
-        <Button
-          variant="subtle"
-          size="icon-xs"
-          aria-label="Don't show again"
-          onClick={() => onDismissHint(hintTab)}
-        >
-          <X />
-        </Button>
-      </TableCell>
-    </TableRow>
-  );
-}
-
-// Content-shaped placeholder row mirroring the 5-column AssetRow layout. Shares
-// its cells with `AssetsTableSkeleton`'s cold-load row via `renderAssetSkeletonCells`
-// so the loading-more affordance reads as part of the same table; only the row
-// shell (key, aria-hidden, test id) differs.
-function renderLoadingMoreRow(key: number): React.JSX.Element {
-  return (
-    <TableRow
-      key={`loading-more-${key}`}
-      aria-hidden="true"
-      className="bg-surface-basic h-16"
-      data-testid="assets-table-loading-more-row"
-    >
-      {renderAssetSkeletonCells()}
-    </TableRow>
-  );
-}
-
-// The rows table (header sort toggle + the mapped `<AssetRow>`s). Extracted to
-// a module-scope helper (no hooks) so `AssetsTableRows` stays one component under
-// the line ceiling. `onAction` is wired for every row — all three categories now
-// carry a `···` menu (Knowledge: Edit/Download/Delete; Deliverable:
-// Download/Delete; Experience: Delete) — and `onOpen` too, because asset-row owns
-// the navigability gate. The hint bar (when `hintTab` is set) and the empty
-// state (when there are no rows) render inside the card so the header + hint
-// stay visible on an empty-but-hinted tab. The surrounding scroll card (and the
-// infinite-scroll sentinel) is owned by `AssetsTable`.
-function renderAssetsTable({
-  visibleRows,
-  ariaSort,
-  SortGlyph,
-  toggleSort,
-  onOpen,
-  onAction,
-  hintTab,
-  onDismissHint,
-  emptyState,
-  isFetchingNextPage,
-}: {
-  visibleRows: AssetRowData[];
-  ariaSort: "ascending" | "descending";
-  SortGlyph: LucideIcon;
-  toggleSort: () => void;
-  onOpen: (row: AssetRowData) => void;
-  onAction: (row: AssetRowData, kind: AssetActionKind) => void;
-  hintTab: HintTab | null;
-  onDismissHint: (tab: HintTab) => void;
-  emptyState: React.JSX.Element;
-  isFetchingNextPage: boolean;
-}): React.JSX.Element {
-  return (
-    <>
-      <Table>
-        <TableHeader>
-          {/* Sticky column-header row: pinned to the top of the scroll card so
-              labels stay visible as the body scrolls. `bg-surface-basic` is
-              required (the scrolling rows would otherwise show through), and
-              `z-30` sits above the body's pinned cells (z-10) and the pinned
-              header cells (z-20) so it covers both when they scroll under it. */}
-          <TableRow className="bg-surface-basic sticky top-0 z-30 h-13">
-            {PLAIN_HEADERS.map((label, index) => (
-              <TableHead
-                key={label}
-                // ASSET NAME is pinned left; CREATOR caps at 200px so its
-                // column sizes to its widest visible name.
-                className={cn(
-                  "h-13 px-6 text-sm",
-                  index === 0 && PIN_HEAD_LEFT,
-                  label === "CREATOR" && CREATOR_MAX,
-                )}
-              >
-                {label}
-              </TableHead>
-            ))}
-            <TableHead aria-sort={ariaSort} className="h-13 px-6 text-sm">
-              <button
-                type="button"
-                className="flex items-center gap-1 uppercase"
-                onClick={toggleSort}
-              >
-                CREATED TIME
-                <SortGlyph className="text-icon-secondary size-4" />
-              </button>
-            </TableHead>
-            <TableHead
-              aria-label="Actions"
-              className={cn("h-13 px-2 text-right text-sm", PIN_HEAD_RIGHT)}
-            />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {hintTab ? renderHintRow(hintTab, onDismissHint) : null}
-          {visibleRows.map((row) => (
-            <AssetRow
-              key={`${row.type}-${row.id}`}
-              row={row}
-              onOpen={() => onOpen(row)}
-              onAction={(kind) => onAction(row, kind)}
-            />
-          ))}
-          {isFetchingNextPage && visibleRows.length > 0
-            ? Array.from({ length: LOADING_MORE_ROW_COUNT }, (_, idx) =>
-                renderLoadingMoreRow(idx),
-              )
-            : null}
-        </TableBody>
-      </Table>
-      {visibleRows.length === 0 ? (
-        <div className={CENTER}>{emptyState}</div>
-      ) : null}
-    </>
-  );
-}
-
 /**
  * The DATA-driven inner of the assets table — the part wrapped by `AssetsTable`'s
  * `<Suspense>` + `<ErrorBoundary>`. Reads the SUSPENSE list query (so a cold load
@@ -307,6 +121,9 @@ export function AssetsTableRows({
   search,
   onSearchChange,
   isFetchingNextPage = false,
+  canManageAsset,
+  canManageAssetOwn,
+  userEmail,
 }: AssetsTableRowsProps): React.JSX.Element {
   const query = useSuspenseAssetsInfiniteQuery(projectId, category);
   const rows = query.data.pages.flatMap((page) => page.items);
@@ -325,6 +142,8 @@ export function AssetsTableRows({
 
   const visibleRows = selectVisibleRows(rows, search);
   const hintTab = resolveHintTab(category, dismissedHints);
+  const canDelete = (row: AssetRowData): boolean =>
+    canManageAsset || (canManageAssetOwn && ownsAsset(row.creator, userEmail));
   const SortGlyph = search.sort === "asc" ? ArrowUp : ArrowDown;
   const ariaSort = search.sort === "asc" ? "ascending" : "descending";
   const toggleSort = (): void =>
@@ -357,18 +176,19 @@ export function AssetsTableRows({
           data-scroll-start="true"
           data-scroll-end="true"
         >
-          {renderAssetsTable({
-            visibleRows,
-            ariaSort,
-            SortGlyph,
-            toggleSort,
-            onOpen: rowActions.handleOpen,
-            onAction: rowActions.handleAction,
-            hintTab,
-            onDismissHint: dismissHint,
-            emptyState,
-            isFetchingNextPage,
-          })}
+          <AssetsTableBody
+            visibleRows={visibleRows}
+            ariaSort={ariaSort}
+            SortGlyph={SortGlyph}
+            toggleSort={toggleSort}
+            onOpen={rowActions.handleOpen}
+            onAction={rowActions.handleAction}
+            canDelete={canDelete}
+            hintTab={hintTab}
+            onDismissHint={dismissHint}
+            emptyState={emptyState}
+            isFetchingNextPage={isFetchingNextPage}
+          />
         </div>
       ) : (
         <div className={CENTER}>{emptyState}</div>

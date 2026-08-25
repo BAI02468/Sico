@@ -1,26 +1,5 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLingui } from "@lingui/react/macro";
 import {
   Button,
   Dialog,
@@ -36,14 +15,14 @@ import { useEffect } from "react";
 import type * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 
+import { CoverField } from "./cover-field";
+import { CreateProjectDescriptionField } from "./create-project-description-field";
 import {
-  CoverField,
   CREATE_PROJECT_INITIAL_VALUES,
   createProjectSchema,
   type CreateProjectValues,
-  renderDescriptionField,
-  renderNameField,
 } from "./create-project-fields";
+import { CreateProjectNameField } from "./create-project-name-field";
 import { apiErrorMessage } from "../../../utils/api-error-message";
 import { useCreateProjectMutation } from "../hooks/use-create-project-mutation";
 
@@ -61,6 +40,7 @@ export function CreateProjectDialog({
   open,
   onOpenChange,
 }: CreateProjectDialogProps): React.JSX.Element {
+  const { t } = useLingui();
   const form = useForm<CreateProjectValues>({
     resolver: zodResolver(createProjectSchema),
     defaultValues: CREATE_PROJECT_INITIAL_VALUES,
@@ -84,30 +64,49 @@ export function CreateProjectDialog({
       },
       {
         onSuccess: () => {
-          toast.success("Project created.", { invert: true });
+          toast.success(
+            t({
+              id: "projects.createDialog.success",
+              message: "Project created.",
+            }),
+            { invert: true },
+          );
           onOpenChange(false);
         },
         onError: (error) => {
           toast.error(
-            apiErrorMessage(error, "We couldn't create your project."),
+            apiErrorMessage(
+              error,
+              t({
+                id: "projects.createDialog.error",
+                message: "We couldn't create your project.",
+              }),
+            ),
           );
         },
       },
     );
   };
 
-  const saveLabel = mutation.isPending ? "Saving…" : "Save";
+  const saveLabel = mutation.isPending
+    ? t({ id: "common.status.saving", message: "Saving…" })
+    : t({ id: "common.action.save", message: "Save" });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent variant="content" className="w-150">
         <DialogHeader>
-          <DialogTitle>Create Project</DialogTitle>
+          <DialogTitle>
+            {t({
+              id: "projects.createDialog.title",
+              message: "Create Project",
+            })}
+          </DialogTitle>
         </DialogHeader>
         <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
-            {renderNameField(form.control)}
-            {renderDescriptionField(form.control)}
+            <CreateProjectNameField control={form.control} />
+            <CreateProjectDescriptionField control={form.control} />
             <Controller
               name="iconUri"
               control={form.control}
@@ -122,7 +121,7 @@ export function CreateProjectDialog({
               variant="subtle"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t({ id: "common.action.cancel", message: "Cancel" })}
             </Button>
             <Button
               type="submit"

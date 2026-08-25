@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import {
   useQueryClient,
   useQueryErrorResetBoundary,
@@ -39,6 +17,8 @@ import { Composer } from "./composer";
 import { MessageHistory } from "./message-history";
 import { Sidepane } from "./sidepane/sidepane";
 import { ErrorView } from "../../../components/error-view";
+import { useAgentQuery } from "../../digital-worker/hooks/use-agents-query";
+import { isActiveStatus } from "../../digital-worker/utils/is-active-status";
 import {
   activeConversationAtom,
   activeConversationIdAtom,
@@ -51,11 +31,13 @@ import {
   sidepaneMaximizedAtom,
 } from "../atoms/sidepane-atom";
 import { useConsumePendingMessage } from "../hooks/use-consume-pending-message";
+import { useConversationDetail } from "../hooks/use-conversation-detail";
 import { invalidateHistory } from "../hooks/use-history";
 import { useReconnect } from "../hooks/use-reconnect";
 import { useSidebarCollapseOnSidepane } from "../hooks/use-sidebar-collapse-on-sidepane";
 import { ChatAgentProvider } from "../services/chat-agent-context";
 import { createOnReplay } from "../services/replay";
+import { refreshConversationStatus } from "../utils/refresh-conversation-status";
 
 type Props = {
   agentInstanceId: number;
@@ -79,12 +61,27 @@ type Props = {
  * `stop()` is threaded to the Composer for plan-aware Stop (G4). The outer
  * ErrorBoundary here is the catch-all for genuinely fatal RENDER errors only.
  */
+function useAgentReadOnly(agentInstanceId: number): boolean {
+  const { data: agent } = useAgentQuery(agentInstanceId);
+  return agent === undefined || !isActiveStatus(agent.status);
+}
+
 export function Collaboration({
   agentInstanceId,
   conversationId,
 }: Props): JSX.Element {
+  const readOnly = useAgentReadOnly(agentInstanceId);
   const store = useStore();
   const queryClient = useQueryClient();
+  const hasNumericConversationId =
+    conversationId !== undefined && Number.isFinite(conversationId);
+  const { data: conversationDetail } = useConversationDetail(
+    conversationId ?? 0,
+    hasNumericConversationId,
+  );
+  const isScheduledTaskRun =
+    hasNumericConversationId &&
+    conversationDetail?.scheduledTaskProvenance !== undefined;
   // Clears any cached query error when the catch-all fallback's "Try again"
   // remounts this subtree. History no longer throws here (it toasts in-place),
   // so this only matters for a fatal render error that trips the boundary.
@@ -168,15 +165,25 @@ export function Collaboration({
   // fire `onSettle`), so invalidate history here too — symmetric with the live
   // send path (use-chat) — else a revisit within staleTime re-serves the
   // pre-reload cache, which is missing the resumed turn.
-  const onReconnectSettle = useCallback(
-    () => invalidateHistory(queryClient, agentInstanceId, conversationId),
-    [queryClient, agentInstanceId, conversationId],
-  );
+  //
+  // ORDERING CONTRACT (load-bearing): this MUST stay declared BEFORE
+  // `useConsumePendingMessage` below. Both are passive effects, so React flushes
+  // them in declaration order; the reconnect mount probe reads `pendingMessageAtom`
+  // (via isFreshHomeSend) to skip the doomed probe on a fresh home send, and that
+  // read is only correct while the pending is STILL parked — i.e. before the
+  // consumer drains it. Reorder these two and the probe gate silently breaks.
+  const onReconnectSettle = useCallback(() => {
+    invalidateHistory(queryClient, agentInstanceId, conversationId);
+    refreshConversationStatus(queryClient, agentInstanceId);
+  }, [queryClient, agentInstanceId, conversationId]);
   const { stop: reconnectStop } = useReconnect(
     agentInstanceId,
     conversationId,
     {
+      enabled: !readOnly,
       onReplay: replay.onReplay,
+      onOpen: replay.onOpen,
+      onStreamEnd: replay.onStreamEnd,
       onSettle: onReconnectSettle,
     },
   );
@@ -184,8 +191,10 @@ export function Collaboration({
   // Drain a message composed on the empty-state home (parked in
   // pendingMessageAtom, then navigated here). Runs as a passive effect —
   // i.e. AFTER the reset layout-effect above — so the send lands in the
-  // freshly-reset store instead of being wiped.
-  useConsumePendingMessage(agentInstanceId, conversationId);
+  // freshly-reset store instead of being wiped. Declared AFTER useReconnect on
+  // purpose (see its ordering-contract note): the reconnect probe must read the
+  // pending BEFORE this drains it.
+  useConsumePendingMessage(agentInstanceId, conversationId, !readOnly);
 
   // Collapse the main Sidebar while the preview Sidepane is open (it takes ~75%
   // of the row), restoring it on close. Reads/writes the shared store since the
@@ -222,6 +231,7 @@ export function Collaboration({
               <MessageHistory
                 agentInstanceId={agentInstanceId}
                 conversationId={conversationId}
+                isScheduledTaskRun={isScheduledTaskRun}
               />
             </div>
             <Composer
@@ -229,6 +239,7 @@ export function Collaboration({
               agentInstanceId={agentInstanceId}
               conversationId={conversationId}
               reconnectStop={reconnectStop}
+              disabled={readOnly}
             />
           </div>
           {/* Bare sibling (no grow wrapper): open, the panel's own w-3/4 is its

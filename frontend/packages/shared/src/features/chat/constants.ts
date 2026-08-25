@@ -1,33 +1,20 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+import { msg } from "@lingui/core/macro";
 
-// 16 MiB cap. Reject when `file.size >` this, so exactly 16 MiB passes.
-// User-facing copy rounds to "16 MB" (collab.composer.file.tooLarge).
-export const MAX_ATTACHMENT_BYTES = 16 * 1024 * 1024;
+export { MAX_ATTACHMENT_BYTES } from "../../constants/attachment";
 
 // Shared failure copy for a turn that errored / truncated — raised by both the
 // live-send path (chat.ts) and the reconnect settle path (use-reconnect), so the
-// user sees the same message whichever transport observed the failure.
-export const SEND_FAILED_COPY = "Something went wrong. Try sending again.";
+// user sees the same message whichever transport observed the failure. Message
+// descriptors (module scope, non-React) resolved with `i18n._()` at the toast.
+export const SEND_FAILED_COPY = msg({
+  id: "chat.send.failed",
+  message: "Something went wrong. Try sending again.",
+});
+
+export const STOP_FAILED_COPY = msg({
+  id: "chat.stop.failed",
+  message: "There's been a connection error. Please try again later.",
+});
 
 // The `AbortController.abort(reason)` sentinel for the live-send→reconnect
 // hand-off. When recovery aborts a dead live-send stream to resume the turn over

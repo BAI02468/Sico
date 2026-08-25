@@ -1,29 +1,7 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { AxiosInstance } from "axios";
+import axios, { type AxiosInstance } from "axios";
 import { produce } from "immer";
 import { createStore, Provider as JotaiProvider } from "jotai";
 import { type PropsWithChildren, type ReactElement } from "react";
@@ -34,8 +12,10 @@ import {
   conversationsAtom,
   type Message,
 } from "@/features/chat/atoms/chat-atom";
+import { MessageHistory } from "@/features/chat/components/message-history";
 import { MessageList } from "@/features/chat/components/message-list";
 import { ChatAgentProvider } from "@/features/chat/services/chat-agent-context";
+import { formatDateTime } from "@/features/chat/utils/format-date-time";
 import type { Agent } from "@/features/digital-worker";
 import { ApiClientProvider } from "@/services/api-client-context";
 
@@ -177,6 +157,7 @@ const seededAgent: Agent = {
 
 function withStore(
   store: ReturnType<typeof createStore>,
+  apiClient: AxiosInstance = axios.create(),
 ): (props: PropsWithChildren) => ReactElement {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -187,7 +168,7 @@ function withStore(
     return (
       <JotaiProvider store={store}>
         <QueryClientProvider client={queryClient}>
-          <ApiClientProvider client={{} as AxiosInstance}>
+          <ApiClientProvider client={apiClient}>
             <ChatAgentProvider
               agentInstanceId={LIST_AGENT_ID}
               conversationId={1}
@@ -480,6 +461,187 @@ describe("MessageList", () => {
       ]);
     });
     expect(fetchOlder).not.toHaveBeenCalled();
+  });
+
+  it("selects scheduled metadata for the timed human turn 1", () => {
+    const store = createStore();
+    const createdAt = new Date("2024-06-15T09:30:00").getTime();
+    seed(store, [{ ...human("h1", "scheduled prompt"), turnId: 1, createdAt }]);
+    render(<MessageList isScheduledTaskRun />, { wrapper: withStore(store) });
+
+    expect(
+      screen.getByText(formatDateTime(createdAt)).parentElement,
+    ).toHaveTextContent(`Scheduled task · ${formatDateTime(createdAt)}`);
+  });
+
+  it("keeps the ordinary Timestamp in an ordinary conversation", () => {
+    const store = createStore();
+    const createdAt = new Date("2024-06-15T09:30:00").getTime();
+    seed(store, [{ ...human("h1", "ordinary prompt"), turnId: 1, createdAt }]);
+    render(<MessageList />, { wrapper: withStore(store) });
+
+    const time = screen.getByText(formatDateTime(createdAt));
+    expect(time.parentElement).not.toHaveTextContent("Scheduled task");
+  });
+
+  it("does not select scheduled metadata for assistant turn 1", () => {
+    const store = createStore();
+    const createdAt = new Date("2024-06-15T09:30:00").getTime();
+    seed(store, [{ ...aiText("a1", "answer"), turnId: 1, createdAt }]);
+    render(<MessageList isScheduledTaskRun />, { wrapper: withStore(store) });
+
+    expect(screen.queryByText(/Scheduled task/)).not.toBeInTheDocument();
+    expect(screen.getByText(formatDateTime(createdAt))).toBeInTheDocument();
+  });
+
+  it("keeps the ordinary Timestamp for scheduled human turn 2", () => {
+    const store = createStore();
+    const createdAt = new Date("2024-06-15T09:30:00").getTime();
+    seed(store, [{ ...human("h2", "follow-up"), turnId: 2, createdAt }]);
+    render(<MessageList isScheduledTaskRun />, { wrapper: withStore(store) });
+
+    const time = screen.getByText(formatDateTime(createdAt));
+    expect(time.parentElement).not.toHaveTextContent("Scheduled task");
+  });
+
+  it("hydrates scheduled human turn 1 only after fetching the older page", async () => {
+    const store = createStore();
+    const apiClient = axios.create();
+    const initiatingTime = new Date("2024-06-15T09:30:00").getTime();
+    const assistantTime = new Date("2024-06-15T09:31:00").getTime();
+    const firstVisibleTime = new Date("2024-06-15T09:32:00").getTime();
+    const get = vi
+      .spyOn(apiClient, "get")
+      .mockResolvedValueOnce({
+        data: {
+          code: 0,
+          msg: "ok",
+          data: {
+            messages: [
+              {
+                messageId: 201,
+                turnId: 2,
+                role: "user",
+                type: 1,
+                content: "first currently loaded human",
+                createdAt: firstVisibleTime,
+              },
+            ],
+            hasMore: true,
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          code: 0,
+          msg: "ok",
+          data: {
+            messages: [
+              {
+                messageId: 102,
+                turnId: 1,
+                role: "assistant",
+                type: 1,
+                content: "scheduled answer",
+                createdAt: assistantTime,
+              },
+              {
+                messageId: 101,
+                turnId: 1,
+                role: "user",
+                type: 1,
+                content: "scheduled prompt",
+                createdAt: initiatingTime,
+              },
+            ],
+            hasMore: false,
+          },
+        },
+      });
+    stickState.isAtBottom = false;
+
+    render(
+      <MessageHistory
+        agentInstanceId={LIST_AGENT_ID}
+        conversationId={1}
+        isScheduledTaskRun
+      />,
+      { wrapper: withStore(store, apiClient) },
+    );
+
+    await screen.findByText("first currently loaded human");
+    expect(screen.queryByText(/Scheduled task/)).not.toBeInTheDocument();
+    expect(
+      screen.getByText(formatDateTime(firstVisibleTime)).parentElement,
+    ).not.toHaveTextContent("Scheduled task");
+
+    const io = ioInstances.at(-1)!;
+    act(() => {
+      io.callback([
+        {
+          isIntersecting: true,
+        } as Partial<IntersectionObserverEntry> as IntersectionObserverEntry,
+      ]);
+    });
+
+    await screen.findByText("scheduled prompt");
+    expect(screen.getAllByText(/Scheduled task/)).toHaveLength(1);
+    expect(screen.getAllByText(formatDateTime(initiatingTime))).toHaveLength(1);
+    expect(
+      screen.getByText(formatDateTime(initiatingTime)).parentElement
+        ?.parentElement,
+    ).toHaveAttribute("data-message-id", "101");
+    expect(
+      screen.getByText(formatDateTime(assistantTime)).parentElement,
+    ).toHaveAttribute("data-message-id", "102");
+    expect(
+      screen.getByText(formatDateTime(firstVisibleTime)).parentElement,
+    ).not.toHaveTextContent("Scheduled task");
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(2));
+    expect(get.mock.calls.map(([, config]) => config?.params?.page)).toEqual([
+      1, 2,
+    ]);
+  });
+
+  it("renders no incomplete metadata for scheduled human turn 1 without createdAt", () => {
+    const store = createStore();
+    seed(store, [{ ...human("h1", "scheduled prompt"), turnId: 1 }]);
+    render(<MessageList isScheduledTaskRun />, { wrapper: withStore(store) });
+
+    expect(screen.queryByText(/Scheduled task/)).not.toBeInTheDocument();
+  });
+
+  it("adds metadata only to the initiating row when provenance changes false to true", () => {
+    const store = createStore();
+    const initiatingTime = new Date("2024-06-15T09:30:00").getTime();
+    const assistantTime = new Date("2024-06-15T09:31:00").getTime();
+    const followUpTime = new Date("2024-06-15T09:32:00").getTime();
+    seed(store, [
+      {
+        ...human("h1", "scheduled prompt"),
+        turnId: 1,
+        createdAt: initiatingTime,
+      },
+      {
+        ...aiText("a1", "answer"),
+        turnId: 1,
+        createdAt: assistantTime,
+      },
+      { ...human("h2", "follow-up"), turnId: 2, createdAt: followUpTime },
+    ]);
+    const { rerender } = render(<MessageList isScheduledTaskRun={false} />, {
+      wrapper: withStore(store),
+    });
+    expect(screen.queryByText(/Scheduled task/)).not.toBeInTheDocument();
+
+    rerender(<MessageList isScheduledTaskRun />);
+
+    expect(screen.getAllByText(/Scheduled task/)).toHaveLength(1);
+    const scheduledTime = screen.getByText(formatDateTime(initiatingTime));
+    expect(scheduledTime.parentElement?.parentElement).toHaveAttribute(
+      "data-message-id",
+      "h1",
+    );
   });
 
   it("re-renders ONLY the streaming tail when settled rows keep their ref (memo)", () => {

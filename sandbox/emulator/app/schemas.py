@@ -1,28 +1,12 @@
-# Copyright (c) 2026 Sico Authors
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 from __future__ import annotations
 
-from typing import Optional
+from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, Field
+
+
+DeviceIndex = Annotated[int, Field(ge=0)]
+AppFilter = Literal["user", "system", "all"]
 
 
 class DeviceInfo(BaseModel):
@@ -60,6 +44,46 @@ class DownloadAppRequest(BaseModel):
     url: str = Field(..., min_length=1)
 
 
+class BatchDevicesRequest(BaseModel):
+    indices: list[DeviceIndex] = Field(
+        ...,
+        min_length=1,
+        max_length=20,
+        description="List of emulator indices (deviceIDList).",
+    )
+    max_parallel: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=20,
+        description="Optional cap on concurrent device operations.",
+    )
+
+
+class ListAppsBatchRequest(BatchDevicesRequest):
+    """Request body for listing installed apps across multiple emulator devices."""
+
+    app_filter: AppFilter = Field(
+        default="user",
+        description="Which apps to return: user, system, or all.",
+    )
+
+
+class InstallAppFromUrlBatchRequest(BatchDevicesRequest):
+    """Request body for installing an APK from a remote URL across multiple devices."""
+
+    url: str = Field(
+        ...,
+        min_length=1,
+        description="HTTP(S) URL of the APK to download.",
+    )
+
+
+class UninstallAppBatchRequest(BatchDevicesRequest):
+    """Request body for uninstalling a package across multiple devices."""
+
+    package: str = Field(..., min_length=1, description="Package name to remove.")
+
+
 class AdbShellRequest(BaseModel):
     """Generic ADB shell command request.
 
@@ -70,4 +94,5 @@ class AdbShellRequest(BaseModel):
         - {"command": "input keyevent 66"}
         - {"command": "pm list packages"}
     """
+
     command: str = Field(..., min_length=1, description="ADB shell command to execute")

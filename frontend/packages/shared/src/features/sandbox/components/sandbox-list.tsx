@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { type JSX } from "react";
 
 import { iconForSandboxType } from "./sandbox-icon";
@@ -33,10 +12,6 @@ export type SandboxListProps = {
   sandboxes: Sandbox[];
   onSandboxClick: (sandbox: Sandbox) => void;
 };
-
-const COPY = {
-  empty: "No devices available.",
-} as const;
 
 /**
  * The all-devices grid: one card per live sandbox (type icon + name + status +
@@ -53,6 +28,7 @@ export function SandboxList({
   sandboxes,
   onSandboxClick,
 }: SandboxListProps): JSX.Element {
+  const { t } = useLingui();
   if (sandboxes.length === 0) {
     // MessageState `fill` centers itself in the scroll container's height, so
     // no hand-rolled centering wrapper (mirrors the grid empty states).
@@ -62,7 +38,10 @@ export function SandboxList({
         illustrationUrl={EMPTY_ILLUSTRATIONS.cards.url}
         illustrationWidth={EMPTY_ILLUSTRATIONS.cards.width}
         illustrationHeight={EMPTY_ILLUSTRATIONS.cards.height}
-        heading={COPY.empty}
+        heading={t({
+          id: "sandbox.list.empty",
+          message: "No devices available.",
+        })}
         body=""
       />
     );

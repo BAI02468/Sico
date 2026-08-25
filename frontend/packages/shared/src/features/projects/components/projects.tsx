@@ -1,33 +1,18 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { Trans } from "@lingui/react/macro";
+import { Button } from "@sico/ui";
+import { cn } from "@sico/ui/lib/utils.ts";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
+import { useAtom } from "jotai";
+import { Plus } from "lucide-react";
 import type * as React from "react";
 import { type RefObject, Suspense, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
+import { CreateProjectDialog } from "./create-project-dialog";
 import { ProjectsGrid } from "./projects-grid";
 import { ProjectsGridSkeleton } from "./projects-grid-skeleton";
 import { ErrorView } from "../../../components/error-view";
+import { createProjectDialogOpenAtom } from "../atoms/create-project-dialog-atom";
 
 /**
  * Feature root for `/project`. `useQueryErrorResetBoundary` is critical:
@@ -37,25 +22,41 @@ import { ErrorView } from "../../../components/error-view";
  *
  * Layout: the header stays fixed while the grid scrolls inside a bounded
  * `scrollRef` container (local scroll), mirroring `<DigitalWorkers>`.
+ *
+ * The create-project dialog's open state lives in `createProjectDialogOpenAtom`
+ * so the Add DW dialog can raise it via a plain `/project` navigation (no URL
+ * search param).
  */
 export function Projects(): React.JSX.Element {
   const { reset } = useQueryErrorResetBoundary();
   const scrollRef: RefObject<HTMLDivElement | null> = useRef(null);
+  const [createOpen, setCreateOpen] = useAtom(createProjectDialogOpenAtom);
 
   return (
     <div className="flex h-full w-full flex-col gap-6 pt-10 pb-2">
       <header className="flex items-start justify-between gap-4 px-16">
-        <div className="flex flex-col gap-1">
+        <div
+          className={cn(
+            "flex flex-col gap-1 transition-[filter] duration-100",
+            createOpen && "blur-xs",
+          )}
+        >
           <h1
             tabIndex={-1}
             className="text-foreground-primary text-3xl leading-tight font-medium outline-none"
           >
-            Projects
+            <Trans id="projects.page.title">Projects</Trans>
           </h1>
           <p className="text-foreground-secondary text-sm leading-normal">
-            Track project performance and knowledge.
+            <Trans id="projects.page.subtitle">
+              Track project performance and knowledge.
+            </Trans>
           </p>
         </div>
+        <Button variant="primary" onClick={() => setCreateOpen(true)}>
+          <Plus aria-hidden="true" />
+          <Trans id="projects.page.createButton">Create Project</Trans>
+        </Button>
       </header>
       <div
         ref={scrollRef}
@@ -63,10 +64,16 @@ export function Projects(): React.JSX.Element {
       >
         <ErrorBoundary FallbackComponent={ErrorView} onReset={reset}>
           <Suspense fallback={<ProjectsGridSkeleton />}>
-            <ProjectsGrid rootRef={scrollRef} />
+            <ProjectsGrid
+              rootRef={scrollRef}
+              onCreate={() => setCreateOpen(true)}
+            />
           </Suspense>
         </ErrorBoundary>
       </div>
+      {createOpen && (
+        <CreateProjectDialog open={createOpen} onOpenChange={setCreateOpen} />
+      )}
     </div>
   );
 }

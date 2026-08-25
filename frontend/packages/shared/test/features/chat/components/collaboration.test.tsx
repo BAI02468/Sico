@@ -1,27 +1,5 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { AxiosInstance } from "axios";
 import { produce } from "immer";
@@ -39,12 +17,20 @@ import {
   plansAtom,
 } from "@/features/chat/atoms/chat-atom";
 import { sidepaneContentAtom } from "@/features/chat/atoms/sidepane-atom";
+import type { MessageListProps } from "@/features/chat/components/message-list";
+import { conversationDetailQueryKey } from "@/features/chat/hooks/use-conversation-detail";
 import { useHistory, type UseHistory } from "@/features/chat/hooks/use-history";
 import { useReconnect } from "@/features/chat/hooks/use-reconnect";
 import {
   PlanStatusSchema,
   PlanStepStatusSchema,
 } from "@/features/chat/schemas/plan";
+import * as conversationService from "@/features/chat/services/conversation";
+import { refreshConversationStatus } from "@/features/chat/utils/refresh-conversation-status";
+import {
+  type AgentStatus,
+  AgentStatusSchema,
+} from "@/features/digital-worker/schemas/agent";
 import { ApiClientProvider } from "@/services/api-client-context";
 
 // The Composer renders inside Collaboration and reads `useChat`; stub it so the
@@ -52,11 +38,17 @@ import { ApiClientProvider } from "@/services/api-client-context";
 // hoisted `vi.mock` factory can close over it) and lets the wiring test assert
 // Composer's Stop reaches use-chat carrying the reconnect manager's stop()
 // (Collaboration → Composer → use-chat).
-const { chatStop } = vi.hoisted(() => ({
+const { chatStop, messageListScheduledTaskSpy } = vi.hoisted(() => ({
   chatStop: vi.fn().mockResolvedValue(undefined),
+  messageListScheduledTaskSpy: vi.fn(),
 }));
 vi.mock("@/features/chat/hooks/use-chat", () => ({
   useChat: () => ({ send: vi.fn(), stop: chatStop, upload: vi.fn() }),
+}));
+
+let agentStatus: AgentStatus = AgentStatusSchema.enum.ACTIVE;
+vi.mock("@/features/digital-worker/hooks/use-agents-query", () => ({
+  useAgentQuery: () => ({ data: { id: 1, status: agentStatus } }),
 }));
 
 // A mounted plan card now owns a `/plan` poll; stub only the network boundary
@@ -78,7 +70,47 @@ vi.mock("@tanstack/react-router", () => ({
 // Collaboration WIRES it (called with the agent id, pager flows to the list,
 // reset clears its atoms).
 vi.mock("@/features/chat/hooks/use-history", () => ({
+  invalidateHistory: vi.fn(),
   useHistory: vi.fn(),
+}));
+
+vi.mock("@/features/chat/components/message-list", async (importActual) => {
+  const actual =
+    await importActual<
+      typeof import("@/features/chat/components/message-list")
+    >();
+  const ActualMessageList = actual.MessageList;
+
+  function MessageListBoundary({
+    hasMore,
+    fetchOlder,
+    isFetchingOlder,
+    isScheduledTaskRun,
+  }: MessageListProps): ReactElement {
+    messageListScheduledTaskSpy(isScheduledTaskRun);
+    return (
+      <ActualMessageList
+        hasMore={hasMore}
+        fetchOlder={fetchOlder}
+        isFetchingOlder={isFetchingOlder}
+        isScheduledTaskRun={isScheduledTaskRun}
+      />
+    );
+  }
+
+  return { ...actual, MessageList: MessageListBoundary };
+});
+
+vi.mock("@/features/chat/services/conversation", async (importActual) => {
+  const actual =
+    await importActual<
+      typeof import("@/features/chat/services/conversation")
+    >();
+  return { ...actual, getConversation: vi.fn() };
+});
+
+vi.mock("@/features/chat/utils/refresh-conversation-status", () => ({
+  refreshConversationStatus: vi.fn(),
 }));
 
 // `use-reconnect` carries its own suite; stub it so Collaboration mounts without
@@ -101,6 +133,7 @@ const apiClient = {} as AxiosInstance;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  agentStatus = AgentStatusSchema.enum.ACTIVE;
   // MessageList now mounts its reverse-pager sentinel unconditionally (so the
   // observer attaches even on a cold load), which constructs an
   // IntersectionObserver jsdom doesn't provide. Stub it the same way the
@@ -116,19 +149,26 @@ beforeEach(() => {
   );
   mockHistory();
   vi.mocked(useReconnect).mockReturnValue({ stop: vi.fn() });
+  vi.mocked(conversationService.getConversation).mockReset();
+  vi.mocked(conversationService.getConversation).mockResolvedValue({
+    id: 7,
+    title: "Conversation",
+    createdAt: undefined,
+    agentInstanceId: undefined,
+  });
 });
 
 function withStore(
   store: ReturnType<typeof createStore>,
+  queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  }),
 ): (props: PropsWithChildren) => ReactElement {
   // Named function declaration (not an inline arrow) to satisfy
   // react/display-name + react/function-component-definition, matching the
   // sibling composer.test.tsx `Wrapper`. The ExperiencePill nested in a turn
   // reads `useApiClient` + `useQuery` (for its owning projectId), so the base
   // wrapper provides both; Collaboration supplies the ChatAgentProvider itself.
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
 
   function Wrapper({ children }: PropsWithChildren): ReactElement {
     return (
@@ -191,6 +231,42 @@ describe("Collaboration", () => {
       wrapper: withStore(store),
     });
     expect(screen.getByLabelText("Message input")).toBeInTheDocument();
+  });
+
+  it("keeps history visible but disables the composer in read-only mode", () => {
+    agentStatus = AgentStatusSchema.enum.INACTIVE;
+    const store = createStore();
+    render(<Collaboration agentInstanceId={1} />, {
+      wrapper: withStore(store),
+    });
+    seedConversation(store, {
+      clientId: "history",
+      history: [
+        {
+          id: "past-message",
+          author: "human",
+          content: [{ partId: "past-part", type: "text", text: "Past work" }],
+        },
+      ],
+    });
+
+    expect(screen.getByText("Past work")).toBeInTheDocument();
+    expect(screen.getByLabelText("Message input")).toBeDisabled();
+    expect(screen.getByLabelText("Attach a file")).toBeDisabled();
+  });
+
+  it("reacts to the mounted worker becoming inactive", () => {
+    const store = createStore();
+    const view = render(<Collaboration agentInstanceId={1} />, {
+      wrapper: withStore(store),
+    });
+    expect(screen.getByLabelText("Message input")).toBeEnabled();
+
+    agentStatus = AgentStatusSchema.enum.INACTIVE;
+    view.rerender(<Collaboration agentInstanceId={1} />);
+
+    expect(screen.getByLabelText("Message input")).toBeDisabled();
+    expect(screen.getByLabelText("Attach a file")).toBeDisabled();
   });
 
   it("does not bleed the previous agent's history onto the next agent", () => {
@@ -315,6 +391,27 @@ describe("Collaboration", () => {
     );
   });
 
+  it("refreshes status once when reconnect settles", () => {
+    const store = createStore();
+    render(<Collaboration agentInstanceId={42} conversationId={7} />, {
+      wrapper: withStore(store),
+    });
+    const onSettle = vi.mocked(useReconnect).mock.calls.at(-1)?.[2]?.onSettle;
+    if (!onSettle) {
+      throw new Error("expected Collaboration to provide reconnect onSettle");
+    }
+
+    act(() => {
+      onSettle();
+    });
+
+    expect(refreshConversationStatus).toHaveBeenCalledOnce();
+    expect(refreshConversationStatus).toHaveBeenCalledWith(
+      expect.any(QueryClient),
+      42,
+    );
+  });
+
   it("threads the reconnect manager's stop() into the composer Stop (G4)", async () => {
     const reconnectStop = vi.fn();
     vi.mocked(useReconnect).mockReturnValue({ stop: reconnectStop });
@@ -352,6 +449,109 @@ describe("Collaboration", () => {
       wrapper: withStore(store),
     });
     expect(screen.getByLabelText("Loading older messages")).toBeInTheDocument();
+  });
+
+  it("keeps history and Composer rendered while detail is pending", () => {
+    vi.mocked(conversationService.getConversation).mockReturnValue(
+      new Promise(() => {
+        // Keep detail pending to verify the non-Suspense render path.
+      }),
+    );
+    const store = createStore();
+    render(<Collaboration agentInstanceId={7} conversationId={55} />, {
+      wrapper: withStore(store),
+    });
+    seedConversation(store, {
+      clientId: "55",
+      conversationId: 55,
+      history: [
+        {
+          id: "pending-detail-message",
+          author: "human",
+          content: [{ partId: "p", type: "text", text: "still visible" }],
+        },
+      ],
+    });
+
+    expect(screen.getByText("still visible")).toBeInTheDocument();
+    expect(screen.getByLabelText("Message input")).toBeInTheDocument();
+    expect(messageListScheduledTaskSpy).toHaveBeenLastCalledWith(false);
+  });
+
+  it("keeps history and Composer rendered when detail errors", async () => {
+    vi.mocked(conversationService.getConversation).mockRejectedValue(
+      new Error("detail failed"),
+    );
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const store = createStore();
+    render(<Collaboration agentInstanceId={7} conversationId={55} />, {
+      wrapper: withStore(store, queryClient),
+    });
+    seedConversation(store, {
+      clientId: "55",
+      conversationId: 55,
+      history: [
+        {
+          id: "errored-detail-message",
+          author: "human",
+          content: [{ partId: "p", type: "text", text: "remains visible" }],
+        },
+      ],
+    });
+
+    await waitFor(() =>
+      expect(
+        queryClient.getQueryState(conversationDetailQueryKey(55))?.status,
+      ).toBe("error"),
+    );
+    expect(screen.getByText("remains visible")).toBeInTheDocument();
+    expect(screen.getByLabelText("Message input")).toBeInTheDocument();
+    expect(messageListScheduledTaskSpy).toHaveBeenLastCalledWith(false);
+  });
+
+  it("ignores cached sentinel provenance without a valid conversation id", () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    queryClient.setQueryData(conversationDetailQueryKey(0), {
+      id: 0,
+      title: "Cached sentinel",
+      scheduledTaskProvenance: {
+        scheduledTaskId: 3,
+        scheduledTaskRunId: 9,
+      },
+    });
+    const store = createStore();
+
+    render(<Collaboration agentInstanceId={7} />, {
+      wrapper: withStore(store, queryClient),
+    });
+
+    expect(messageListScheduledTaskSpy).toHaveBeenLastCalledWith(false);
+    expect(conversationService.getConversation).not.toHaveBeenCalled();
+  });
+
+  it("passes scheduled-task provenance to MessageList as a boolean", () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    queryClient.setQueryData(conversationDetailQueryKey(55), {
+      id: 55,
+      title: "Scheduled run",
+      scheduledTaskProvenance: {
+        scheduledTaskId: 3,
+        scheduledTaskRunId: 9,
+      },
+    });
+    const store = createStore();
+
+    render(<Collaboration agentInstanceId={7} conversationId={55} />, {
+      wrapper: withStore(store, queryClient),
+    });
+
+    expect(messageListScheduledTaskSpy).toHaveBeenLastCalledWith(true);
   });
 
   it("resets plansAtom on agent change", () => {

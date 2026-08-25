@@ -1,33 +1,10 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLingui } from "@lingui/react/macro";
 import {
   Button,
   Dialog,
   DialogContent,
   DialogFooter,
-  DialogHeader,
-  DialogTitle,
   FieldGroup,
 } from "@sico/ui";
 import { useNavigate } from "@tanstack/react-router";
@@ -37,20 +14,22 @@ import { useEffect } from "react";
 import type * as React from "react";
 import { useForm } from "react-hook-form";
 
+import { AddDwDialogHeader } from "./add-dw-dialog-header";
 import {
   ADD_DW_INITIAL_VALUES,
   addDwSchema,
   type AddDwValues,
-  renderAvatarField,
-  renderDwField,
-  renderNameField,
-  renderProjectField,
 } from "./add-dw-fields";
+import { AvatarField } from "./avatar-field";
+import { DwField } from "./dw-field";
+import { NameField } from "./name-field";
+import { ProjectField } from "./project-field";
 import { userAtom } from "../../../atoms/auth-atom";
 import { createProjectDialogOpenAtom } from "../../projects/atoms/create-project-dialog-atom";
 import { useProjectsInfiniteQueryNonSuspense } from "../../projects/hooks/use-projects-query";
 import { useAgentInfosQuery } from "../../studio/hooks/use-agent-infos-query";
 import { type SingleAgentCard } from "../../studio/schemas/single-agent-card";
+import { PLATFORM_AGENT_INFOS_INTENT } from "../../studio/services/single-agents";
 import { useAddDwSubmit } from "../hooks/use-add-dw-submit";
 import { deriveState } from "../utils/load-state";
 
@@ -68,12 +47,10 @@ export function AddDwDialog({
   open,
   onOpenChange,
 }: AddDwDialogProps): React.JSX.Element {
+  const { t } = useLingui();
   const user = useAtomValue(userAtom);
   const navigate = useNavigate();
   const setCreateProjectOpen = useSetAtom(createProjectDialogOpenAtom);
-  // Non-suspense read: the dialog mounts outside the route's Suspense boundary,
-  // so a suspending query would blank the whole page. The list-page loader has
-  // usually warmed this cache already.
   const projectsQuery = useProjectsInfiniteQueryNonSuspense({});
   const projects =
     projectsQuery.data?.pages.flatMap((page) => page.items) ?? [];
@@ -82,7 +59,7 @@ export function AddDwDialog({
     projectsQuery.isError,
     projects.length,
   );
-  const templatesQuery = useAgentInfosQuery();
+  const templatesQuery = useAgentInfosQuery(PLATFORM_AGENT_INFOS_INTENT);
   const templates = templatesQuery.data ?? [];
   const templatesState = deriveState(
     templatesQuery.isPending,
@@ -98,6 +75,9 @@ export function AddDwDialog({
   const { onSubmit, isPending } = useAddDwSubmit(user?.email, templates, () =>
     onOpenChange(false),
   );
+  const saveLabel = isPending
+    ? t({ id: "common.status.saving", message: "Saving…" })
+    : t({ id: "common.action.save", message: "Save" });
 
   useEffect(() => {
     if (open) {
@@ -105,16 +85,12 @@ export function AddDwDialog({
     }
   }, [open, form]);
 
-  // "Create project" leaves the Add DW flow and navigates to the Projects page
-  // with the create dialog raised via a jotai atom (§ create-project lives on
-  // /project, not nested here; intent flows through state, not the URL).
   const handleCreateProject = (): void => {
     onOpenChange(false);
     setCreateProjectOpen(true);
     void navigate({ to: "/project" });
   };
 
-  // Seed the name from the picked template while the name is untouched.
   const handlePick = (card: SingleAgentCard | undefined): void => {
     if (card && !form.getFieldState("name").isDirty) {
       form.setValue("name", card.name);
@@ -124,20 +100,23 @@ export function AddDwDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent variant="content" className="w-150">
-        <DialogHeader>
-          <DialogTitle>Add Digital Worker</DialogTitle>
-        </DialogHeader>
+        <AddDwDialogHeader />
         <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
-            {renderProjectField(
-              form.control,
-              projects,
-              projectsState,
-              handleCreateProject,
-            )}
-            {renderDwField(form.control, templates, templatesState, handlePick)}
-            {renderNameField(form.control)}
-            {renderAvatarField(form.control)}
+            <ProjectField
+              control={form.control}
+              projects={projects}
+              state={projectsState}
+              onCreate={handleCreateProject}
+            />
+            <DwField
+              control={form.control}
+              templates={templates}
+              state={templatesState}
+              onPick={handlePick}
+            />
+            <NameField control={form.control} />
+            <AvatarField control={form.control} />
           </FieldGroup>
           <DialogFooter className="mt-6">
             <Button
@@ -145,7 +124,7 @@ export function AddDwDialog({
               variant="subtle"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t({ id: "common.action.cancel", message: "Cancel" })}
             </Button>
             <Button
               type="submit"
@@ -154,7 +133,7 @@ export function AddDwDialog({
               disabled={isPending}
             >
               {isPending ? <Loader2 className="animate-spin" /> : null}
-              {isPending ? "Saving…" : "Save"}
+              {saveLabel}
             </Button>
           </DialogFooter>
         </form>

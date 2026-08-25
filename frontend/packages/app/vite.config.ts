@@ -1,39 +1,13 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { createRequire } from "node:module";
 import path from "node:path";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react-swc";
+import { lingui } from "@lingui/vite-plugin";
 import { defineConfig } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
 const API_TARGET = process.env.VITE_API_TARGET ?? "http://localhost:8080";
-// The dwp backend is a DIFFERENT origin from sico's (self-signed TLS, hence
-// `secure: false` on its proxy entry). Both routes stay registered so a single
-// `vite dev` serves either backend depending on the active build profile.
-const DWP_API_TARGET =
-  process.env.VITE_DWP_API_TARGET ?? "https://test.sico.microsoft.com";
 
 // pdfjs-dist ships its cMap (CJK character maps) + standard-font assets inside
 // the npm package but not in the JS bundle. Resolve the package root via
@@ -61,7 +35,10 @@ export default defineConfig({
       enableRouteTreeFormatting: true,
     }),
     tailwindcss(),
-    react(),
+    react({
+      plugins: [["@lingui/swc-plugin", {}]],
+    }),
+    lingui(),
     viteStaticCopy({
       // `stripBase` flattens the deep absolute `src` path so the files land at
       // `dist/pdfjs/<dir>/` (not nested under the resolved node_modules path).
@@ -90,13 +67,6 @@ export default defineConfig({
         target: API_TARGET,
         changeOrigin: true,
         secure: false,
-      },
-      "/api/dwp": {
-        target: DWP_API_TARGET,
-        changeOrigin: true,
-        // dwp backend serves self-signed TLS — don't reject it in dev.
-        secure: false,
-        ws: true,
       },
     },
   },

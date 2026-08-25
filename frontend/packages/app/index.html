@@ -1,32 +1,35 @@
 <!doctype html>
-<!--
- Copyright (c) 2026 Sico Authors
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
--->
-
-<html lang="en">
+<html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>SICO</title>
+    <script>
+      // Apply the initial locale to <html lang> before React mounts so CSS like
+      // `:lang(zh)` (CJK font stack) is correct on the very first frame (FOUC).
+      // Priority mirrors `localeAtom.loadLocaleFromLS`: stored preference >
+      // detected browser language > default "en". `localeAtom` persists a RAW
+      // locale tag (e.g. "en" / "zh-CN"), so this must NOT JSON.parse — it reads
+      // and validates the bare string.
+      try {
+        const stored = localStorage.getItem("sico.locale");
+        let lang = stored === "zh-CN" || stored === "en" ? stored : null;
+        if (!lang) {
+          const tags = navigator.languages && navigator.languages.length
+            ? navigator.languages
+            : [navigator.language];
+          for (const tag of tags) {
+            const lower = (tag || "").toLowerCase();
+            if (lower.indexOf("zh") === 0) { lang = "zh-CN"; break; }
+            if (lower.indexOf("en") === 0) { lang = "en"; break; }
+          }
+        }
+        document.documentElement.lang = lang || "en";
+      } catch {
+        document.documentElement.lang = "en";
+      }
+    </script>
   </head>
   <body>
     <div id="root">

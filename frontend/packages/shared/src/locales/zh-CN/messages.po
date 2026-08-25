@@ -1,0 +1,4368 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-07-07 10:37+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: zh-CN\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/__root.tsx
+msgid "app.notFound.backToHome"
+msgstr "返回首页"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/__root.tsx
+msgid "app.notFound.body"
+msgstr "你查找的页面不存在或已被移动。"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/__root.tsx
+msgid "app.notFound.title"
+msgstr "页面未找到"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/add-to-project-button.tsx
+msgid "chat.addToProject.add"
+msgstr "添加到项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/add-to-project-button.tsx
+msgid "chat.addToProject.added"
+msgstr "已添加到项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/add-to-project-button.tsx
+msgid "chat.addToProject.shareError"
+msgstr "无法将其添加到项目。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/add-to-project-button.tsx
+msgid "chat.addToProject.shareSuccess"
+msgstr "文件已共享。项目内所有人均可访问。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: app.appName
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.actionsForApp"
+msgstr "{appName}的操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.name"
+msgstr "名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.uninstall"
+msgstr "卸载"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.uninstallForAllDevices"
+msgstr "从所有设备卸载"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.version"
+msgstr "版本"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/attachment-input/attachment-chip.tsx
+msgid "chat.attachmentChip.removeAttachment"
+msgstr "移除附件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/hooks/use-composer-attachments.ts
+msgid "chat.composer.fileTooLarge"
+msgstr "该文件超过 16 MB。请换用更小的文件。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/disabled-composer-tooltip.tsx
+msgid "chat.composer.inactiveAriaLabel"
+msgstr "数字员工处于非活动状态"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/disabled-composer-tooltip.tsx
+msgid "chat.composer.inactiveTooltip"
+msgstr "此数字员工处于非活动状态，无法接收新任务。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-input.tsx
+msgid "chat.composer.inputAriaLabel"
+msgstr "消息输入框"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-input.tsx
+msgid "chat.composer.inputPlaceholder"
+msgstr "输入任何问题…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-send-button.tsx
+msgid "chat.composer.sending"
+msgstr "发送中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-send-button.tsx
+msgid "chat.composer.sendMessage"
+msgstr "发送消息"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-send-button.tsx
+msgid "chat.composer.stopRequest"
+msgstr "停止请求"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-send-button.tsx
+msgid "chat.composer.stopResponse"
+msgstr "停止响应"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: file.name
+#: packages/shared/src/features/chat/hooks/use-composer-attachments.ts
+msgid "chat.composer.uploadFailed"
+msgstr "无法上传“{0}”。请重新添加。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/attachment-input/attachment-picker-button.tsx
+msgid "chat.composerAttach.add"
+msgstr "添加附件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/attachment-input/attachment-picker-button.tsx
+msgid "chat.composerAttach.fileInput"
+msgstr "附加文件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/deliverable.tsx
+#: packages/shared/src/features/chat/components/message/plan-summary.tsx
+msgid "chat.deliverable.previewPage"
+msgstr "页面预览"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/device-button.tsx
+msgid "chat.deviceButton.label"
+msgstr "设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/hooks/use-home-submit.ts
+msgid "chat.dwHomeContent.error.startConversationFailed"
+msgstr "无法开始会话。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/digital-worker-home/digital-worker-home-hero.tsx
+msgid "chat.dwHomeHero.prompt"
+msgstr "有什么可以帮你的吗？"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/experience-pill.tsx
+msgid "chat.experiencePill.experience"
+msgstr "经验"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/experience-pill.tsx
+msgid "chat.experiencePill.experienceCount"
+msgstr "经验 + {experienceCount}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/experience-pill.tsx
+msgid "chat.experiencePill.generatingExperience"
+msgstr "正在生成经验"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/experience-pill.tsx
+msgid "chat.experiencePill.newStrategies"
+msgstr "新策略"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/experience-pill.tsx
+msgid "chat.experiencePill.viewMore"
+msgstr "查看更多"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/file-previewer.tsx
+msgid "chat.filePreviewer.download"
+msgstr "下载"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/hooks/use-history.ts
+msgid "chat.history.error.loadMessages"
+msgstr "无法加载消息。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/install-app-button.tsx
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/install-app-button.tsx
+msgid "chat.installAppButton.installApp"
+msgstr "安装应用"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/install-app-button.tsx
+msgid "chat.installAppButton.invalidApk"
+msgstr "请上传 .apk 文件。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/install-app-button.tsx
+msgid "chat.installAppButton.toAllAndroidDevices"
+msgstr "安装到所有 Android 设备（{deviceCount}）"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/install-app-button.tsx
+msgid "chat.installAppButton.toThisDevice"
+msgstr "安装到当前设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/manage-apps-header.tsx
+msgid "chat.manageAppsHeader.backToDevice"
+msgstr "返回设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/manage-apps-header.tsx
+msgid "chat.manageAppsHeader.close"
+msgstr "关闭"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/manage-apps-header.tsx
+msgid "chat.manageAppsHeader.devices"
+msgstr "设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/manage-apps-header.tsx
+msgid "chat.manageAppsHeader.maximize"
+msgstr "最大化"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/manage-apps-header.tsx
+msgid "chat.manageAppsHeader.restore"
+msgstr "还原"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/markdown-previewer.tsx
+msgid "chat.markdownPreviewer.download"
+msgstr "下载"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/markdown-previewer.tsx
+msgid "chat.markdownPreviewer.empty"
+msgstr "尚无可预览内容。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/markdown-previewer.tsx
+msgid "chat.markdownPreviewer.untitled"
+msgstr "未命名"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/message-history-skeleton.tsx
+msgid "chat.messageHistory.loading"
+msgstr "正在加载消息"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message-list.tsx
+msgid "chat.messageList.loadingOlderMessages"
+msgstr "正在加载更早的消息"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message-list.tsx
+msgid "chat.messageList.scrollToNewestMessage"
+msgstr "滚动到最新消息"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/hooks/use-plan.ts
+msgid "chat.plan.pollFailed"
+msgstr "无法更新计划状态。正在重试…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/failure-analyzed-label.tsx
+msgid "chat.planCard.analysisVerified"
+msgstr "分析已验证。新经验已保存。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/failure-analyzed-label.tsx
+msgid "chat.planCard.failureAnalyzed"
+msgstr "失败已分析。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/plan-status-text.tsx
+msgid "chat.planCard.status.completed"
+msgstr "执行完成"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/plan-status-text.tsx
+msgid "chat.planCard.status.failed"
+msgstr "执行失败"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/plan-status-text.tsx
+msgid "chat.planCard.status.inProgress"
+msgstr "正在执行"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/plan-status-text.tsx
+msgid "chat.planCard.status.stopped"
+msgstr "执行已停止"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/hooks/use-reconnect.ts
+msgid "chat.reconnect.reconnecting"
+msgstr "正在重新连接…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-header-shell.tsx
+msgid "chat.sandbox.deviceTitle"
+msgstr "设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-empty.tsx
+msgid "chat.sandboxAppsEmpty.body"
+msgstr "应用将显示在此处。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-empty.tsx
+msgid "chat.sandboxAppsEmpty.heading"
+msgstr "未安装应用"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-skeleton.tsx
+msgid "chat.sandboxAppsSkeleton.header.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-skeleton.tsx
+msgid "chat.sandboxAppsSkeleton.header.name"
+msgstr "名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-skeleton.tsx
+msgid "chat.sandboxAppsSkeleton.header.version"
+msgstr "版本"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-skeleton.tsx
+msgid "chat.sandboxAppsSkeleton.loadingApps"
+msgstr "正在加载应用"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-instance.tsx
+msgid "chat.sandboxInstance.manageApps"
+msgstr "管理应用"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-instance.tsx
+msgid "chat.sandboxInstance.stopTakeOver"
+msgstr "停止接管"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-instance.tsx
+msgid "chat.sandboxInstance.takeOver"
+msgstr "接管"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-instance.tsx
+msgid "chat.sandboxInstance.takingOver"
+msgstr "你正在接管"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-instance.tsx
+msgid "chat.sandboxInstance.unavailable"
+msgstr "此设备的实时视图不可用。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox-previewer.tsx
+msgid "chat.sandboxPreviewer.loading"
+msgstr "正在加载设备"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: formatDateTime(createdAt)
+#: packages/shared/src/features/chat/components/message/scheduled-task-metadata.tsx
+msgid "chat.scheduledTaskMetadata.label"
+msgstr "定期任务 · <0>{0}</0>"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/constants.ts
+msgid "chat.send.failed"
+msgstr "出了点问题。请重新发送。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/sidepane.tsx
+msgid "chat.sidepane.regionLabel"
+msgstr "预览面板"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/sidepane-header.tsx
+msgid "chat.sidepaneHeader.close"
+msgstr "关闭"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/sidepane-header.tsx
+msgid "chat.sidepaneHeader.maximize"
+msgstr "最大化"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/sidepane-header.tsx
+msgid "chat.sidepaneHeader.restore"
+msgstr "还原"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/constants.ts
+msgid "chat.stop.failed"
+msgstr "连接出现错误。请稍后重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/digital-worker-home/suggested-tasks-skeleton.tsx
+#: packages/shared/src/features/chat/components/digital-worker-home/suggested-tasks.tsx
+msgid "chat.suggestedTasks.heading"
+msgstr "推荐任务"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/utils/format-date-time.ts
+msgid "chat.timestamp.yesterday"
+msgstr "昨天 {time}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.bodyAllDevices"
+msgstr "此应用将从所有设备中移除。此操作无法撤销。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.bodyCurrentDevice"
+msgstr "此应用将从此设备中移除。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.titleAllDevices"
+msgstr "要从所有设备卸载此应用吗？"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.titleCurrentDevice"
+msgstr "要卸载此应用吗？"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.uninstall"
+msgstr "卸载"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.uninstalling"
+msgstr "正在卸载…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/webpage-previewer.tsx
+msgid "chat.webpagePreviewer.blocked"
+msgstr "此页面无法在此处显示。请在新标签页中打开以查看。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/webpage-previewer.tsx
+msgid "chat.webpagePreviewer.title"
+msgstr "页面预览"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "common.action.add"
+msgstr "添加"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/confirm-dialog/confirm-dialog.tsx
+#: packages/shared/src/features/digital-worker/components/add-dw-dialog.tsx
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+#: packages/shared/src/features/organization/components/manage-devices-dialog.tsx
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form-view.tsx
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "common.action.cancel"
+msgstr "取消"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+#: packages/shared/src/features/studio/components/studio-manage-editors-dialog.tsx
+msgid "common.action.close"
+msgstr "关闭"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+#: packages/shared/src/features/projects/components/asset-row.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+#: packages/shared/src/features/skill/components/dialogs/delete-skill-dialog.tsx
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "common.action.delete"
+msgstr "删除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-row.tsx
+msgid "common.action.download"
+msgstr "下载"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-row.tsx
+msgid "common.action.edit"
+msgstr "编辑"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "common.action.reload"
+msgstr "重新加载"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-removal-confirm.tsx
+msgid "common.action.remove"
+msgstr "删除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-boundary/inner-error-fallback.tsx
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "common.action.retry"
+msgstr "重试"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-dialog.tsx
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+#: packages/shared/src/features/organization/components/manage-devices-dialog.tsx
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form-view.tsx
+#: packages/shared/src/features/studio/components/studio-setup-header.tsx
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+msgid "common.action.save"
+msgstr "保存"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "common.action.saving"
+msgstr "保存中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+#: packages/shared/src/features/organization/components/organization-projects-view.tsx
+#: packages/shared/src/features/skill/components/setup/setup-role-field.tsx
+#: packages/shared/src/features/skill/components/setup/skill-body.tsx
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-organization-status.tsx
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "common.action.tryAgain"
+msgstr "重试"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+#: packages/shared/src/features/skill/components/dialogs/upload-button-content.tsx
+msgid "common.action.upload"
+msgstr "上传"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/add-to-project-button.tsx
+msgid "common.action.view"
+msgstr "查看"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-knowledge-section.tsx
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "common.action.viewAll"
+msgstr "查看全部"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-email-field.tsx
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "common.field.email"
+msgstr "邮箱"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/digital-worker-home/digital-worker-home-skeleton.tsx
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "common.status.loading"
+msgstr "加载中"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "common.status.saved"
+msgstr "已保存"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-dialog.tsx
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form-view.tsx
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+msgid "common.status.saving"
+msgstr "保存中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+#: packages/shared/src/features/skill/components/dialogs/upload-button-content.tsx
+msgid "common.status.uploading"
+msgstr "上传中"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/avatar-field.tsx
+msgid "digitalWorker.addDialog.avatarLabel"
+msgstr "头像"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.createProjectButton"
+msgstr "创建项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/name-field.tsx
+msgid "digitalWorker.addDialog.nameLabel"
+msgstr "名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/name-field.tsx
+msgid "digitalWorker.addDialog.namePlaceholder"
+msgstr "例如：Nova"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-dialog-header.tsx
+msgid "digitalWorker.addDialog.operatorNote"
+msgstr "你将成为该数字员工的人类操作员。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.projectLabel"
+msgstr "项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.projectPlaceholder"
+msgstr "选择一个项目…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.projectsEmpty"
+msgstr "暂无项目——请先创建第一个项目。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.projectsLoadError"
+msgstr "无法加载项目。请重开弹窗后重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.projectsNoun"
+msgstr "项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-dialog-header.tsx
+msgid "digitalWorker.addDialog.title"
+msgstr "添加数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-fields.tsx
+msgid "digitalWorker.addDialog.validation.nameRequired"
+msgstr "名称为必填项"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-fields.tsx
+msgid "digitalWorker.addDialog.validation.nameTooLong"
+msgstr "名称过长"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-fields.tsx
+msgid "digitalWorker.addDialog.validation.projectRequired"
+msgstr "请选择项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-fields.tsx
+msgid "digitalWorker.addDialog.validation.workerRequired"
+msgstr "请选择数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-field.tsx
+msgid "digitalWorker.addDialog.workerLabel"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-field.tsx
+msgid "digitalWorker.addDialog.workerPlaceholder"
+msgstr "选择一个数字员工…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-field.tsx
+msgid "digitalWorker.addDialog.workersEmpty"
+msgstr "暂无可用数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-field.tsx
+msgid "digitalWorker.addDialog.workersLoadError"
+msgstr "无法加载数字员工。请重开弹窗后重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-field.tsx
+msgid "digitalWorker.addDialog.workersNoun"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: i + 1
+#: packages/shared/src/features/digital-worker/components/dw-avatar-picker.tsx
+msgid "digitalWorker.avatarPicker.avatarAria"
+msgstr "头像 {index}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-avatar-picker.tsx
+msgid "digitalWorker.avatarPicker.changeAvatarAria"
+msgstr "更换头像"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-avatar-picker.tsx
+msgid "digitalWorker.avatarPicker.groupAria"
+msgstr "头像"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-avatar-picker.tsx
+msgid "digitalWorker.avatarPicker.hint"
+msgstr "点击头像或随机按钮生成另一个。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-avatar-picker.tsx
+msgid "digitalWorker.avatarPicker.shuffleAvatarAria"
+msgstr "随机头像"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/empty-state.tsx
+msgid "digitalWorker.emptyState.addButton"
+msgstr "添加数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/empty-state.tsx
+msgid "digitalWorker.emptyState.createProjectButton"
+msgstr "创建项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/empty-state.tsx
+msgid "digitalWorker.emptyState.hasProjectBody"
+msgstr "添加你的第一个数字员工以开始使用。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/empty-state.tsx
+msgid "digitalWorker.emptyState.heading"
+msgstr "暂无数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/empty-state.tsx
+msgid "digitalWorker.emptyState.noProjectBody"
+msgstr "你还没有项目。请先创建项目，再添加数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers-grid.tsx
+msgid "digitalWorker.grid.loadingMore"
+msgstr "加载更多中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/inactive-toggle.tsx
+msgid "digitalWorker.inactiveToggle.hide"
+msgstr "隐藏未激活数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/inactive-toggle.tsx
+msgid "digitalWorker.inactiveToggle.show"
+msgstr "显示未激活数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers.tsx
+msgid "digitalWorker.page.actions"
+msgstr "数字员工的操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers.tsx
+msgid "digitalWorker.page.addMenuItem"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers.tsx
+msgid "digitalWorker.page.scheduledTaskButton"
+msgstr "定期任务"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers.tsx
+msgid "digitalWorker.page.subtitle"
+msgstr "协作、训练并监督你的数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers.tsx
+msgid "digitalWorker.page.title"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.aborted"
+msgstr "已中止"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.active"
+msgstr "活跃"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.inactive"
+msgstr "未激活"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.onboarding"
+msgstr "入职中"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.unknown"
+msgstr "未知"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.working"
+msgstr "工作中"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers-grid-skeleton.tsx
+msgid "dw.gridSkeleton.loading"
+msgstr "加载数字员工中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-boundary/inner-error-fallback.tsx
+msgid "errorBoundary.inner.body"
+msgstr "渲染此部分时发生意外错误。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-boundary/inner-error-fallback.tsx
+msgid "errorBoundary.inner.title"
+msgstr "此页面出了点问题。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.network.body"
+msgstr "请检查网络连接后重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.network.heading"
+msgstr "无法连接服务器"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.schema.body"
+msgstr "我们收到了异常数据。请尝试刷新页面。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.schema.heading"
+msgstr "响应异常"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.server.body"
+msgstr "我们这边出了点问题。请稍后重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.server.heading"
+msgstr "出了点问题"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.unknown.body"
+msgstr "此页面出了点问题。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.unknown.heading"
+msgstr "出了点问题"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/file-preview/components/viewers/office-viewer.tsx
+msgid "filePreview.office.title"
+msgstr "Office 预览"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/file-preview/components/unpreviewable-state.tsx
+msgid "filePreview.unpreviewable.body"
+msgstr "请下载文件以查看内容。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/file-preview/components/unpreviewable-state.tsx
+msgid "filePreview.unpreviewable.heading"
+msgstr "此文件类型不支持预览。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-page.tsx
+msgid "login.sessionExpired"
+msgstr "你的会话已过期。请重新登录。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/markdown/code-box.tsx
+msgid "markdown.codeBox.copied"
+msgstr "已复制到剪贴板"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/markdown/code-box.tsx
+msgid "markdown.codeBox.copyCode"
+msgstr "复制代码"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/markdown/code-box.tsx
+msgid "markdown.codeBox.copyFailed"
+msgstr "无法复制到剪贴板"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.deliverableShared.body"
+msgstr "已将 {fileName} 分享到 {projectName}。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.dwDismissed.body"
+msgstr "你的数字员工 {dwName} 已被解除。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.dwDismissed.title"
+msgstr "数字员工已解除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.dwReassigned.title"
+msgstr "数字员工已重新分配"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.dwReassigned.toOther"
+msgstr "管理员已将 {dwName} 分配给其他操作员。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.dwReassigned.toYou"
+msgstr "管理员已将 {dwName} 分配给你。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notifications-empty.tsx
+msgid "notifications.empty.all"
+msgstr "暂无通知"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notifications-empty.tsx
+msgid "notifications.empty.heading"
+msgstr "你已看完全部通知"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notifications-empty.tsx
+msgid "notifications.empty.unread"
+msgstr "没有未读通知"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.fallback.aDw"
+msgstr "一个数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.fallback.aFile"
+msgstr "一个文件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.fallback.aProject"
+msgstr "一个项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.fallback.someone"
+msgstr "某人"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.fallback.yourDw"
+msgstr "你的数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.markAllRead"
+msgstr "全部标为已读"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.memberInvitation.body"
+msgstr "你已被邀请加入 {projectName}。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.memberInvitation.title"
+msgstr "项目邀请"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.memberRemoved.body"
+msgstr "你已被移出 {projectName}。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.memberRemoved.title"
+msgstr "已移出项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.navRow.label"
+msgstr "通知"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.neutral.by"
+msgstr "来自 {senderUsername}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.panel.title"
+msgstr "通知"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.role.admin"
+msgstr "管理员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.role.member"
+msgstr "成员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.roleChanged.body"
+msgstr "你在 {projectName} 中的角色已变更为 {roleLabel}。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.roleChanged.title"
+msgstr "角色已变更"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.completedBody"
+msgstr "“{taskTitle}”已成功完成。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.completedTitle"
+msgstr "定期任务已完成"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.failedBody"
+msgstr "“{taskTitle}”执行失败。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.failedTitle"
+msgstr "定期任务执行失败"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.fallbackTitle"
+msgstr "定期任务"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.finishedBody"
+msgstr "“{taskTitle}”已结束。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.finishedTitle"
+msgstr "定期任务已结束"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.tabs.all"
+msgstr "全部"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.tabs.unread"
+msgstr "未读（{unreadCount}）"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.days"
+msgstr "{day} 天前"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.hours"
+msgstr "{hr} 小时前"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.justNow"
+msgstr "刚刚"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.minutes"
+msgstr "{min} 分钟前"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.months"
+msgstr "{month} 个月前"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.weeks"
+msgstr "{week} 周前"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.years"
+msgstr "{year} 年前"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.trigger.label"
+msgstr "通知"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.trigger.unread"
+msgstr "通知，{unreadCount} 条未读"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-card.tsx
+msgid "notifications.unread"
+msgstr "未读"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.available"
+msgstr "{available, plural, one {# 台可用} other {# 台可用}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.decrease"
+msgstr "减少"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.increase"
+msgstr "增加"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.inUseCount"
+msgstr "<0><1><2/></1><3>{value}</3><4><5/></4></0> <6>使用中</6>"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/manage-devices-dialog.tsx
+msgid "organization.devices.manage"
+msgstr "管理设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.mobile"
+msgstr "移动设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/manage-devices-dialog.tsx
+msgid "organization.devices.partialFailure"
+msgstr "部分设备可能已发生变更。列表已刷新。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/manage-devices-dialog.tsx
+msgid "organization.devices.saved"
+msgstr "设备分配已更新。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.windows"
+msgstr "Windows"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.failed"
+msgstr "无法重命名此组织。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.label"
+msgstr "组织名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-page-content.tsx
+msgid "organization.editName.open"
+msgstr "重命名组织"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.placeholder"
+msgstr "请输入组织名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.success"
+msgstr "组织名称已更新。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.title"
+msgstr "重命名组织"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.validation.required"
+msgstr "请输入组织名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-unavailable.tsx
+msgid "organization.empty.title"
+msgstr "暂无可用组织"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-email-field.tsx
+msgid "organization.invite.emailPlaceholder"
+msgstr "name@company.com"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.failed"
+msgstr "无法邀请此用户。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-role-field.tsx
+msgid "organization.invite.role.admin"
+msgstr "可管理组织"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-role-field.tsx
+msgid "organization.invite.role.developer"
+msgstr "可创建新的数字员工角色"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-role-field.tsx
+msgid "organization.invite.role.operator"
+msgstr "可以与数字员工协作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-role-field.tsx
+msgid "organization.invite.roleLabel"
+msgstr "角色"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.send"
+msgstr "邀请"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.success"
+msgstr "邀请已发送。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.title"
+msgstr "邀请加入 {orgName}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.userNotFound"
+msgstr "此用户尚未注册。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.validation.emailInvalid"
+msgstr "请输入有效的邮箱"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.validation.emailRequired"
+msgstr "请输入邮箱"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.actions"
+msgstr "成员操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-role-cell.tsx
+msgid "organization.members.changeRole"
+msgstr "更改角色"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.deleteBody"
+msgstr "将“{display}”从此组织中删除。此操作不可撤销。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.deleteTitle"
+msgstr "删除成员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.deleting"
+msgstr "删除中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.empty.body"
+msgstr "邀请你的第一位团队成员，开始协作。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.empty.heading"
+msgstr "暂无成员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.header.account"
+msgstr "姓名"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.header.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.header.joined"
+msgstr "加入时间"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.header.role"
+msgstr "角色"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.invite"
+msgstr "邀请"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-page-skeleton.tsx
+msgid "organization.members.loading"
+msgstr "正在加载成员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.removed"
+msgstr "成员已移除。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.removeDenied"
+msgstr "仅限所有者和管理员可用。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.removeFailed"
+msgstr "无法移除此成员。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-row.tsx
+msgid "organization.members.roleChangeFailed"
+msgstr "无法更改此成员的角色。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.selfRemoveDenied"
+msgstr "你无法将自己从组织中移除。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.title"
+msgstr "成员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-management-shell.tsx
+msgid "organization.navigation.ariaLabel"
+msgstr "组织管理"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-management-shell.tsx
+msgid "organization.navigation.back"
+msgstr "返回"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-management-shell.tsx
+msgid "organization.navigation.organization"
+msgstr "组织"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-management-shell.tsx
+msgid "organization.navigation.projects"
+msgstr "项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-management-shell.tsx
+msgid "organization.navigation.title"
+msgstr "管理组织"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-project-row.tsx
+msgid "organization.projects.actions"
+msgstr "项目操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.empty.body"
+msgstr "创建你的第一个项目，以组织团队工作。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.empty.heading"
+msgstr "暂无项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.header.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.header.created"
+msgstr "创建时间"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.header.devices"
+msgstr "设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.header.name"
+msgstr "项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.header.owner"
+msgstr "所有者"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-page-skeleton.tsx
+msgid "organization.projects.loading"
+msgstr "正在加载项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-view.tsx
+msgid "organization.projects.loadingMore"
+msgstr "正在加载更多项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-view.tsx
+msgid "organization.projects.loadMoreFailed"
+msgstr "无法加载更多项目。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-project-row.tsx
+msgid "organization.projects.manageDevices"
+msgstr "管理设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-project-row.tsx
+msgid "organization.projects.manageDevicesOrgAdminOnly"
+msgstr "仅对组织所有者和管理员可用。"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: counts.mobile
+#: packages/shared/src/features/organization/components/org-project-row.tsx
+msgid "organization.projects.mobileCount"
+msgstr "{0, plural, one {# 台移动设备} other {# 台移动设备}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-stat-count.tsx
+msgid "organization.projects.stat.availableCount"
+msgstr "<0>{count}</0> <1>可用</1>"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-project-stats.tsx
+msgid "organization.projects.stat.mobiles"
+msgstr "移动设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-project-stats.tsx
+msgid "organization.projects.stat.projects"
+msgstr "项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-stat-count.tsx
+msgid "organization.projects.stat.totalCount"
+msgstr "<1>总计</1> <0>{count}</0>"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-project-stats.tsx
+msgid "organization.projects.stat.windows"
+msgstr "Windows"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-view.tsx
+msgid "organization.projects.title"
+msgstr "项目"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: counts.windows
+#: packages/shared/src/features/organization/components/org-project-row.tsx
+msgid "organization.projects.windowsCount"
+msgstr "{0, plural, one {# 台 Windows 设备} other {# 台 Windows 设备}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/hooks/use-organization-role-labels.ts
+msgid "organization.role.admin"
+msgstr "管理员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/hooks/use-organization-role-labels.ts
+msgid "organization.role.developer"
+msgstr "开发者"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/hooks/use-organization-role-labels.ts
+msgid "organization.role.operator"
+msgstr "操作员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-row.tsx
+msgid "organization.role.owner"
+msgstr "所有者"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/_authed/organization.members.tsx
+#: packages/app/src/routes/_authed/organization.projects.tsx
+msgid "organization.route.title"
+msgstr "管理组织 · SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.action.addFiles"
+msgstr "添加文件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.action.import"
+msgstr "从链接导入"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.action.removeFile"
+msgstr "移除{filename}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.action.removeLink"
+msgstr "移除{url}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.error.fileTooLarge"
+msgstr "“{0}”超过 10MB。请换用更小的文件。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.error.tooManyFiles"
+msgstr "每次最多可添加 5 个文件。请先移除一个再添加。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.error.unsupportedType"
+msgstr "“{0}”的类型不受支持。请使用 pdf、docx 或 xlsx。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.importPlaceholder"
+msgstr "粘贴链接以导入"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.title"
+msgstr "添加知识"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.toast.failed"
+msgstr "部分项目未能添加。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.toast.invalidLink"
+msgstr "请输入有效的 http(s) 链接。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.toast.success"
+msgstr "知识已上传——正在提取…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.uploadHint1"
+msgstr "支持 pdf、docx、xlsx · 最大 10MB · 最多 5 个文件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.uploadHint2"
+msgstr "文件必须可被公开访问。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.uploadLabel"
+msgstr "上传上下文"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-tag-area.tsx
+msgid "projects.addKnowledgeTagArea.knowledgeTagLabel"
+msgstr "知识标签"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: tag.name
+#: packages/shared/src/features/projects/components/add-knowledge-tag-area.tsx
+msgid "projects.addKnowledgeTagArea.removeTag"
+msgstr "移除{0}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-tag-area-skeleton.tsx
+msgid "projects.addKnowledgeTagAreaSkeleton.loadingKnowledgeTags"
+msgstr "正在加载知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.actionsAriaLabel"
+msgstr "资产操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.delete"
+msgstr "删除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.deleteBody"
+msgstr "在该项目中永久删除此交付物。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.deletedSuccess"
+msgstr "已删除“{name}”。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.deleteError"
+msgstr "无法删除该项。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.deleteTitle"
+msgstr "删除交付物"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.download"
+msgstr "下载"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.unavailableBody"
+msgstr "该交付物没有可预览或下载的文件。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.unavailableHeading"
+msgstr "该文件不可用。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-layout.tsx
+msgid "projects.assetDetailLayout.detail"
+msgstr "详情"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-skeleton.tsx
+msgid "projects.assetDetailSkeleton.loading"
+msgstr "正在加载资产"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-row.tsx
+msgid "projects.assetRow.actions"
+msgstr "资产操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-row.tsx
+msgid "projects.assetRow.deleteDenied"
+msgstr "你只能删除自己创建的内容。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/hooks/use-asset-row-actions.ts
+msgid "projects.assetRowActions.deleteError"
+msgstr "无法删除。请重试。"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: deletingAsset.name
+#: packages/shared/src/features/projects/hooks/use-asset-row-actions.ts
+msgid "projects.assetRowActions.deleteSuccess"
+msgstr "已删除“{0}”。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.body.all"
+msgstr "上传知识，或等待你的数字员工产出交付物。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.body.deliverable"
+msgstr "当你的数字员工发布交付物后，它们将显示在这里。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.body.experience"
+msgstr "当你的数字员工从任务中学习后，经验将显示在这里。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.body.knowledge"
+msgstr "添加知识，为该项目提供共享上下文。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.heading"
+msgstr "暂无资产"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.searchBody"
+msgstr "没有与“{0}”匹配的资产。请尝试其他搜索。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-body.tsx
+msgid "projects.assetsTableRows.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-body.tsx
+msgid "projects.assetsTableRows.assetName"
+msgstr "资产名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-body.tsx
+msgid "projects.assetsTableRows.createdTime"
+msgstr "创建时间"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-body.tsx
+msgid "projects.assetsTableRows.creator"
+msgstr "创建者"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-hint-row.tsx
+msgid "projects.assetsTableRows.dontShowAgain"
+msgstr "不再显示"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-body.tsx
+msgid "projects.assetsTableRows.type"
+msgstr "类型"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.assetName"
+msgstr "资产名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.createdTime"
+msgstr "创建时间"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.creator"
+msgstr "创建者"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.loadingAssets"
+msgstr "正在加载资产"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.type"
+msgstr "类型"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.addKnowledge"
+msgstr "添加知识"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.search.ariaLabel"
+msgstr "搜索资产"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.search.placeholder"
+msgstr "搜索资产"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.tabs.all"
+msgstr "全部"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.tabs.deliverable"
+msgstr "交付物"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.tabs.experience"
+msgstr "经验"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.tabs.knowledge"
+msgstr "知识"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-type-cell.tsx
+msgid "projects.assetType.deliverable"
+msgstr "交付物"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-type-cell.tsx
+msgid "projects.assetType.experience"
+msgstr "经验"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-type-cell.tsx
+msgid "projects.assetType.knowledge"
+msgstr "知识"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/collapsible-panel-shell.tsx
+msgid "projects.collapsiblePanelShell.collapsePanel"
+msgstr "折叠面板"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.change"
+msgstr "更换封面"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.choose"
+msgstr "选择项目封面"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.fileInput"
+msgstr "项目封面文件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.label"
+msgstr "项目封面"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.upload"
+msgstr "上传封面"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.uploading"
+msgstr "上传中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-description-field.tsx
+msgid "projects.createDialog.descriptionLabel"
+msgstr "描述"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-description-field.tsx
+msgid "projects.createDialog.descriptionPlaceholder"
+msgstr "这个项目要实现什么目标？面向哪些人？"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+msgid "projects.createDialog.error"
+msgstr "无法创建项目。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-name-field.tsx
+msgid "projects.createDialog.nameLabel"
+msgstr "名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-name-field.tsx
+msgid "projects.createDialog.namePlaceholder"
+msgstr "例如：Aurora launch"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+msgid "projects.createDialog.success"
+msgstr "项目已创建。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+msgid "projects.createDialog.title"
+msgstr "创建项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-fields.tsx
+msgid "projects.createDialog.validation.descriptionTooLong"
+msgstr "描述不能超过 {max} 个字符"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-fields.tsx
+msgid "projects.createDialog.validation.nameRequired"
+msgstr "请输入名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-fields.tsx
+msgid "projects.createDialog.validation.nameTooLong"
+msgstr "名称过长"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/creator-cell.tsx
+msgid "projects.creatorCell.digitalWorker"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.available"
+msgstr "可用"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.deviceType.aio"
+msgstr "AIO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.deviceType.android"
+msgstr "Android"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.deviceType.physical"
+msgstr "实体设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.deviceType.windows"
+msgstr "Windows"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.empty"
+msgstr "暂无设备。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.titleDevices"
+msgstr "设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.viewAllDevicesAria"
+msgstr "查看全部设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-team-section.tsx
+msgid "projects.drawerTeam.invite"
+msgstr "邀请"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-team-section.tsx
+msgid "projects.drawerTeam.inviteHuman"
+msgstr "人类操作员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-team-section.tsx
+msgid "projects.drawerTeam.inviteWorker"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-team-section.tsx
+msgid "projects.drawerTeam.title"
+msgstr "团队"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/team-preview.tsx
+msgid "projects.drawerTeam.workerCount"
+msgstr "{total, plural, other {# 名成员}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.cancel"
+msgstr "取消"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.knowledgeName"
+msgstr "知识名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.nameRequired"
+msgstr "名称为必填项"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.save"
+msgstr "保存"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.saveError"
+msgstr "无法保存你的更改。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.saveSuccess"
+msgstr "你的更改已保存。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.saving"
+msgstr "保存中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.title"
+msgstr "编辑"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/empty-state.tsx
+msgid "projects.emptyState.body"
+msgstr "你尚未被添加到任何项目。请让项目所有者邀请你。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/empty-state.tsx
+msgid "projects.emptyState.createButton"
+msgstr "创建项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/empty-state.tsx
+msgid "projects.emptyState.heading"
+msgstr "暂无项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/hooks/use-extraction-toasts.ts
+msgid "projects.extraction.complete"
+msgstr "提取完成——已添加 {ingested} 项。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/hooks/use-extraction-toasts.ts
+msgid "projects.extraction.failed"
+msgstr "{failed, plural, one {# 个条目提取失败。} other {# 个条目提取失败。}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/hooks/use-extraction-toasts.ts
+msgid "projects.extraction.partial"
+msgstr "提取完成——已添加 {ingested} 项，{failed} 项失败。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/projects-grid.tsx
+msgid "projects.grid.loadingMore"
+msgstr "加载更多"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-hint-row.tsx
+msgid "projects.hints.deliverable.description"
+msgstr "由数字员工产出的成果。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-hint-row.tsx
+msgid "projects.hints.deliverable.label"
+msgstr "交付物："
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-hint-row.tsx
+msgid "projects.hints.experience.description"
+msgstr "通过执行积累的可复用模式。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-hint-row.tsx
+msgid "projects.hints.experience.label"
+msgstr "经验："
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.addTitle"
+msgstr "添加知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.editTitle"
+msgstr "编辑知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.name"
+msgstr "名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.namePlaceholder"
+msgstr "为此知识标签命名"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.saveError"
+msgstr "无法保存你的更改。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.saveSuccess"
+msgstr "知识标签已保存。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.validation.nameRequired"
+msgstr "请输入名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.validation.nameTooLong"
+msgstr "名称过长"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.validation.whenToUseTooLong"
+msgstr "使用时机说明过长"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.whenToUse"
+msgstr "使用时机"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.whenToUsePlaceholder"
+msgstr "说明数字员工应在何时使用此标签。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.actions.ariaLabel"
+msgstr "知识标签操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.actions.delete"
+msgstr "删除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.actions.edit"
+msgstr "编辑"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.addButton"
+msgstr "添加知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.confirmDelete.body"
+msgstr "带有该标签的资产不会被删除，但将失去此标签。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.confirmDelete.title"
+msgstr "删除此知识标签？"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.delete.error"
+msgstr "无法删除此知识标签。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.delete.success"
+msgstr "已删除知识标签。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-empty-state.tsx
+msgid "projects.knowledgeTagsContent.emptyState.body"
+msgstr "创建知识标签以整理你的资产。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-empty-state.tsx
+msgid "projects.knowledgeTagsContent.emptyState.heading"
+msgstr "暂无知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.header.current"
+msgstr "知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.tableHeader.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.tableHeader.description"
+msgstr "描述"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.tableHeader.knowledgeTag"
+msgstr "知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.title"
+msgstr "知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-skeleton.tsx
+msgid "projects.knowledgeTagsSkeleton.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-skeleton.tsx
+msgid "projects.knowledgeTagsSkeleton.description"
+msgstr "描述"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-skeleton.tsx
+msgid "projects.knowledgeTagsSkeleton.loading"
+msgstr "正在加载知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-skeleton.tsx
+msgid "projects.knowledgeTagsSkeleton.tag"
+msgstr "知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/projects.tsx
+msgid "projects.page.createButton"
+msgstr "创建项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/projects.tsx
+msgid "projects.page.subtitle"
+msgstr "跟踪项目表现与知识。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/projects.tsx
+msgid "projects.page.title"
+msgstr "项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-type-cell.tsx
+msgid "projects.pollIndicator.failedText"
+msgstr "提取失败"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-type-cell.tsx
+msgid "projects.pollIndicator.failedTip"
+msgstr "请确认该文件的权限已对外公开，然后重新上传。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-actions-menu.tsx
+msgid "projects.projectDrawer.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-knowledge-section.tsx
+msgid "projects.projectDrawer.addFirstTag"
+msgstr "添加你的第一个标签。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-actions-menu.tsx
+msgid "projects.projectDrawer.deleteProject"
+msgstr "删除项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-edit-button.tsx
+msgid "projects.projectDrawer.editProject"
+msgstr "编辑项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-knowledge-section.tsx
+msgid "projects.projectDrawer.knowledgeTags"
+msgstr "知识标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/project-drawer.tsx
+msgid "projects.projectDrawer.projectDetails"
+msgstr "项目详情"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/project-page-header.tsx
+msgid "projects.projectPageHeader.backButton"
+msgstr "返回"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/projects-grid-skeleton.tsx
+msgid "projects.projectsGridSkeleton.loading"
+msgstr "正在加载项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/project-workspace-content.tsx
+msgid "projects.projectWorkspaceContent.allProjectsLabel"
+msgstr "所有项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/project-workspace-content.tsx
+msgid "projects.projectWorkspaceContent.showPanelAria"
+msgstr "显示面板"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/project-workspace-skeleton.tsx
+msgid "projects.projectWorkspaceSkeleton.loading"
+msgstr "正在加载项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.addTag"
+msgstr "添加标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.createError"
+msgstr "无法创建标签。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.createNew"
+msgstr "创建新标签"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.empty"
+msgstr "暂无标签。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.nameLabel"
+msgstr "标签名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.namePlaceholder"
+msgstr "输入标签名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/login-form.ts
+msgid "rbacLogin.email.invalid"
+msgstr "请输入有效的邮箱"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/login-form.ts
+msgid "rbacLogin.email.max"
+msgstr "邮箱不能超过 64 个字符"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/login-form.ts
+msgid "rbacLogin.email.min"
+msgstr "邮箱至少需要 3 个字符"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/email-field.tsx
+msgid "rbacLogin.emailField.label"
+msgstr "邮箱地址*"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/email-field.tsx
+msgid "rbacLogin.emailField.placeholderYourEmail"
+msgstr "输入你的邮箱地址"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.continue"
+msgstr "继续"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/hooks/use-login-form.ts
+msgid "rbacLogin.loginForm.credentialsError"
+msgstr "邮箱或密码不正确。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.developerSubtitle"
+msgstr "构建并管理数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.developerSwitchTo"
+msgstr "前往 SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.developerTitle"
+msgstr "欢迎使用 SICO.Dev"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/hooks/use-login-form.ts
+msgid "rbacLogin.loginForm.networkError"
+msgstr "无法连接到服务器。请检查你的网络连接后重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.noAccount"
+msgstr "还没有账号？"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.operatorSubtitle"
+msgstr "你的数字员工平台。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.operatorSwitchTo"
+msgstr "前往 SICO.Dev"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.operatorTitle"
+msgstr "登录"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.signUp"
+msgstr "注册"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/login-form.ts
+msgid "rbacLogin.password.max"
+msgstr "密码不能超过 128 个字符"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/login-form.ts
+msgid "rbacLogin.password.min"
+msgstr "密码至少需要 6 个字符"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/password-field.tsx
+msgid "rbacLogin.passwordField.capsLock"
+msgstr "大写锁定已开启"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/password-field.tsx
+msgid "rbacLogin.passwordField.hide"
+msgstr "隐藏密码"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/password-field.tsx
+msgid "rbacLogin.passwordField.label"
+msgstr "密码*"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/password-field.tsx
+msgid "rbacLogin.passwordField.placeholder"
+msgstr "请输入密码"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/password-field.tsx
+msgid "rbacLogin.passwordField.show"
+msgstr "显示密码"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.email.invalid"
+msgstr "请输入有效的邮箱"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.email.max"
+msgstr "邮箱不能超过 64 个字符"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.email.required"
+msgstr "请输入你的邮箱"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.password.max"
+msgstr "密码不能超过 128 个字符"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.password.min"
+msgstr "密码至少需要 8 个字符"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.password.required"
+msgstr "请创建密码"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.createAccount"
+msgstr "创建账号"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.developerSubtitle"
+msgstr "构建并管理数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.developerSwitchTo"
+msgstr "前往 SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.developerTitle"
+msgstr "欢迎使用 SICO.Dev"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.haveAccount"
+msgstr "已经有账号了？"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/hooks/use-register-form.ts
+msgid "rbacLogin.registerForm.networkError"
+msgstr "无法连接到服务器。请检查你的网络连接后重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.operatorSubtitle"
+msgstr "你的数字员工平台。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.operatorSwitchTo"
+msgstr "前往 SICO.Dev"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.operatorTitle"
+msgstr "注册"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.passwordPlaceholder"
+msgstr "创建密码"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.signIn"
+msgstr "登录"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-page.tsx
+msgid "rbacLogin.registerPage.accountCreated"
+msgstr "账号已创建"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.error.couldNotInstall"
+msgstr "无法安装 {name}。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.error.couldNotInstallOnDevice"
+msgstr "{name} 无法安装到该设备。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.error.couldNotInstallOnDevices"
+msgstr "{count, plural, other {无法在 # 台设备上安装 {name}。}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.error.uploadFailed"
+msgstr "无法上传 {name}。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.status.installing"
+msgstr "正在安装 {name}…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.success.installed"
+msgstr "{name} 已安装。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/components/sandbox-list.tsx
+msgid "sandbox.list.empty"
+msgstr "暂无可用设备。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.uninstall.error.failed"
+msgstr "卸载失败。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.uninstall.scope.allDevices"
+msgstr " 从所有设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.uninstall.status.uninstalling"
+msgstr "正在卸载 {name}{scope}…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.uninstall.success.complete"
+msgstr "{name} 已卸载{scope}。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.uninstall.success.partial"
+msgstr "{name} 已卸载，以下设备除外：{failedDevices}。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.action.assign"
+msgstr "分配"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.action.assignDenied"
+msgstr "仅所有者和管理员可用。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.action.reassign"
+msgstr "重新分配"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.assign"
+msgstr "分配"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.assigning"
+msgstr "正在分配…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.error.assign"
+msgstr "无法分配该设备。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.error.loadWorkers"
+msgstr "无法加载数字员工。请重新打开此对话框。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/dw-field.tsx
+msgid "sandboxDevices.assignDialog.placeholder.empty"
+msgstr "暂无可用的数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/dw-field.tsx
+msgid "sandboxDevices.assignDialog.placeholder.loading"
+msgstr "正在加载数字员工…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/dw-field.tsx
+msgid "sandboxDevices.assignDialog.placeholder.select"
+msgstr "选择数字员工…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.success"
+msgstr "设备已分配。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.title"
+msgstr "分配设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-fields.tsx
+msgid "sandboxDevices.assignDialog.validation.workerRequired"
+msgstr "请选择数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/dw-field.tsx
+msgid "sandboxDevices.assignDialog.workerLabel"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-body.tsx
+msgid "sandboxDevices.empty.body"
+msgstr "此项目没有设备。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-body.tsx
+msgid "sandboxDevices.empty.filteredBody"
+msgstr "没有符合当前筛选条件的设备。请尝试其他标签页或搜索。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-body.tsx
+msgid "sandboxDevices.empty.filteredTitle"
+msgstr "无匹配设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-body.tsx
+msgid "sandboxDevices.empty.title"
+msgstr "暂无设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-content.tsx
+msgid "sandboxDevices.filter.all"
+msgstr "全部"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-content.tsx
+msgid "sandboxDevices.filter.assigned"
+msgstr "已分配"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-content.tsx
+msgid "sandboxDevices.filter.available"
+msgstr "可用"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-skeleton.tsx
+msgid "sandboxDevices.loading"
+msgstr "正在加载设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-content.tsx
+msgid "sandboxDevices.page.title"
+msgstr "设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-content.tsx
+msgid "sandboxDevices.search.label"
+msgstr "搜索设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.status.assigned"
+msgstr "已分配"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.status.available"
+msgstr "可用"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/hooks/use-device-header-copy.ts
+msgid "sandboxDevices.table.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/hooks/use-device-header-copy.ts
+msgid "sandboxDevices.table.assignedWorker"
+msgstr "已分配的数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/hooks/use-device-header-copy.ts
+msgid "sandboxDevices.table.device"
+msgstr "设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/hooks/use-device-header-copy.ts
+msgid "sandboxDevices.table.status"
+msgstr "状态"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/hooks/use-device-header-copy.ts
+msgid "sandboxDevices.table.type"
+msgstr "类型"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.type.emulator"
+msgstr "模拟器"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.type.physical"
+msgstr "实体设备"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/hooks/use-scheduled-task-attachments.ts
+msgid "scheduledTask.attachments.fileTooLarge"
+msgstr "该文件超过 16 MB。请换用更小的文件。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/hooks/use-scheduled-task-attachments.ts
+msgid "scheduledTask.attachments.uploadFailed"
+msgstr "无法上传“{fileName}”。请重新添加。"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: task.name
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-card.tsx
+msgid "scheduledTask.card.disableAriaLabel"
+msgstr "禁用 {0}"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: task.name
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-card.tsx
+msgid "scheduledTask.card.editAriaLabel"
+msgstr "编辑 {0}"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: task.name
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-card.tsx
+msgid "scheduledTask.card.enableAriaLabel"
+msgstr "启用 {0}"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: task.agentInstanceId
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-worker-detail-card.tsx
+msgid "scheduledTask.card.workerFallback"
+msgstr "数字员工 {0}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+msgid "scheduledTask.dialog.actions"
+msgstr "定期任务的操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.delete.body"
+msgstr "此操作无法撤销。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.delete.confirm"
+msgstr "删除定期任务"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.delete.pending"
+msgstr "正在删除…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.delete.title"
+msgstr "删除定期任务？"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+msgid "scheduledTask.dialog.deleteFailed"
+msgstr "无法删除定期任务。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+msgid "scheduledTask.dialog.deleteSuccess"
+msgstr "定期任务已删除。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.discard.body"
+msgstr "未保存的更改将丢失。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.discard.confirm"
+msgstr "放弃更改"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.discard.title"
+msgstr "放弃更改？"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+msgid "scheduledTask.dialog.title"
+msgstr "定期任务"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-email-on-complete-field.tsx
+msgid "scheduledTask.form.advancedSettings.heading"
+msgstr "高级设置"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form.tsx
+msgid "scheduledTask.form.createFailed"
+msgstr "无法创建定期任务。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form.tsx
+msgid "scheduledTask.form.createSuccess"
+msgstr "定期任务已创建。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.customSchedule.label"
+msgstr "自定义计划"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-email-on-complete-field.tsx
+msgid "scheduledTask.form.emailOnComplete.label"
+msgstr "完成后通过邮箱通知我"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.frequency.custom"
+msgstr "自定义"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.frequency.daily"
+msgstr "每天"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.frequency.label"
+msgstr "频率"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.frequency.weekly"
+msgstr "每周"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form-view.tsx
+msgid "scheduledTask.form.instruction.label"
+msgstr "说明"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-name-field.tsx
+msgid "scheduledTask.form.name.label"
+msgstr "任务名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-name-field.tsx
+msgid "scheduledTask.form.name.placeholder"
+msgstr "为此任务命名"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.scheduleConfiguration.label"
+msgstr "调度配置"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.time.label"
+msgstr "时间"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form.tsx
+msgid "scheduledTask.form.updateFailed"
+msgstr "无法更新定时任务。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form.tsx
+msgid "scheduledTask.form.updateSuccess"
+msgstr "定时任务已更新。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.customSchedule.required"
+msgstr "原始自定义计划不可用。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.message.required"
+msgstr "请输入任务说明。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.name.required"
+msgstr "请输入任务名称。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.time.invalid"
+msgstr "请选择有效的时间。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.timezone.invalid"
+msgstr "请选择有效的时区。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.timezone.required"
+msgstr "请选择时区。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.weekday.required"
+msgstr "请选择星期几。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.worker.required"
+msgstr "请选择数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.0"
+msgstr "星期日"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.1"
+msgstr "星期一"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.2"
+msgstr "星期二"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.3"
+msgstr "星期三"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.4"
+msgstr "星期四"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.5"
+msgstr "星期五"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.6"
+msgstr "星期六"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.label"
+msgstr "星期几"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-digital-worker-select.tsx
+msgid "scheduledTask.form.worker.label"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-digital-worker-select.tsx
+msgid "scheduledTask.form.worker.loadError"
+msgstr "无法加载数字员工。请重试。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-digital-worker-field.tsx
+msgid "scheduledTask.form.worker.loading"
+msgstr "正在加载数字员工…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-digital-worker-select.tsx
+msgid "scheduledTask.form.worker.loadMore"
+msgstr "加载更多数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-digital-worker-field.tsx
+msgid "scheduledTask.form.worker.placeholder"
+msgstr "选择数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-instruction-field.tsx
+msgid "scheduledTask.instruction.inputPlaceholder"
+msgstr "描述此任务应执行的操作…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+msgid "scheduledTask.list.create"
+msgstr "新建"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+msgid "scheduledTask.list.emptyDescription"
+msgstr "通过安排你的第一个任务来自动化重复性工作，例如摘要、站会、评审。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+msgid "scheduledTask.list.emptyTitle"
+msgstr "尚无任务"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-view.tsx
+msgid "scheduledTask.list.initialError"
+msgstr "无法加载计划任务。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+msgid "scheduledTask.list.nextPageError"
+msgstr "无法加载更多计划任务。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-view.tsx
+msgid "scheduledTask.list.retry"
+msgstr "重试"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+msgid "scheduledTask.list.retryMore"
+msgstr "重试加载更多"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/hooks/use-scheduled-task-mutations.ts
+msgid "scheduledTask.mutations.toggleFailed"
+msgstr "无法更新计划任务。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.schedule.custom"
+msgstr "自定义计划"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.schedule.daily"
+msgstr "每天 · {time}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.schedule.weekly"
+msgstr "每周 {weekday} · {time}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.friday"
+msgstr "星期五"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.monday"
+msgstr "星期一"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.saturday"
+msgstr "星期六"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.sunday"
+msgstr "星期日"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.thursday"
+msgstr "星期四"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.tuesday"
+msgstr "星期二"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.wednesday"
+msgstr "星期三"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/collapsed-rail.tsx
+msgid "sidebar.collapsed.expand"
+msgstr "展开侧边栏"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-nav.tsx
+msgid "sidebar.dwConversationNav.back"
+msgstr "返回"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-nav.tsx
+msgid "sidebar.dwConversationNav.backAriaLabel"
+msgstr "返回数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-nav.tsx
+msgid "sidebar.dwConversationNav.empty"
+msgstr "暂无会话"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-new-session-button.tsx
+msgid "sidebar.dwConversationNav.newSession"
+msgstr "新会话"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-row.tsx
+msgid "sidebar.dwConversationNav.runningAriaLabel"
+msgstr "会话正在运行"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-row.tsx
+msgid "sidebar.dwConversationNav.untitled"
+msgstr "未命名"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-nav-skeleton.tsx
+msgid "sidebar.dwConversationNavSkeleton.loadingConversations"
+msgstr "正在加载会话"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-list.tsx
+msgid "sidebar.dwList.empty"
+msgstr "暂无数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-list.tsx
+msgid "sidebar.dwList.error"
+msgstr "无法加载数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-list.tsx
+msgid "sidebar.dwList.label"
+msgstr "数字员工列表"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-list.tsx
+msgid "sidebar.dwList.loading"
+msgstr "加载数字员工中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-section.tsx
+msgid "sidebar.dwSection.title"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-section.tsx
+msgid "sidebar.dwSection.viewAll"
+msgstr "查看全部"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-section.tsx
+msgid "sidebar.dwSection.viewAllAriaLabel"
+msgstr "查看全部数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/expanded-sidebar.tsx
+msgid "sidebar.expanded.collapse"
+msgstr "收起侧边栏"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar-account-menu.tsx
+msgid "sidebar.footer.accountOptions"
+msgstr "账户选项"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar-account-menu.tsx
+msgid "sidebar.footer.goToSico"
+msgstr "前往 SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/switch-to-sico-dev-menu-item.tsx
+msgid "sidebar.footer.goToSicoDev"
+msgstr "前往 SICO.Dev"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar-account-menu.tsx
+msgid "sidebar.footer.language"
+msgstr "语言"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar-account-menu.tsx
+msgid "sidebar.footer.logout"
+msgstr "退出登录"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/manage-organization-menu-item.tsx
+msgid "sidebar.footer.manageOrganization"
+msgstr "管理组织"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar-menu.tsx
+msgid "sidebar.menu.studio"
+msgstr "工作室"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar.tsx
+msgid "sidebar.nav.ariaLabel"
+msgstr "主导航"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/rail-conversation-body.tsx
+msgid "sidebar.rail.backToDigitalWorkers"
+msgstr "返回数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/rail-body.tsx
+msgid "sidebar.rail.digitalWorkers"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/rail-conversation-body.tsx
+msgid "sidebar.rail.newSession"
+msgstr "新会话"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/rail-body.tsx
+msgid "sidebar.rail.projects"
+msgstr "项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/rail-body.tsx
+msgid "sidebar.rail.studio"
+msgstr "工作室"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/standard-menu.tsx
+msgid "sidebar.standardMenu.projects"
+msgstr "项目"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.downloadBlocked"
+msgstr "此文件无法下载。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.replaceFailed"
+msgstr "替换技能失败。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.saved"
+msgstr "技能已保存"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.saveFailed"
+msgstr "保存技能失败。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.saving"
+msgstr "正在保存更改…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.skillReplaced"
+msgstr "技能已替换"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-card-delete-dialog.tsx
+msgid "skill.cardContainer.deleteFailed"
+msgstr "删除技能失败。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-card-delete-dialog.tsx
+msgid "skill.cardContainer.skillDeleted"
+msgstr "技能已删除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/delete-skill-dialog.tsx
+msgid "skill.deleteDialog.deleting"
+msgstr "删除中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/delete-skill-dialog.tsx
+msgid "skill.deleteDialog.description"
+msgstr "删除“{skillName}”？此操作无法撤销。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/delete-skill-dialog.tsx
+msgid "skill.deleteDialog.title"
+msgstr "删除技能"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/explorer-view.tsx
+msgid "skill.explorerView.toggleFullscreen"
+msgstr "切换全屏模式"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/explorer-view.tsx
+msgid "skill.explorerView.toggleSidebar"
+msgstr "切换侧边栏"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/file-explorer.tsx
+msgid "skill.fileExplorer.fileFallback"
+msgstr "文件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/file-explorer.tsx
+msgid "skill.fileExplorer.filesWillAppear"
+msgstr "技能设置完成后，文件将显示在此处。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/file-explorer.tsx
+msgid "skill.fileExplorer.loadingFiles"
+msgstr "正在加载文件…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/file-explorer.tsx
+msgid "skill.fileExplorer.noFilesYet"
+msgstr "暂无文件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/role-select.tsx
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "skill.roleSelect.placeholder"
+msgstr "选择角色…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/role-select.tsx
+msgid "skill.roleSelect.roleAria"
+msgstr "行业类型"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-name-field.tsx
+msgid "skill.setupBasicInfo.namePlaceholder"
+msgstr "例如 Ryan"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-name-field.tsx
+msgid "skill.setupBasicInfo.originalName"
+msgstr "角色名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-role-field.tsx
+#: packages/shared/src/features/skill/components/setup/setup-role-field.tsx
+msgid "skill.setupBasicInfo.role"
+msgstr "行业类型"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-basic-info.tsx
+msgid "skill.setupBasicInfo.sectionTitle"
+msgstr "基本信息"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-skill-section.tsx
+msgid "skill.setupSkillSection.addSkills"
+msgstr "添加技能"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/skill-body.tsx
+msgid "skill.setupSkillSection.emptyList"
+msgstr "列表为空"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/skill-body.tsx
+msgid "skill.setupSkillSection.loadingMore"
+msgstr "正在加载更多内容"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/skill-body.tsx
+msgid "skill.setupSkillSection.loadMoreFailed"
+msgstr "无法加载更多技能。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/skill-body.tsx
+msgid "skill.setupSkillSection.noSkillsYet"
+msgstr "暂无技能。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-skill-section.tsx
+msgid "skill.setupSkillSection.skillsAdded"
+msgstr "技能已成功添加。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-skill-section.tsx
+msgid "skill.setupSkillSection.skillsUploading"
+msgstr "正在上传技能。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-skill-section.tsx
+msgid "skill.setupSkillSection.title"
+msgstr "技能"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-skill-section.tsx
+msgid "skill.setupSkillSection.uploadFailure"
+msgstr "部分技能无法添加。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-list/skill-actions-menu.tsx
+msgid "skill.skillActionsMenu.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-list/skill-actions-menu.tsx
+msgid "skill.skillActionsMenu.delete"
+msgstr "删除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-list/skill-actions-menu.tsx
+msgid "skill.skillActionsMenu.downloadZip"
+msgstr "下载 ZIP"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-list/skill-actions-menu.tsx
+msgid "skill.skillActionsMenu.replace"
+msgstr "替换"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+msgid "skill.stagedDraft.failed"
+msgstr "失败"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+msgid "skill.stagedDraft.pending"
+msgstr "等待中"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+msgid "skill.stagedDraft.remove"
+msgstr "删除技能"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+msgid "skill.stagedDraft.saved"
+msgstr "已保存"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/tools/tool-item.tsx
+msgid "skill.toolItem.advancedSettings"
+msgstr "高级设置"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/tools/tool-item.tsx
+msgid "skill.toolItem.describeTool"
+msgstr "描述此工具的功能"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/tools/tool-item.tsx
+msgid "skill.toolItem.description"
+msgstr "描述"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/tools/tool-item.tsx
+msgid "skill.toolItem.enterToolName"
+msgstr "输入工具名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/tools/tool-item.tsx
+msgid "skill.toolItem.name"
+msgstr "名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.duplicatesSkipped"
+msgstr "已跳过重复文件。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/skill-file-dropzone.tsx
+msgid "skill.uploadDialog.filesAria"
+msgstr "技能文件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.fileTooLarge"
+msgstr "文件大小超过 {maxMb}MB 限制。请选择较小的文件。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.invalidExtension"
+msgstr "请仅选择 .zip、.md 或 .skill 文件。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.maxFiles"
+msgstr "{max, plural, other {最多可上传 # 个文件。}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/skill-file-dropzone.tsx
+msgid "skill.uploadDialog.pickFiles"
+msgstr "点击选择文件"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.support.create"
+msgstr "支持格式：zip、md、skill；单个文件最大 {maxMb}MB，最多 {maxFiles} 个文件。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.support.replace"
+msgstr "支持格式：zip、md、skill；文件最大 {maxMb}MB。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.title.create"
+msgstr "添加技能"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.title.replace"
+msgstr "替换技能"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-list/version-dropdown.tsx
+msgid "skill.versionDropdown.version"
+msgstr "版本"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-access-boundary.tsx
+msgid "studio.access.denied.body"
+msgstr "你需要 Organization Admin 或 Developer 角色才能使用 Studio。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-access-boundary.tsx
+msgid "studio.access.denied.heading"
+msgstr "需要 Studio 访问权限"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/agent-setup-skeleton.tsx
+msgid "studio.agentSetup.loading"
+msgstr "正在加载数字员工设置…"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/_authed/studio.$agentId.setup.tsx
+msgid "studio.agentSetup.route.title"
+msgstr "设置 · SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "studio.autosave.conflict"
+msgstr "有较新版本可用"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "studio.autosave.discardFailed"
+msgstr "丢弃失败的上传"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "studio.autosave.failed"
+msgstr "无法保存"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "studio.autosave.invalid"
+msgstr "请填写必填字段"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-card.tsx
+msgid "studio.card.openSetup"
+msgstr "打开 {name} 的设置"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+msgid "studio.createDialog.continue"
+msgstr "继续"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+msgid "studio.createDialog.description"
+msgstr "输入数字员工的基本信息。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog.tsx
+msgid "studio.createDialog.error"
+msgstr "无法创建此数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog.tsx
+msgid "studio.createDialog.navigationError"
+msgstr "此数字员工已创建，但无法打开其设置。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-organization-status.tsx
+msgid "studio.createDialog.organizationLoadFailed"
+msgstr "无法加载你的组织。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-organization-status.tsx
+msgid "studio.createDialog.organizationLoading"
+msgstr "正在加载你的组织…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-organization-status.tsx
+msgid "studio.createDialog.organizationUnavailable"
+msgstr "你的账户暂无可用组织。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "studio.createDialog.roleNamePlaceholder"
+msgstr "例如软件测试员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "studio.createDialog.rolesEmpty"
+msgstr "暂无可用角色"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "studio.createDialog.rolesLoadError"
+msgstr "无法加载角色。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "studio.createDialog.rolesLoadFailed"
+msgstr "无法加载角色。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "studio.createDialog.rolesLoading"
+msgstr "正在加载角色…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+msgid "studio.createDialog.title"
+msgstr "新建数字员工角色"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-setup-body-skeleton.tsx
+msgid "studio.createSetupBody.loading"
+msgstr "正在加载数字员工设置表单"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "studio.deleteDialog.deleting"
+msgstr "删除中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "studio.deleteDialog.description"
+msgstr "删除“{agentName}”？此操作无法撤销。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "studio.deleteDialog.failed"
+msgstr "无法删除该数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "studio.deleteDialog.success"
+msgstr "数字员工已删除。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "studio.deleteDialog.title"
+msgstr "删除数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-grid-skeleton.tsx
+msgid "studio.grid.loading"
+msgstr "正在加载数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-skeleton.tsx
+msgid "studio.loading"
+msgstr "加载 Studio…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.alreadyEditor"
+msgstr "此人已是编辑。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "studio.manageEditors.creator"
+msgstr "创建者"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.creatorCannotBeEditor"
+msgstr "创建者已具有访问权限。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "studio.manageEditors.editor"
+msgstr "编辑"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.emailInvalid"
+msgstr "请输入有效的邮箱地址。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-invite-form.tsx
+msgid "studio.manageEditors.emailLabel"
+msgstr "邮箱地址"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.emailRequired"
+msgstr "请输入邮箱地址。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-invite-form.tsx
+msgid "studio.manageEditors.invite"
+msgstr "邀请"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-manage-editors-dialog.tsx
+msgid "studio.manageEditors.inviteDescription"
+msgstr "邀请并管理数字员工编辑。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.inviteFailed"
+msgstr "无法添加此编辑。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-invite-form.tsx
+msgid "studio.manageEditors.invitePlaceholder"
+msgstr "通过邮箱邀请编辑"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-manage-editors-dialog.tsx
+msgid "studio.manageEditors.inviteTitle"
+msgstr "邀请编辑"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "studio.manageEditors.loadFailed"
+msgstr "无法加载编辑列表。"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: editor?.email ?? ""
+#: packages/shared/src/features/studio/components/studio-editor-removal-confirm.tsx
+msgid "studio.manageEditors.removeDescription"
+msgstr "要将 {0} 移除为编辑吗？"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: editor.email
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "studio.manageEditors.removeEditor"
+msgstr "移除 {0}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.removeFailed"
+msgstr "无法移除该编辑。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-removal-confirm.tsx
+msgid "studio.manageEditors.removeTitle"
+msgstr "移除编辑"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-removal-confirm.tsx
+msgid "studio.manageEditors.removing"
+msgstr "移除中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.userNotFound"
+msgstr "未找到该邮箱对应的用户。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio.tsx
+msgid "studio.page.create"
+msgstr "创建"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio.tsx
+msgid "studio.page.subtitle"
+msgstr "配置并部署数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio.tsx
+msgid "studio.page.title"
+msgstr "Studio"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+msgid "studio.publishDialog.access"
+msgstr "访问权限"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+msgid "studio.publishDialog.description"
+msgstr "选择发布后可在 SICO 中使用此数字员工的人员。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-publish-dialog.tsx
+msgid "studio.publishDialog.failed"
+msgstr "无法发布此数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+msgid "studio.publishDialog.onlyMe"
+msgstr "仅限我"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+msgid "studio.publishDialog.onlyMeDescription"
+msgstr "只有你可以添加并使用此数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+msgid "studio.publishDialog.organization"
+msgstr "我的组织"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+msgid "studio.publishDialog.organizationDescription"
+msgstr "组织内的任何人都可以添加并使用此数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+msgid "studio.publishDialog.publish"
+msgstr "发布"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+msgid "studio.publishDialog.publishing"
+msgstr "发布中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-publish-dialog.tsx
+msgid "studio.publishDialog.success"
+msgstr "数字员工已发布。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+msgid "studio.publishDialog.title"
+msgstr "发布数字员工"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/_authed/-studio-tab-route.tsx
+msgid "studio.route.title"
+msgstr "Studio · SICO"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/_authed/studio.setup.tsx
+msgid "studio.setup.route.title"
+msgstr "创建数字员工 · SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-basic-info.tsx
+msgid "studio.setupEditor.createdBy"
+msgstr "由 {creatorUsername} 创建。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-unsaved-changes-guard.tsx
+msgid "studio.setupEditor.discard.body"
+msgstr "你未保存的更改将会丢失。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-unsaved-changes-guard.tsx
+msgid "studio.setupEditor.discard.confirm"
+msgstr "放弃"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-unsaved-changes-guard.tsx
+msgid "studio.setupEditor.discard.title"
+msgstr "放弃更改"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/use-studio-setup-save.ts
+msgid "studio.setupEditor.savedSuccessfully"
+msgstr "保存成功！"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-editor-content.tsx
+#: packages/shared/src/features/studio/hooks/use-studio-setup-save.ts
+msgid "studio.setupEditor.saveFailed"
+msgstr "保存更改失败。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/use-studio-setup-save.ts
+msgid "studio.setupEditor.savePartiallyFailed"
+msgstr "部分更改无法保存。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/use-studio-setup-form.ts
+msgid "studio.setupEditor.validation.industryTypeRequired"
+msgstr "必须填写行业类型。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/use-studio-setup-form.ts
+msgid "studio.setupEditor.validation.roleNameRequired"
+msgstr "必须填写角色名称。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header.tsx
+msgid "studio.setupHeader.backToStudio"
+msgstr "返回 Studio"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header-actions.tsx
+msgid "studio.setupHeader.delete"
+msgstr "删除数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header-actions.tsx
+msgid "studio.setupHeader.manageEditors"
+msgstr "管理编辑者"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header-actions.tsx
+msgid "studio.setupHeader.moreActions"
+msgstr "更多设置操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header.tsx
+msgid "studio.setupHeader.publish"
+msgstr "发布"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header.tsx
+msgid "studio.setupHeader.title"
+msgstr "数字员工设置"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-tabs.tsx
+msgid "studio.tabs.all"
+msgstr "全部"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-tabs.tsx
+msgid "studio.tabs.created"
+msgstr "已创建"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-tabs.tsx
+msgid "studio.tabs.editable"
+msgstr "可编辑"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-dismiss-agent.ts
+msgid "team.dismissAgent.error"
+msgstr "无法移除此数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-dismiss-agent.ts
+msgid "team.dismissAgent.success"
+msgstr "数字员工已移除。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.actions"
+msgstr "数字员工操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismiss"
+msgstr "移除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismissDenied"
+msgstr "你只能移除自己邀请的数字员工。"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: agent.name
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismissDialog.body"
+msgstr "将“{0}”移出此项目。此操作无法撤销。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismissDialog.confirm"
+msgstr "移除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismissDialog.pending"
+msgstr "正在移除…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismissDialog.title"
+msgstr "移除数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.reassign"
+msgstr "重新分配"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-role-cell.tsx
+msgid "team.humanRow.changeRole"
+msgstr "更改角色"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-member-row-actions.ts
+msgid "team.humanRow.changeRole.error"
+msgstr "无法更新角色。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-member-row-actions.ts
+msgid "team.humanRow.changeRole.success"
+msgstr "角色已更新。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-actions-menu.tsx
+msgid "team.humanRow.memberActions"
+msgstr "项目成员操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-role-cell.tsx
+msgid "team.humanRow.owner"
+msgstr "所有者"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-actions-menu.tsx
+msgid "team.humanRow.remove"
+msgstr "移除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-row.tsx
+msgid "team.humanRow.removeMember.body"
+msgstr "将“{display}”移出此项目。此操作无法撤销。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-row.tsx
+msgid "team.humanRow.removeMember.confirm"
+msgstr "移除"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-member-row-actions.ts
+msgid "team.humanRow.removeMember.error"
+msgstr "无法移除该成员。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-row.tsx
+msgid "team.humanRow.removeMember.pending"
+msgstr "正在移除…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-member-row-actions.ts
+msgid "team.humanRow.removeMember.success"
+msgstr "成员已移除。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-row.tsx
+msgid "team.humanRow.removeMember.title"
+msgstr "移除项目成员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+msgid "team.inviteDw.error.addFailed"
+msgstr "无法添加该数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+msgid "team.inviteDw.error.mustSignIn"
+msgstr "你必须登录后才能添加数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+msgid "team.inviteDw.success.added"
+msgstr "已添加数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.action.invite"
+msgstr "邀请"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.emailPlaceholder"
+msgstr "colleague@company.com"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.error.inviteFailed"
+msgstr "无法邀请该用户。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.error.userNotRegistered"
+msgstr "该用户尚未注册。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.roleAria"
+msgstr "角色"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.status.inviting"
+msgstr "邀请中…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.success.memberInvited"
+msgstr "已邀请成员。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.title"
+msgstr "邀请加入 {projectName}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.validation.emailInvalid"
+msgstr "请输入有效的邮箱"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.validation.emailRequired"
+msgstr "请输入邮箱"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.invite"
+msgstr "邀请"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.inviteHuman"
+msgstr "人类操作员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.inviteWorker"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.tabs.humans"
+msgstr "人类操作员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.tabs.workers"
+msgstr "数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.title"
+msgstr "团队"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.cancel"
+msgstr "取消"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.error.loadMembers"
+msgstr "无法加载项目成员。请重新打开此对话框。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.error.reassignFailed"
+msgstr "无法重新分配此数字员工。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.newOperator"
+msgstr "新操作员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.placeholder.loadingMembers"
+msgstr "正在加载项目成员…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.placeholder.loadMembersFailed"
+msgstr "无法加载项目成员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.placeholder.noMembers"
+msgstr "没有可接收分配的项目成员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.placeholder.selectMember"
+msgstr "选择项目成员…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.reassign"
+msgstr "重新分配"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.reassigning"
+msgstr "正在重新分配…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.success.reassigned"
+msgstr "数字员工已重新分配。"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.title"
+msgstr "重新分配数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-role-labels.ts
+msgid "team.role.admin"
+msgstr "管理员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-role-labels.ts
+msgid "team.role.member"
+msgstr "成员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-table.tsx
+#: packages/shared/src/features/team/components/humans-table.tsx
+msgid "team.table.header.actions"
+msgstr "操作"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-table.tsx
+#: packages/shared/src/features/team/components/humans-table.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.header.lastActive"
+msgstr "最近活跃"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-table.tsx
+#: packages/shared/src/features/team/components/humans-table.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.header.name"
+msgstr "名称"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-table.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.header.operator"
+msgstr "操作员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/humans-table.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.header.role"
+msgstr "角色"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-table.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.header.status"
+msgstr "状态"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.loading.members"
+msgstr "正在加载成员"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.loading.workers"
+msgstr "正在加载数字员工"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-status-cell.tsx
+msgid "team.table.status.active"
+msgstr "活跃"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-status-cell.tsx
+msgid "team.table.status.inactive"
+msgstr "未激活"

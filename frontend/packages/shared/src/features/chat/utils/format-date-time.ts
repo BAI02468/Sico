@@ -1,28 +1,9 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 // 4-tier conversation timestamp: same day → `HH:mm`; day before → `Yesterday
 // HH:mm`; earlier this year → `MM-DD HH:mm`; prior year → `YYYY-MM-DD HH:mm`.
 // Native `Date` + `Intl.DateTimeFormat` only (moment is banned).
+
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 
 // `hourCycle: "h23"` (not `hour12: false`) pins midnight to "00:00" — `hour12:
 // false` can surface "24:00" in some engines.
@@ -47,6 +28,14 @@ function localMonthDay(date: Date): string {
   return `${m}-${d}`;
 }
 
+// "Yesterday HH:mm" — a module-scope descriptor resolved with `i18n._()` at
+// call time (same pattern as chat `constants.ts`), so it follows the active
+// locale even though this helper runs outside a React component.
+const YESTERDAY_COPY = msg({
+  id: "chat.timestamp.yesterday",
+  message: "Yesterday {time}",
+});
+
 function isSameLocalDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -67,7 +56,7 @@ export function formatDateTime(value: number): string {
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
   if (isSameLocalDay(date, yesterday)) {
-    return `Yesterday ${time}`;
+    return i18n._(YESTERDAY_COPY.id, { time }, YESTERDAY_COPY);
   }
 
   // Earlier this calendar year → drop the year.

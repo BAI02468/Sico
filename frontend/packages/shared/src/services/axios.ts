@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import axios, {
   type AxiosError,
   AxiosHeaders,
@@ -31,7 +9,7 @@ import { type createStore } from "jotai";
 import { z } from "zod";
 
 import { synthesizeNetworkError } from "./synthesize-error";
-import { logoutAtom } from "../atoms/auth-atom";
+import { isAuthenticatedAtom, logoutAtom } from "../atoms/auth-atom";
 import { HTTP_UNAUTHORIZED } from "../constants/http";
 import {
   type ApiResponse,
@@ -40,6 +18,7 @@ import {
 } from "../schemas/api";
 import { getAccessToken } from "../utils/auth-storage";
 import { isSameOriginRequest } from "../utils/is-same-origin-request";
+import { AUTH_TOKEN_LS, getItemFromLocalStorage } from "../utils/local-storage";
 import { logger } from "../utils/logger";
 
 type Store = ReturnType<typeof createStore>;
@@ -104,9 +83,17 @@ function makeSyntheticResponse(
 // requests (see `isSameOriginRequest`) so it never leaks to third-party hosts.
 function attachAuthHeader(
   config: InternalAxiosRequestConfig,
+  requestTokens: WeakMap<InternalAxiosRequestConfig, string | null>,
 ): InternalAxiosRequestConfig {
+  if (!isSameOriginRequest(config.url, config.baseURL)) {
+    return config;
+  }
+  if (config.headers.has("Authorization")) {
+    return config;
+  }
   const token = getAccessToken();
-  if (token && isSameOriginRequest(config.url, config.baseURL)) {
+  requestTokens.set(config, token);
+  if (token) {
     // eslint-disable-next-line no-param-reassign -- axios request interceptors must mutate config to attach headers
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -132,6 +119,7 @@ function parseResponseEnvelope(response: AxiosResponse): AxiosResponse {
 function handleResponseError(
   error: unknown,
   options: CreateApiClientOptions,
+  requestTokens: WeakMap<InternalAxiosRequestConfig, string | null>,
 ): Promise<AxiosResponse> {
   if (axios.isAxiosError(error)) {
     const status = error.response?.status;
@@ -139,13 +127,22 @@ function handleResponseError(
 
     if (status === HTTP_UNAUTHORIZED) {
       logger.warn("unauthorized", { url: scrubbedUrl });
-      if (options.store) {
-        options.store.set(logoutAtom);
+      const requestToken = error.config
+        ? requestTokens.get(error.config)
+        : undefined;
+      const rawCurrentToken = getItemFromLocalStorage(AUTH_TOKEN_LS);
+      const currentToken = rawCurrentToken === "" ? null : rawCurrentToken;
+      const shouldHandleUnauthorized =
+        requestToken !== undefined &&
+        requestToken === currentToken &&
+        (options.store === undefined || options.store.get(isAuthenticatedAtom));
+      if (shouldHandleUnauthorized) {
+        options.store?.set(logoutAtom);
+        options.onUnauthorized?.({
+          code: HTTP_UNAUTHORIZED,
+          ...(scrubbedUrl ? { url: scrubbedUrl } : {}),
+        });
       }
-      options.onUnauthorized?.({
-        code: HTTP_UNAUTHORIZED,
-        ...(scrubbedUrl ? { url: scrubbedUrl } : {}),
-      });
       return Promise.resolve(
         makeSyntheticResponse(
           makeUnauthorizedEnvelope(),
@@ -173,9 +170,15 @@ export function createApiClient(
   const instance = axios.create(
     options.baseURL ? { baseURL: options.baseURL } : undefined,
   );
-  instance.interceptors.request.use(attachAuthHeader);
+  const requestTokens = new WeakMap<
+    InternalAxiosRequestConfig,
+    string | null
+  >();
+  instance.interceptors.request.use((config) =>
+    attachAuthHeader(config, requestTokens),
+  );
   instance.interceptors.response.use(parseResponseEnvelope, (error: unknown) =>
-    handleResponseError(error, options),
+    handleResponseError(error, options, requestTokens),
   );
   return instance;
 }

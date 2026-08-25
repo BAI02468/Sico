@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -31,7 +9,6 @@ import {
 } from "@tanstack/react-router";
 import type { AxiosInstance } from "axios";
 import { createStore, Provider } from "jotai";
-import { Bell, Users } from "lucide-react";
 import type { ReactElement } from "react";
 
 import { userAtom } from "@/atoms/auth-atom";
@@ -176,65 +153,4 @@ export const Empty: Story = {
 /** DW fetch rejects — exercises the inline error state. */
 export const ErrorState: Story = {
   args: { apiClient: errorApiClient },
-};
-
-/**
- * Downstream injection (dwp): an extra "My Team" nav item rendered with sico's
- * own chrome after the built-ins, plus a header-slot notification bell. Both
- * the expanded list and the collapsed rail show the injected entry.
- */
-export const WithExtraNavItems: Story = {
-  render: (args) => {
-    const store = createStore();
-    store.set(userAtom, fakeUser);
-    const qc = new QueryClient();
-    const rootRoute = createRootRoute({
-      component: () => (
-        <Sidebar
-          extraNavItems={[
-            {
-              to: "/my-team",
-              label: "My Team",
-              icon: <Users className="size-5" />,
-            },
-          ]}
-          headerExtras={
-            <button type="button" aria-label="Notifications">
-              <Bell className="size-5" />
-            </button>
-          }
-        />
-      ),
-    });
-    const dwRoute = createRoute({
-      getParentRoute: () => rootRoute,
-      path: "/digital-worker",
-      component: () => null,
-    });
-    const projRoute = createRoute({
-      getParentRoute: () => rootRoute,
-      path: "/project",
-      component: () => null,
-    });
-    const teamRoute = createRoute({
-      getParentRoute: () => rootRoute,
-      path: "/my-team",
-      component: () => null,
-    });
-    const router = createRouter({
-      routeTree: rootRoute.addChildren([dwRoute, projRoute, teamRoute]),
-      history: createMemoryHistory({ initialEntries: ["/my-team"] }),
-    });
-    return (
-      <Provider store={store}>
-        <QueryClientProvider client={qc}>
-          <ApiClientProvider client={args.apiClient}>
-            <div className="bg-background flex h-screen">
-              <RouterProvider router={router} />
-            </div>
-          </ApiClientProvider>
-        </QueryClientProvider>
-      </Provider>
-    );
-  },
 };

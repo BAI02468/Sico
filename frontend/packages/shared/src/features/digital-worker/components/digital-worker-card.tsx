@@ -1,38 +1,15 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { Briefcase } from "lucide-react";
-import { memo, type ReactElement, useState } from "react";
+import { memo, type ReactElement } from "react";
 
 import {
   DwStatusIndicator,
   type DwStatusIndicatorProps,
-  STATUS_INDICATOR,
+  resolveStatusIndicator,
 } from "./dw-status-indicator";
 import { Card } from "../../../components/card";
 import { DwAvatar } from "../../../components/dw-avatar";
-import { useSicoConfig } from "../../../services/sico-config-context";
-import { logger } from "../../../utils/logger";
 import { type Agent, AgentStatusSchema } from "../schemas/agent";
 
 export type DigitalWorkerCardProps = {
@@ -59,6 +36,7 @@ function renderCardContent(
             </span>
             {showNewDot ? (
               <span
+                data-testid="new-status-dot"
                 aria-hidden
                 className="bg-primary-600 size-1.5 shrink-0 rounded-full"
               />
@@ -95,73 +73,26 @@ function renderCardContent(
   );
 }
 
-// Run the injected click handler with the pending lifecycle: disable the card,
-// await the (maybe-async) handler, surface any failure, then re-enable. As an
-// `async` function a *synchronous* throw from the handler is also caught (it
-// becomes a rejection), so the card can never get stuck disabled.
-async function runCardClick(
-  handler: (agent: Agent) => void | Promise<void>,
-  agent: Agent,
-  setIsPending: (pending: boolean) => void,
-): Promise<void> {
-  setIsPending(true);
-  try {
-    await handler(agent);
-  } catch (error: unknown) {
-    logger.error("onDigitalWorkerCardClick failed", {
-      agentId: agent.id,
-      error,
-    });
-  } finally {
-    setIsPending(false);
-  }
-}
-
 /**
- * Card for a single Digital Worker. Renders as a link to the DW's
- * collaboration page. The status indicator + NEW dot are gated by
- * `SicoConfig.digitalWorkerCardShowStatus` (off in sico, on in dwp).
+ * Card for a single Digital Worker with the lifecycle/execution presentation
+ * selected by `resolveStatusIndicator` and an independent NEW lifecycle dot.
  */
 function DigitalWorkerCardImpl({
   agent,
 }: DigitalWorkerCardProps): ReactElement {
-  const { digitalWorkerCardShowStatus, onDigitalWorkerCardClick } =
-    useSicoConfig();
-  const [isPending, setIsPending] = useState(false);
-  // `status` is `AgentStatus | null | undefined`; UNKNOWN is `0` (falsy), so
-  // narrow with explicit null/undefined checks rather than a truthy guard.
+  const { t } = useLingui();
+  // Centralize lifecycle/execution precedence in the resolver; the card only
+  // localizes and positions the selected presentation.
   const status = agent.status;
-  const indicator =
-    digitalWorkerCardShowStatus && status !== null && status !== undefined
-      ? STATUS_INDICATOR[status]
-      : undefined;
-  const showNewDot =
-    digitalWorkerCardShowStatus && status === AgentStatusSchema.enum.NEW;
+  const meta = resolveStatusIndicator(status, agent.conversationStatus);
+  // Resolve the label descriptor here (component subscribes to Lingui) so the
+  // status text re-renders on locale switch.
+  const indicator = meta
+    ? { tone: meta.tone, label: t(meta.label) }
+    : undefined;
+  const showNewDot = status === AgentStatusSchema.enum.NEW;
 
   const inner = renderCardContent(agent, showNewDot, indicator);
-
-  // dwp: a config-injected handler owns ALL click branching (status write,
-  // routing by lifecycle, opening the onboarding wizard). The card becomes a
-  // `<button>` and just awaits the handler — losing the `<a href>` (no
-  // middle-click / prefetch) is acceptable since the action is imperative
-  // async. `isPending` disables it to block double-clicks.
-  if (onDigitalWorkerCardClick) {
-    return (
-      <Card asChild className="h-32 justify-between text-left">
-        <button
-          type="button"
-          aria-label={`Open ${agent.name}'s collaboration`}
-          disabled={isPending}
-          className="cursor-pointer disabled:pointer-events-none disabled:opacity-50"
-          onClick={() => {
-            void runCardClick(onDigitalWorkerCardClick, agent, setIsPending);
-          }}
-        >
-          {inner}
-        </button>
-      </Card>
-    );
-  }
 
   return (
     <Card asChild className="h-32 justify-between">

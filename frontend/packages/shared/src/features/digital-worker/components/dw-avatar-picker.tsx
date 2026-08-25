@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { cn } from "@sico/ui/lib/utils.ts";
 import { Shuffle } from "lucide-react";
 import { type JSX, useEffect, useRef, useState } from "react";
@@ -42,6 +21,7 @@ export function DwAvatarPicker({
   value,
   onChange,
 }: DwAvatarPickerProps): JSX.Element {
+  const { t } = useLingui();
   const [open, setOpen] = useState(false);
   const gridRef = useRef<HTMLDivElement | null>(null);
 
@@ -71,7 +51,10 @@ export function DwAvatarPicker({
           <button
             type="button"
             aria-expanded={open}
-            aria-label="Change avatar"
+            aria-label={t({
+              id: "digitalWorker.avatarPicker.changeAvatarAria",
+              message: "Change avatar",
+            })}
             onClick={() => setOpen((prev) => !prev)}
             className="focus-visible:outline-focus-rest rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2"
           >
@@ -83,7 +66,10 @@ export function DwAvatarPicker({
           </button>
           <button
             type="button"
-            aria-label="Shuffle avatar"
+            aria-label={t({
+              id: "digitalWorker.avatarPicker.shuffleAvatarAria",
+              message: "Shuffle avatar",
+            })}
             onClick={handleShuffle}
             className="bg-surface-basic text-foreground-primary shadow-s focus-visible:outline-focus-rest absolute -right-0.5 bottom-0 flex size-5 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2"
           >
@@ -91,14 +77,20 @@ export function DwAvatarPicker({
           </button>
         </div>
         <div className="text-foreground-secondary text-sm">
-          Click the avatar or Shuffle to generate another one.
+          {t({
+            id: "digitalWorker.avatarPicker.hint",
+            message: "Click the avatar or Shuffle to generate another one.",
+          })}
         </div>
       </div>
       {open ? (
         <div
           ref={gridRef}
           role="radiogroup"
-          aria-label="Avatar"
+          aria-label={t({
+            id: "digitalWorker.avatarPicker.groupAria",
+            message: "Avatar",
+          })}
           className="flex flex-wrap gap-2 p-1"
         >
           {DW_AVATAR_PRESETS.map((url, i) => {
@@ -109,7 +101,10 @@ export function DwAvatarPicker({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                aria-label={`Avatar ${String(i + 1)}`}
+                aria-label={t({
+                  id: "digitalWorker.avatarPicker.avatarAria",
+                  message: `Avatar ${i + 1}`,
+                })}
                 onClick={() => onChange(url)}
                 className={cn(
                   "focus-visible:outline-focus-rest rounded-full transition focus-visible:outline-2 focus-visible:outline-offset-2",

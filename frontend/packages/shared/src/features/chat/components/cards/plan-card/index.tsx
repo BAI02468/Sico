@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { cn } from "@sico/ui/lib/utils.ts";
 import {
   ChevronDown,
@@ -31,6 +9,7 @@ import {
 } from "lucide-react";
 import { type JSX, useMemo, useState } from "react";
 
+import { PlanStatusText } from "./plan-status-text";
 import { PlanStep } from "./plan-step";
 import { usePlan } from "../../../hooks/use-plan";
 import { usePlanById } from "../../../hooks/use-plan-by-id";
@@ -51,23 +30,6 @@ export type PlanCardProps = {
   // `use-plan` is the sole writer of `plansAtom`; this card never writes it.
   planId: string;
 };
-
-// RUNNING / UNKNOWN / NO_PLAN read as "in progress"; COMPLETED +
-// REQUIRE_HUMAN_INPUT as "completed"; FAILED / CANCELLED get their own line.
-// Plain lookup helper, not a component (react/no-multi-comp).
-function statusLabel(status: PlanStatus): string {
-  switch (status) {
-    case PlanStatusSchema.enum.COMPLETED:
-    case PlanStatusSchema.enum.REQUIRE_HUMAN_INPUT:
-      return "Execution completed";
-    case PlanStatusSchema.enum.FAILED:
-      return "Execution failed";
-    case PlanStatusSchema.enum.CANCELLED:
-      return "Execution stopped";
-    default:
-      return "Execution in progress";
-  }
-}
 
 // Leading header glyph, one per status (restored from legacy PlanCard): RUNNING
 // spins; COMPLETED / REQUIRE_HUMAN_INPUT show a check; FAILED a warning; CANCELLED
@@ -203,7 +165,7 @@ export function PlanCard({ planId }: PlanCardProps): JSX.Element | null {
             {expanded && (
               <div
                 data-testid="header-connector"
-                className="border-stroke-subtle-card-rest w-0 flex-1 border-l"
+                className="border-stroke-subtle-card-rest w-0 flex-1 border-s"
               />
             )}
           </div>
@@ -212,7 +174,7 @@ export function PlanCard({ planId }: PlanCardProps): JSX.Element | null {
             shoving the chevron off-screen; the chevron stays glued to the text. */}
         <span className="flex h-9 min-w-0 items-center gap-2">
           <span className="text-foreground-primary truncate text-sm">
-            {statusLabel(status)}
+            <PlanStatusText status={status} />
           </span>
           <Chevron className="text-foreground-primary size-4 shrink-0" />
         </span>

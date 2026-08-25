@@ -1,26 +1,7 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { zodResolver } from "@hookform/resolvers/zod";
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Button,
   Dialog,
@@ -51,8 +32,17 @@ import type { KnowledgeRow } from "../types";
 // asset READS `tags[] {id,name}`, but `PUT /knowledge/document` WRITES
 // `tagIds[]`, so the dialog seeds `tagIds` from `asset.tags.map(t => t.id)` and
 // submits the ids straight through.
+
+// Module-scope `msg()` descriptor (statically extractable); zod v4's `error`
+// callback resolves it via `i18n._()` at validation time, so the schema is a
+// plain module const in the active locale — no factory, no injected `t`.
+const NAME_REQUIRED = msg({
+  id: "projects.editAsset.nameRequired",
+  message: "Name is required",
+});
+
 const editAssetFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, { error: () => i18n._(NAME_REQUIRED) }),
   tagIds: z.array(z.number()),
 });
 type EditAssetFormValues = z.infer<typeof editAssetFormSchema>;
@@ -72,7 +62,7 @@ function renderNameField(
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid ? true : undefined}>
           <FieldLabel htmlFor="edit-asset-name" className="text-base">
-            Knowledge name
+            <Trans id="projects.editAsset.knowledgeName">Knowledge name</Trans>
           </FieldLabel>
           <Input
             id="edit-asset-name"
@@ -146,6 +136,7 @@ export function EditAssetDialog({
   projectId,
   asset,
 }: EditAssetDialogProps): React.JSX.Element {
+  const { t } = useLingui();
   const form = useForm<EditAssetFormValues>({
     resolver: zodResolver(editAssetFormSchema),
     defaultValues: {
@@ -177,7 +168,13 @@ export function EditAssetDialog({
       { id: asset.id, name: values.name, tagIds: values.tagIds },
       {
         onSuccess: () => {
-          toast.success("Your changes are saved.", { invert: true });
+          toast.success(
+            t({
+              id: "projects.editAsset.saveSuccess",
+              message: "Your changes are saved.",
+            }),
+            { invert: true },
+          );
           onOpenChange(false);
         },
       },
@@ -188,7 +185,9 @@ export function EditAssetDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent variant="content" className="w-150">
         <DialogHeader>
-          <DialogTitle>Edit</DialogTitle>
+          <DialogTitle>
+            <Trans id="projects.editAsset.title">Edit</Trans>
+          </DialogTitle>
         </DialogHeader>
         <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
@@ -198,15 +197,17 @@ export function EditAssetDialog({
           <DialogFooter className="mt-6">
             {edit.isError && (
               <FieldError>
-                We couldn&apos;t save your changes. Try again.
+                <Trans id="projects.editAsset.saveError">
+                  We couldn&apos;t save your changes. Try again.
+                </Trans>
               </FieldError>
             )}
             <Button
               type="button"
-              variant="secondary"
+              variant="subtle"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              <Trans id="projects.editAsset.cancel">Cancel</Trans>
             </Button>
             <Button
               type="submit"
@@ -215,7 +216,11 @@ export function EditAssetDialog({
               disabled={edit.isPending}
             >
               {edit.isPending ? <Loader2 className="animate-spin" /> : null}
-              {edit.isPending ? "Saving…" : "Save"}
+              {edit.isPending ? (
+                <Trans id="projects.editAsset.saving">Saving…</Trans>
+              ) : (
+                <Trans id="projects.editAsset.save">Save</Trans>
+              )}
             </Button>
           </DialogFooter>
         </form>

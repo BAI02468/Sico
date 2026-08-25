@@ -1,32 +1,10 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import {
   type InfiniteData,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
-import type { AxiosInstance } from "axios";
+import axios, { type AxiosInstance } from "axios";
 import { createStore, Provider as JotaiProvider } from "jotai";
 import type { ReactElement, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -37,13 +15,15 @@ import {
   CONVERSATION_TITLE_POLL_INTERVAL_MS,
   CONVERSATION_TITLE_POLL_MAX_ATTEMPTS,
 } from "@/features/chat/constants";
+import { conversationDetailQueryOptions } from "@/features/chat/hooks/use-conversation-detail";
 import {
   classifyPolledTitles,
-  conversationDetailQueryKey,
   patchListTitle,
+  pendingTitleQueryOptions,
   titlePollInterval,
   usePendingConversationTitles,
 } from "@/features/chat/hooks/use-pending-conversation-titles";
+import { chatKeys } from "@/features/chat/query-keys";
 import type { ConversationSummary } from "@/features/chat/schemas/conversation";
 import * as service from "@/features/chat/services/conversation";
 import type { ConversationListPage } from "@/features/chat/services/conversation";
@@ -65,7 +45,7 @@ function infinite(
   return { pages, pageParams: pages.map((_, i) => i + 1) };
 }
 
-const listKey = ["conversations", "list", { agentInstanceId: 7 }] as const;
+const listKey = chatKeys.conversationList(7);
 
 describe("patchListTitle", () => {
   it("replaces the matching row's title across pages", () => {
@@ -105,6 +85,21 @@ describe("patchListTitle", () => {
 
   it("returns old untouched when the cache is empty", () => {
     expect(patchListTitle(undefined, conv(1, "X"))).toBeUndefined();
+  });
+});
+
+describe("pendingTitleQueryOptions", () => {
+  it("preserves the shared detail key and query function contract", () => {
+    const detailOptions = conversationDetailQueryOptions(1, axios.create());
+    const pollingOptions = pendingTitleQueryOptions(detailOptions);
+
+    expect(pollingOptions.queryKey).toBe(detailOptions.queryKey);
+    expect(pollingOptions.queryFn).toBe(detailOptions.queryFn);
+    expect(pollingOptions.staleTime).toBe(0);
+    expect(pollingOptions.gcTime).toBe(0);
+    expect(pollingOptions.retry).toBe(false);
+    expect(pollingOptions.refetchOnWindowFocus).toBe(true);
+    expect(pollingOptions.refetchInterval).toEqual(expect.any(Function));
   });
 });
 
@@ -220,7 +215,7 @@ async function seedErroredQuery(
   for (let i = 0; i < n; i++) {
     await queryClient
       .fetchQuery({
-        queryKey: conversationDetailQueryKey(id),
+        queryKey: chatKeys.conversationDetail(id),
         queryFn: () => Promise.reject(new Error("boom")),
       })
       .catch(() => undefined);
@@ -231,7 +226,7 @@ describe("classifyPolledTitles", () => {
   it("marks a resolved id as both resolved and settled", () => {
     const queryClient = freshClient();
     queryClient.setQueryData(
-      conversationDetailQueryKey(1),
+      chatKeys.conversationDetail(1),
       conv(1, "Weekly report"),
     );
 
@@ -244,7 +239,7 @@ describe("classifyPolledTitles", () => {
   it("leaves a still-pending id unsettled so it keeps polling", () => {
     const queryClient = freshClient();
     queryClient.setQueryData(
-      conversationDetailQueryKey(1),
+      chatKeys.conversationDetail(1),
       conv(1, CONVERSATION_TITLE_PENDING),
     );
 
@@ -296,6 +291,45 @@ describe("classifyPolledTitles", () => {
 });
 
 describe("usePendingConversationTitles", () => {
+  it("makes one request per poll when prefetch starts before the observer", async () => {
+    vi.useFakeTimers();
+    const queryClient = retryingClient();
+    try {
+      let rejectFirstRequest!: (reason: Error) => void;
+      const firstRequest = new Promise<ConversationSummary>((_, reject) => {
+        rejectFirstRequest = reject;
+      });
+      vi.mocked(service.getConversation)
+        .mockReturnValueOnce(firstRequest)
+        .mockRejectedValue(new Error("boom"));
+      const prefetch = queryClient.prefetchQuery(
+        conversationDetailQueryOptions(1, {} as AxiosInstance),
+      );
+      const store = createStore();
+      store.set(pendingTitleConversationIdsAtom, new Set([1]));
+
+      const { unmount } = renderHook(() => usePendingConversationTitles(), {
+        wrapper: makeWrapper(queryClient, store),
+      });
+      rejectFirstRequest(new Error("boom"));
+      await vi.advanceTimersByTimeAsync(0);
+
+      await vi.advanceTimersByTimeAsync(1_000);
+      expect(service.getConversation).toHaveBeenCalledTimes(1);
+
+      await vi.advanceTimersByTimeAsync(
+        CONVERSATION_TITLE_POLL_INTERVAL_MS - 1_000,
+      );
+      expect(service.getConversation).toHaveBeenCalledTimes(2);
+
+      unmount();
+      await prefetch;
+    } finally {
+      queryClient.clear();
+      vi.useRealTimers();
+    }
+  });
+
   it("polls a pending id from the set and patches the resolved title into the list cache", async () => {
     vi.mocked(service.getConversation).mockResolvedValue(
       conv(1, "Weekly report"),

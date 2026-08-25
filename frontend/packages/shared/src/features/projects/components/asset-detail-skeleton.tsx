@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Skeleton } from "@sico/ui";
 import type * as React from "react";
 
@@ -33,49 +12,72 @@ export type AssetDetailSkeletonProps = {
   variant?: "rich" | "simple";
 };
 
+const DIVIDER = (
+  <hr
+    data-testid="asset-detail-skeleton-divider"
+    className="border-divider w-full border-t border-solid"
+  />
+);
+
 // The right Detail panel — `rich` mirrors the knowledge panel (name/summary,
 // tags, source file, created time); `simple` mirrors the experience/deliverable
 // meta panel (name + generated-by, then a stacked created/operator pair).
 function renderPanel(variant: "rich" | "simple"): React.JSX.Element {
-  if (variant === "simple") {
-    return (
-      <div className="flex flex-1 flex-col gap-8 p-6">
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-5 w-40" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-5 w-28" />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-5 w-44" />
-          </div>
-        </div>
-      </div>
-    );
-  }
   return (
-    <div className="flex flex-1 flex-col gap-8 p-6">
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-5 w-40" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-32" />
-      </div>
-      <div className="flex flex-col gap-3">
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-7 w-24 rounded-md" />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-4 w-20" />
-        <Skeleton className="h-6 w-56 rounded-lg" />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-5 w-32" />
-      </div>
+    <div
+      data-testid="asset-detail-skeleton-body"
+      className="scrollbar flex flex-1 flex-col gap-8 overflow-y-auto pt-8 pr-5 pb-5 pl-5"
+    >
+      {variant === "simple" ? (
+        <div
+          data-testid="asset-detail-skeleton-simple"
+          className="flex flex-col gap-6"
+        >
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="flex flex-col gap-6">
+            <div
+              data-testid="asset-detail-skeleton-field"
+              className="flex flex-col gap-3"
+            >
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-5 w-28" />
+            </div>
+            <div
+              data-testid="asset-detail-skeleton-field"
+              className="flex flex-col gap-3"
+            >
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-5 w-44" />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          {DIVIDER}
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-7 w-24 rounded-md" />
+          </div>
+          {DIVIDER}
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-6 w-56 rounded-lg" />
+          </div>
+          {DIVIDER}
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-5 w-32" />
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -90,10 +92,14 @@ function renderPanel(variant: "rich" | "simple"): React.JSX.Element {
 export function AssetDetailSkeleton({
   variant = "rich",
 }: AssetDetailSkeletonProps): React.JSX.Element {
+  const { t } = useLingui();
   return (
     <div
       role="status"
-      aria-label="Loading asset"
+      aria-label={t({
+        id: "projects.assetDetailSkeleton.loading",
+        message: "Loading asset",
+      })}
       className="bg-surface-canvas flex h-full min-h-0"
     >
       <div aria-hidden="true" className="flex min-w-0 flex-1 flex-col">
@@ -127,13 +133,28 @@ export function AssetDetailSkeleton({
           </div>
         </div>
       </div>
-      <div
-        aria-hidden="true"
-        className="border-divider flex h-full w-90 shrink-0 flex-col border-l"
-      >
-        <div className="flex h-12 items-center justify-between px-5">
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="size-7" />
+      <div aria-hidden="true" className="flex h-full w-80 shrink-0 flex-col">
+        <div
+          data-testid="asset-detail-skeleton-header"
+          className="flex h-12 items-center justify-between gap-1 pr-5 pl-5"
+        >
+          <div
+            data-testid="asset-detail-skeleton-title-actions"
+            className="flex min-w-0 items-center gap-1"
+          >
+            <Skeleton
+              data-testid="asset-detail-skeleton-title"
+              className="h-4 w-12"
+            />
+            <Skeleton
+              data-testid="asset-detail-skeleton-actions"
+              className="size-7"
+            />
+          </div>
+          <Skeleton
+            data-testid="asset-detail-skeleton-collapse"
+            className="size-7"
+          />
         </div>
         {renderPanel(variant)}
       </div>

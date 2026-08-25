@@ -1,28 +1,12 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { type MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { cn } from "@sico/ui/lib/utils.ts";
 import type { ReactElement } from "react";
 
+import {
+  type ConversationRunStatus,
+  ConversationRunStatusSchema,
+} from "../../../schemas/conversation-run-status";
 import { type AgentStatus, AgentStatusSchema } from "../schemas/agent";
 
 // The three visual tones a status maps to. Each is the sico text-colour
@@ -41,26 +25,81 @@ export type DwStatusIndicatorProps = {
   label: string;
 };
 
-// AgentStatus → {tone, label}. Onboarding-saved collapses to Onboarding;
-// NEW reads as Active (it also gets the "new" dot on the card).
-export const STATUS_INDICATOR: Record<AgentStatus, DwStatusIndicatorProps> = {
-  [AgentStatusSchema.enum.ACTIVE]: { tone: "success", label: "Active" },
-  [AgentStatusSchema.enum.NEW]: { tone: "success", label: "Active" },
-  [AgentStatusSchema.enum.ONBOARDING]: { tone: "info", label: "Onboarding" },
-  [AgentStatusSchema.enum.ONBOARDING_SAVED]: {
-    tone: "info",
-    label: "Onboarding",
-  },
-  [AgentStatusSchema.enum.INACTIVE]: { tone: "muted", label: "Inactive" },
-  [AgentStatusSchema.enum.ABORTED]: { tone: "muted", label: "Aborted" },
-  [AgentStatusSchema.enum.UNKNOWN]: { tone: "info", label: "Unknown" },
+// Keep lifecycle metadata separate from the execution override so protected
+// lifecycle states retain their existing presentation. Labels stay as message
+// descriptors until the caller resolves them reactively with `useLingui().t`.
+export type StatusIndicatorMeta = {
+  tone: StatusTone;
+  label: MessageDescriptor;
 };
 
+const WORKING_STATUS_INDICATOR: StatusIndicatorMeta = {
+  tone: "info",
+  label: msg({ id: "digitalWorker.status.working", message: "Working" }),
+};
+
+export const STATUS_INDICATOR: Record<AgentStatus, StatusIndicatorMeta> = {
+  [AgentStatusSchema.enum.ACTIVE]: {
+    tone: "success",
+    label: msg({ id: "digitalWorker.status.active", message: "Active" }),
+  },
+  [AgentStatusSchema.enum.NEW]: {
+    tone: "success",
+    label: msg({ id: "digitalWorker.status.active", message: "Active" }),
+  },
+  [AgentStatusSchema.enum.ONBOARDING]: {
+    tone: "info",
+    label: msg({
+      id: "digitalWorker.status.onboarding",
+      message: "Onboarding",
+    }),
+  },
+  [AgentStatusSchema.enum.ONBOARDING_SAVED]: {
+    tone: "info",
+    label: msg({
+      id: "digitalWorker.status.onboarding",
+      message: "Onboarding",
+    }),
+  },
+  [AgentStatusSchema.enum.INACTIVE]: {
+    tone: "muted",
+    label: msg({ id: "digitalWorker.status.inactive", message: "Inactive" }),
+  },
+  [AgentStatusSchema.enum.ABORTED]: {
+    tone: "muted",
+    label: msg({ id: "digitalWorker.status.aborted", message: "Aborted" }),
+  },
+  [AgentStatusSchema.enum.UNKNOWN]: {
+    tone: "info",
+    label: msg({ id: "digitalWorker.status.unknown", message: "Unknown" }),
+  },
+};
+
+export function resolveStatusIndicator(
+  status: AgentStatus | null | undefined,
+  conversationStatus: ConversationRunStatus | undefined,
+): StatusIndicatorMeta | undefined {
+  if (status === null || status === undefined) {
+    return undefined;
+  }
+
+  const canShowWorking =
+    status === AgentStatusSchema.enum.ACTIVE ||
+    status === AgentStatusSchema.enum.NEW;
+  if (
+    canShowWorking &&
+    conversationStatus === ConversationRunStatusSchema.enum.RUNNING
+  ) {
+    return WORKING_STATUS_INDICATOR;
+  }
+
+  return STATUS_INDICATOR[status];
+}
+
 /**
- * A digital worker's lifecycle status as a same-colour dot + label on a
- * transparent background (dwp's `StatusTag appearance="subtle"`). Pure
- * presentation: the caller maps a status to `{tone, label}` (via
- * `STATUS_INDICATOR`) and owns gating + positioning.
+ * Presents metadata selected by `resolveStatusIndicator` as a same-colour dot
+ * and label. Keeping selection outside this component lets lifecycle and
+ * execution states share one presentation without branching here.
  */
 export function DwStatusIndicator({
   tone,
@@ -69,7 +108,7 @@ export function DwStatusIndicator({
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center gap-1 text-xs leading-4 font-medium",
+        "flex shrink-0 items-center gap-1 text-xs leading-4 font-medium whitespace-nowrap",
         TONE_CLASS[tone],
       )}
     >

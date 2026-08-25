@@ -1,28 +1,10 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import type { AxiosInstance } from "axios";
 import { z } from "zod";
 
+import {
+  KNOWLEDGE_ENDPOINTS,
+  PROJECT_ENDPOINTS,
+} from "../../../constants/endpoints";
 import { apiResponseSchema, unwrapData } from "../../../schemas/api";
 import { type Paged } from "../../../schemas/paginated";
 import {
@@ -94,7 +76,7 @@ export async function fetchKnowledgeItems(
   apiClient: AxiosInstance,
   { projectId, page, pageSize }: ListParams,
 ): Promise<Paged<AssetRow>> {
-  const response = await apiClient.get<unknown>("/knowledge/items", {
+  const response = await apiClient.get<unknown>(KNOWLEDGE_ENDPOINTS.items, {
     params: { projectId, page, pageSize },
   });
   const parsed = knowledgeItemsEnvelope.parse(response.data);
@@ -162,7 +144,7 @@ export async function fetchDocuments(
   apiClient: AxiosInstance,
   { projectId, page, pageSize }: ListParams,
 ): Promise<Paged<AssetRow>> {
-  const response = await apiClient.get<unknown>("/knowledge/documents", {
+  const response = await apiClient.get<unknown>(KNOWLEDGE_ENDPOINTS.documents, {
     params: { projectId, page, pageSize },
   });
   const parsed = documentsEnvelope.parse(response.data);
@@ -175,7 +157,7 @@ export async function fetchPlaybooks(
   apiClient: AxiosInstance,
   { projectId, page, pageSize }: ListParams,
 ): Promise<Paged<AssetRow>> {
-  const response = await apiClient.get<unknown>("/knowledge/playbooks", {
+  const response = await apiClient.get<unknown>(KNOWLEDGE_ENDPOINTS.playbooks, {
     params: { projectId, page, pageSize },
   });
   const parsed = playbooksEnvelope.parse(response.data);
@@ -188,9 +170,12 @@ export async function fetchDeliverables(
   apiClient: AxiosInstance,
   { projectId, page, pageSize }: ListParams,
 ): Promise<Paged<AssetRow>> {
-  const response = await apiClient.get<unknown>("/project/deliverables", {
-    params: { projectId, page, pageSize },
-  });
+  const response = await apiClient.get<unknown>(
+    PROJECT_ENDPOINTS.deliverables,
+    {
+      params: { projectId, page, pageSize },
+    },
+  );
   const parsed = deliverablesEnvelope.parse(response.data);
   return unwrapData(parsed, "fetchDeliverables");
 }
@@ -202,7 +187,7 @@ export async function fetchDeliverableDetail(
   apiClient: AxiosInstance,
   id: number,
 ): Promise<DeliverableWire> {
-  const response = await apiClient.get<unknown>("/project/deliverable", {
+  const response = await apiClient.get<unknown>(PROJECT_ENDPOINTS.deliverable, {
     params: { id },
   });
   const parsed = deliverableEnvelope.parse(response.data);
@@ -213,7 +198,7 @@ export async function fetchKnowledgeDocument(
   apiClient: AxiosInstance,
   id: number,
 ): Promise<KnowledgeDocument> {
-  const response = await apiClient.get<unknown>("/knowledge/document", {
+  const response = await apiClient.get<unknown>(KNOWLEDGE_ENDPOINTS.document, {
     params: { id },
   });
   const parsed = documentEnvelope.parse(response.data);
@@ -224,9 +209,12 @@ export async function fetchDocumentDetails(
   apiClient: AxiosInstance,
   id: number,
 ): Promise<DocumentDetails> {
-  const response = await apiClient.get<unknown>("/knowledge/document/details", {
-    params: { id },
-  });
+  const response = await apiClient.get<unknown>(
+    KNOWLEDGE_ENDPOINTS.documentDetails,
+    {
+      params: { id },
+    },
+  );
   const parsed = documentDetailsEnvelope.parse(response.data);
   return unwrapData(parsed, "fetchDocumentDetails");
 }
@@ -235,9 +223,12 @@ export async function fetchPlaybookDetails(
   apiClient: AxiosInstance,
   id: number,
 ): Promise<PlaybookDetails> {
-  const response = await apiClient.get<unknown>("/knowledge/playbook/details", {
-    params: { id },
-  });
+  const response = await apiClient.get<unknown>(
+    KNOWLEDGE_ENDPOINTS.playbookDetails,
+    {
+      params: { id },
+    },
+  );
   const parsed = playbookDetailsEnvelope.parse(response.data);
   return unwrapData(parsed, "fetchPlaybookDetails");
 }
@@ -249,7 +240,7 @@ export async function fetchPlaybook(
   apiClient: AxiosInstance,
   id: number,
 ): Promise<PlaybookWire> {
-  const response = await apiClient.get<unknown>("/knowledge/playbook", {
+  const response = await apiClient.get<unknown>(KNOWLEDGE_ENDPOINTS.playbook, {
     params: { id },
   });
   const parsed = playbookEnvelope.parse(response.data);

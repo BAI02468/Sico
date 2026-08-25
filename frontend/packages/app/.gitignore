@@ -1,1 +1,4 @@
 .tanstack/
+
+# E2E real-environment credentials — never commit.
+.env.test.local

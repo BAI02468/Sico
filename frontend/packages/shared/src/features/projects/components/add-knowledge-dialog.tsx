@@ -1,230 +1,109 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import {
-  Button,
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  FieldLabel,
-  Input,
   toast,
 } from "@sico/ui";
-import { Loader2 } from "lucide-react";
-import { Suspense, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type * as React from "react";
-import { ErrorBoundary } from "react-error-boundary";
 
-import { AddKnowledgeTagArea } from "./add-knowledge-tag-area";
-import { AddKnowledgeTagAreaSkeleton } from "./add-knowledge-tag-area-skeleton";
-import { FileTile } from "../../../components/file-tile";
-import { logger } from "../../../utils/logger";
-import { safeIconUri } from "../../../utils/safe-icon-uri";
 import {
-  type AddKnowledgeResult,
-  useAddKnowledgeMutation,
-} from "../hooks/use-add-knowledge-mutation";
+  type AttachmentView,
+  type DialogCopy,
+  renderAttachments,
+  renderDropZone,
+  renderFooter,
+  renderLinkRow,
+  renderTagArea,
+  reportResult,
+} from "./add-knowledge-dialog-parts";
+import { safeIconUri } from "../../../utils/safe-icon-uri";
+import { useAddKnowledgeMutation } from "../hooks/use-add-knowledge-mutation";
 import { collectValidFiles, fileKey } from "../utils/collect-valid-files";
 
-// Render helpers — plain module-scope functions (NOT nested components, so
-// `react/no-unstable-nested-components` never fires and only ONE component
-// lives in this file) that keep the dialog body under the 100-line cap. Called
-// as `{renderDropZone(...)}`, never `<RenderDropZone/>` — the exact pattern
-// `edit-project-dialog.tsx` uses.
+// Args for buildAttachments — bundled into one object so the helper stays under
+// the 4-param cap.
+type BuildAttachmentsArgs = {
+  files: File[];
+  links: string[];
+  setFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  setLinks: React.Dispatch<React.SetStateAction<string[]>>;
+};
 
-// The knowledge-tag picker. It suspends on `useKnowledgeTagsQuery`, so a LOCAL
-// ErrorBoundary drops only the tag area on failure (a secondary field) instead
-// of escalating to the page boundary and blanking the whole workspace.
-function renderTagArea(
-  projectId: number,
-  value: number[],
-  onChange: (next: number[]) => void,
-): React.JSX.Element {
-  return (
-    <ErrorBoundary
-      fallback={null}
-      onError={(error) => logger.error("tag area failed", { error })}
-    >
-      <Suspense fallback={<AddKnowledgeTagAreaSkeleton />}>
-        <AddKnowledgeTagArea
-          projectId={projectId}
-          value={value}
-          onChange={onChange}
-        />
-      </Suspense>
-    </ErrorBoundary>
-  );
-}
-
-function renderDropZone(
-  fileInputRef: React.RefObject<HTMLInputElement | null>,
-  onPick: () => void,
-  onFileInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
-  onDropFiles: (files: File[]) => void,
-): React.JSX.Element {
-  return (
-    <div className="flex flex-col gap-3">
-      <FieldLabel className="text-base">Upload context</FieldLabel>
-      <div
-        className="border-input-stroke-rest bg-surface-basic flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-6 py-9"
-        onDragOver={(event) => event.preventDefault()}
-        onDrop={(event) => {
-          event.preventDefault();
-          onDropFiles(Array.from(event.dataTransfer.files));
-        }}
-      >
-        <p className="leading-body text-foreground-secondary text-center text-sm">
-          Supports pdf, docx, xlsx · up to 10MB · max 5 files
-        </p>
-        <p className="leading-body text-foreground-secondary text-center text-sm">
-          Files must be publicly accessible.
-        </p>
-        <Button type="button" variant="secondary" onClick={onPick}>
-          Add files
-        </Button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept=".pdf,.docx,.xlsx"
-          className="hidden"
-          data-testid="add-knowledge-file-input"
-          onChange={onFileInputChange}
-        />
-      </div>
-    </div>
-  );
-}
-
-function renderLinkRow(
-  linkDraft: string,
-  onLinkDraftChange: (value: string) => void,
-  onAddLink: () => void,
-): React.JSX.Element {
-  return (
-    <div className="flex items-center gap-2">
-      <Input
-        aria-label="Import from link"
-        placeholder="Paste a link to import"
-        value={linkDraft}
-        onChange={(event) => onLinkDraftChange(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            onAddLink();
-          }
-        }}
-      />
-      <Button type="button" variant="secondary" onClick={onAddLink}>
-        Add
-      </Button>
-    </div>
-  );
-}
-
-function renderAttachmentRow(
-  key: string,
-  filename: string,
-  onRemove: () => void,
-): React.JSX.Element {
-  // The glyph is derived from `filename` inside <FileTile> via
-  // `iconForFilename` — files resolve by extension, a link (an http(s) URL)
-  // resolves to the globe.
-  return (
-    <FileTile
-      key={key}
-      filename={filename}
-      removeLabel={`Remove ${filename}`}
-      onRemove={onRemove}
-    />
-  );
-}
-
-// Mixed-result toast (M-3): a partial failure still surfaces, and any success
-// closes the dialog. Closing on success only is intentional — a full failure
-// keeps the dialog so the user can retry. The success copy says "extracting"
-// (not "added") because registration only queues extraction — the extraction
-// result toast fires later, from the table's poll (useExtractionResultToast).
-function reportResult(result: AddKnowledgeResult, onClose: () => void): void {
-  if (result.failed.length > 0) {
-    toast.error("Some items couldn't be added. Try again.");
-  }
-  if (result.succeeded.length > 0) {
-    toast.success("Knowledge uploaded — extracting…");
-    onClose();
-  }
-}
-
-// Footer (§5): Cancel + Upload. `Upload` is enabled once there's at least one
-// file OR one link (migration C3); links and files both flow into submit.
-function renderFooter(
-  itemCount: number,
-  isPending: boolean,
-  onCancel: () => void,
-  onUpload: () => void,
-): React.JSX.Element {
-  return (
-    <DialogFooter>
-      <Button type="button" variant="secondary" onClick={onCancel}>
-        Cancel
-      </Button>
-      <Button
-        type="button"
-        variant="primary"
-        aria-busy={isPending}
-        aria-label={isPending ? "Uploading" : undefined}
-        disabled={itemCount === 0 || isPending}
-        onClick={onUpload}
-      >
-        {isPending ? <Loader2 className="animate-spin" /> : "Upload"}
-      </Button>
-    </DialogFooter>
-  );
-}
-
-function renderAttachments(
-  files: File[],
-  links: string[],
-  onRemoveFile: (index: number) => void,
-  onRemoveLink: (index: number) => void,
-): React.JSX.Element | null {
-  if (files.length === 0 && links.length === 0) {
-    return null;
-  }
-  return (
-    <div className="flex flex-wrap gap-2">
-      {files.map((file, index) =>
-        renderAttachmentRow(fileKey(file), file.name, () =>
-          onRemoveFile(index),
-        ),
-      )}
-      {links.map((url, index) =>
-        renderAttachmentRow(url, url, () => onRemoveLink(index)),
-      )}
-    </div>
-  );
-}
+// Module-scope `msg()` descriptors (statically extractable). Resolved via
+// `i18n._` at render time; the dialog subscribes with `useLingui`, so a locale
+// switch re-renders it and every string re-resolves in the new locale.
+const TOO_MANY_FILES_COPY = msg({
+  id: "projects.addKnowledge.error.tooManyFiles",
+  message: "You can add up to 5 files.",
+});
+const UNSUPPORTED_TYPE_COPY = msg({
+  id: "projects.addKnowledge.error.unsupportedType",
+  message: '"{0}" has an unsupported file type.',
+});
+const FILE_TOO_LARGE_COPY = msg({
+  id: "projects.addKnowledge.error.fileTooLarge",
+  message: '"{0}" exceeds the 10MB size limit.',
+});
+const INVALID_LINK_COPY = msg({
+  id: "projects.addKnowledge.toast.invalidLink",
+  message: "Enter a valid http(s) link.",
+});
+const TITLE_COPY = msg({
+  id: "projects.addKnowledge.title",
+  message: "Add Knowledge",
+});
+const UPLOAD_LABEL_COPY = msg({
+  id: "projects.addKnowledge.uploadLabel",
+  message: "Upload context",
+});
+const UPLOAD_HINT1_COPY = msg({
+  id: "projects.addKnowledge.uploadHint1",
+  message: "Supports pdf, docx, xlsx · up to 10MB · max 5 files",
+});
+const UPLOAD_HINT2_COPY = msg({
+  id: "projects.addKnowledge.uploadHint2",
+  message: "Files must be publicly accessible.",
+});
+const ADD_FILES_COPY = msg({
+  id: "projects.addKnowledge.action.addFiles",
+  message: "Add files",
+});
+const ADD_COPY = msg({ id: "common.action.add", message: "Add" });
+const IMPORT_LABEL_COPY = msg({
+  id: "projects.addKnowledge.action.import",
+  message: "Import from link",
+});
+const IMPORT_PLACEHOLDER_COPY = msg({
+  id: "projects.addKnowledge.importPlaceholder",
+  message: "Paste a link to import",
+});
+const CANCEL_COPY = msg({ id: "common.action.cancel", message: "Cancel" });
+const UPLOAD_COPY = msg({ id: "common.action.upload", message: "Upload" });
+const UPLOADING_COPY = msg({
+  id: "common.status.uploading",
+  message: "Uploading…",
+});
+const FAILED_COPY = msg({
+  id: "projects.addKnowledge.toast.failed",
+  message: "Some items couldn't be added. Try again.",
+});
+const SUCCESS_COPY = msg({
+  id: "projects.addKnowledge.toast.success",
+  message: "Knowledge uploaded — extracting…",
+});
+const REMOVE_FILE_COPY = msg({
+  id: "projects.addKnowledge.action.removeFile",
+  message: "Remove {name}",
+});
+const REMOVE_LINK_COPY = msg({
+  id: "projects.addKnowledge.action.removeLink",
+  message: "Remove {url}",
+});
 
 export type AddKnowledgeDialogProps = {
   projectId: number;
@@ -232,20 +111,68 @@ export type AddKnowledgeDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-/**
- * Controlled dialog for adding knowledge (files + links + tags) to a project.
- *
- * Upload submits files, links, and the selected knowledge-tag ids together
- * via `useAddKnowledgeMutation` (files register as FILE, links as LINK, both
- * carrying `tagIds`). Upload is enabled once there's at least one file or link
- * (migration C3).
- *
- * Closing the dialog resets every draft field — `files`, `links`, `linkDraft`,
- * and `selectedTagIds` — so a reopened dialog always starts clean (the parent
- * only toggles `open`; the component stays mounted). The suspending
- * `<AddKnowledgeTagArea>` sits behind a LOCAL `<ErrorBoundary>` so a tag-source
- * failure drops only the tag area, not the whole workspace.
- */
+function createDialogCopy(): DialogCopy {
+  return {
+    title: i18n._(TITLE_COPY),
+    uploadLabel: i18n._(UPLOAD_LABEL_COPY),
+    uploadHint1: i18n._(UPLOAD_HINT1_COPY),
+    uploadHint2: i18n._(UPLOAD_HINT2_COPY),
+    addFiles: i18n._(ADD_FILES_COPY),
+    add: i18n._(ADD_COPY),
+    importLabel: i18n._(IMPORT_LABEL_COPY),
+    importPlaceholder: i18n._(IMPORT_PLACEHOLDER_COPY),
+    cancel: i18n._(CANCEL_COPY),
+    upload: i18n._(UPLOAD_COPY),
+    uploading: i18n._(UPLOADING_COPY),
+    failed: i18n._(FAILED_COPY),
+    success: i18n._(SUCCESS_COPY),
+  };
+}
+
+function toastFileRejection(rejection: {
+  reason: "tooMany" | "unsupportedType" | "tooLarge";
+  filename?: string;
+}): void {
+  if (rejection.reason === "tooMany") {
+    toast.error(i18n._(TOO_MANY_FILES_COPY));
+    return;
+  }
+  const name = rejection.filename ?? "File";
+  if (rejection.reason === "unsupportedType") {
+    toast.error(
+      i18n._(UNSUPPORTED_TYPE_COPY.id, { 0: name }, UNSUPPORTED_TYPE_COPY),
+    );
+    return;
+  }
+  toast.error(i18n._(FILE_TOO_LARGE_COPY.id, { 0: name }, FILE_TOO_LARGE_COPY));
+}
+
+function buildAttachments({
+  files,
+  links,
+  setFiles,
+  setLinks,
+}: BuildAttachmentsArgs): AttachmentView[] {
+  return [
+    ...files.map((file, index) => ({
+      key: fileKey(file),
+      filename: file.name,
+      removeLabel: i18n._(
+        REMOVE_FILE_COPY.id,
+        { name: file.name },
+        REMOVE_FILE_COPY,
+      ),
+      onRemove: () => setFiles((prev) => prev.filter((_, i) => i !== index)),
+    })),
+    ...links.map((url, index) => ({
+      key: url,
+      filename: url,
+      removeLabel: i18n._(REMOVE_LINK_COPY.id, { url }, REMOVE_LINK_COPY),
+      onRemove: () => setLinks((prev) => prev.filter((_, i) => i !== index)),
+    })),
+  ];
+}
+
 export function AddKnowledgeDialog({
   projectId,
   open,
@@ -256,44 +183,13 @@ export function AddKnowledgeDialog({
   const [linkDraft, setLinkDraft] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Subscribe so a locale switch re-renders the dialog and the `i18n._`-resolved
+  // copy below (title, dropzone, footer, attachment labels) re-resolves.
+  useLingui();
   const mutation = useAddKnowledgeMutation(projectId);
+  const copy = createDialogCopy();
 
-  const addFiles = (incoming: File[]): void => {
-    const { accepted, errors } = collectValidFiles(incoming, files);
-    for (const message of errors) {
-      toast.error(message);
-    }
-    if (accepted.length > 0) {
-      setFiles((prev) => [...prev, ...accepted]);
-    }
-  };
-
-  const handleFileInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    const input = event.target;
-    addFiles(Array.from(input.files ?? []));
-    input.value = "";
-  };
-
-  const addLink = (): void => {
-    const url = linkDraft.trim();
-    if (!url || links.includes(url)) {
-      return;
-    }
-    // Scheme-gate the user-entered link: a stored javascript:/data: URL would
-    // later render as a live <a href> on the asset-detail page (XSS). safeIconUri
-    // accepts only http(s)/same-origin paths.
-    if (!safeIconUri(url)) {
-      toast.error("Enter a valid http(s) link.");
-      return;
-    }
-    setLinks((prev) => [...prev, url]);
-    setLinkDraft("");
-  };
-
-  // Resets every draft field, tags included, so a reopened dialog starts clean.
-  const handleClose = (): void => {
+  const resetAndClose = (): void => {
     setFiles([]);
     setLinks([]);
     setLinkDraft("");
@@ -301,46 +197,82 @@ export function AddKnowledgeDialog({
     onOpenChange(false);
   };
 
-  const handleUpload = (): void => {
-    if (files.length === 0 && links.length === 0) {
+  const addFiles = (incoming: File[]): void => {
+    const { accepted, rejections } = collectValidFiles(incoming, files);
+    for (const rejection of rejections) {
+      toastFileRejection(rejection);
+    }
+    if (accepted.length > 0) {
+      setFiles((prev) => [...prev, ...accepted]);
+    }
+  };
+
+  const addLink = (): void => {
+    const url = linkDraft.trim();
+    if (!url || links.includes(url)) {
       return;
     }
-    mutation.mutate(
-      { files, links, tagIds: selectedTagIds },
-      { onSuccess: (result) => reportResult(result, handleClose) },
-    );
+    if (!safeIconUri(url)) {
+      toast.error(i18n._(INVALID_LINK_COPY));
+      return;
+    }
+    setLinks((prev) => [...prev, url]);
+    setLinkDraft("");
   };
+
+  const attachments = buildAttachments({
+    files,
+    links,
+    setFiles,
+    setLinks,
+  });
 
   return (
     <Dialog
       open={open}
-      onOpenChange={(next) => (next ? onOpenChange(true) : handleClose())}
+      onOpenChange={(next) => (next ? onOpenChange(true) : resetAndClose())}
     >
       <DialogContent variant="content" className="w-150">
         <DialogHeader>
-          <DialogTitle>Add Knowledge</DialogTitle>
+          <DialogTitle>{copy.title}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-6">
           {renderTagArea(projectId, selectedTagIds, setSelectedTagIds)}
           {renderDropZone(
             fileInputRef,
-            () => fileInputRef.current?.click(),
-            handleFileInputChange,
+            (event) => {
+              const input = event.target;
+              addFiles(Array.from(input.files ?? []));
+              input.value = "";
+            },
             addFiles,
+            copy,
           )}
-          {renderLinkRow(linkDraft, setLinkDraft, addLink)}
-          {renderAttachments(
-            files,
-            links,
-            (index) => setFiles((prev) => prev.filter((_, i) => i !== index)),
-            (index) => setLinks((prev) => prev.filter((_, i) => i !== index)),
-          )}
+          {renderLinkRow(linkDraft, setLinkDraft, addLink, copy)}
+          {renderAttachments(attachments)}
         </div>
         {renderFooter(
           files.length + links.length,
           mutation.isPending,
-          handleClose,
-          handleUpload,
+          {
+            onCancel: resetAndClose,
+            onUpload: () => {
+              if (files.length === 0 && links.length === 0) {
+                return;
+              }
+              mutation.mutate(
+                { files, links, tagIds: selectedTagIds },
+                {
+                  onSuccess: (result) =>
+                    reportResult(result, resetAndClose, {
+                      failed: copy.failed,
+                      success: copy.success,
+                    }),
+                },
+              );
+            },
+          },
+          copy,
         )}
       </DialogContent>
     </Dialog>

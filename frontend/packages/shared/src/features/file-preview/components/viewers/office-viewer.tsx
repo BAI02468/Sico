@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { type JSX, useEffect, useRef, useState } from "react";
 
 import { logger } from "../../../../utils/logger";
@@ -69,6 +48,7 @@ export type OfficeViewerProps = {
  * than an endless spinner.
  */
 export function OfficeViewer({ fileUrl }: OfficeViewerProps): JSX.Element {
+  const { t } = useLingui();
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -109,7 +89,7 @@ export function OfficeViewer({ fileUrl }: OfficeViewerProps): JSX.Element {
     <div className="relative flex-1">
       {!loaded && <LoadingOverlay />}
       <iframe
-        title="Office preview"
+        title={t({ id: "filePreview.office.title", message: "Office preview" })}
         src={officeEmbedUrl(fileUrl)}
         onLoad={handleLoad}
         data-testid="file-office"

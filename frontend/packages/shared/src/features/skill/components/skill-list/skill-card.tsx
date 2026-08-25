@@ -1,30 +1,16 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+import { type ReactElement, useEffect, useMemo } from "react";
 
-import { type ReactElement, useState } from "react";
-
+import { SkillCardAutosaveHeader } from "./skill-card-autosave-header";
 import { SkillCardContent } from "./skill-card-content";
-import { SkillCardHeader } from "./skill-card-header";
-import { type SkillCardSaveInput } from "../../hooks/use-skill-card-actions";
+import type { LatestSaveQueue } from "../../../../hooks/use-latest-save-queue";
+import {
+  type SkillAutosaveSnapshot,
+  useSkillAutosave,
+} from "../../hooks/use-skill-autosave";
+import {
+  type SkillCardSaveInput,
+  type SkillCardSaveOptions,
+} from "../../hooks/use-skill-card-actions";
 import { useSkillCardEdits } from "../../hooks/use-skill-card-edits";
 import {
   type SkillFile,
@@ -34,6 +20,7 @@ import {
   type SkillVersion,
 } from "../../schemas/skill";
 import { findActiveVersion } from "../../utils";
+import { useSkillSaveRegistry } from "../setup/skill-save-registry";
 
 export type SkillCardProps = {
   skill: SkillItem;
@@ -42,6 +29,7 @@ export type SkillCardProps = {
   parsing?: boolean;
   detailLoading: boolean;
   expanded: boolean;
+  editable: boolean;
   onToggle: () => void;
   originalFiles: SkillFile[];
   filesLoading: boolean;
@@ -52,8 +40,53 @@ export type SkillCardProps = {
   onReplace: () => void;
   onDownloadZip: () => void;
   onDelete: () => void;
-  onSave: (changes: SkillCardSaveInput) => Promise<void>;
+  onSave: (
+    changes: SkillCardSaveInput,
+    options?: SkillCardSaveOptions,
+  ) => Promise<string>;
 };
+
+function useRegisterSkillAutosave({
+  register,
+  skillId,
+  editable,
+  hasChanges,
+  autosave,
+}: {
+  register: ReturnType<typeof useSkillSaveRegistry>["register"];
+  skillId: number;
+  editable: boolean;
+  hasChanges: boolean;
+  autosave: LatestSaveQueue<SkillAutosaveSnapshot>;
+}): void {
+  const { error, flush, hasUnsettled, retry, status } = autosave;
+  useEffect(
+    () =>
+      register({
+        id: `skill-${skillId}`,
+        dirty: editable && (hasChanges || hasUnsettled),
+        status,
+        save: async () => {
+          if (!(await flush())) {
+            throw error;
+          }
+        },
+        flush,
+        retry,
+      }),
+    [
+      editable,
+      error,
+      flush,
+      hasChanges,
+      hasUnsettled,
+      register,
+      retry,
+      skillId,
+      status,
+    ],
+  );
+}
 
 export function SkillCard({
   skill,
@@ -62,6 +95,7 @@ export function SkillCard({
   parsing,
   detailLoading,
   expanded,
+  editable,
   onToggle,
   originalFiles,
   filesLoading,
@@ -74,43 +108,56 @@ export function SkillCard({
   onDelete,
   onSave,
 }: SkillCardProps): ReactElement {
+  const { register } = useSkillSaveRegistry();
   const activeVersion = findActiveVersion(versions, selectedVersion);
-
-  const [saving, setSaving] = useState(false);
   const edits = useSkillCardEdits(originalFiles, activeVersion);
+  const snapshot = useMemo(
+    () => ({
+      ...edits.snapshot,
+      changedFiles: edits.changedFiles,
+      actionsChanged: edits.changedActions.length > 0,
+    }),
+    [edits.changedActions.length, edits.changedFiles, edits.snapshot],
+  );
+  const baseline = useMemo(
+    () => ({ files: edits.filesBaseline, actions: edits.actionsBaseline }),
+    [edits.actionsBaseline, edits.filesBaseline],
+  );
+  const autosave = useSkillAutosave({
+    enabled: editable,
+    selectedVersion,
+    snapshot,
+    baseline,
+    hasChanges: edits.hasChanges,
+    onSave: (changes, currentVersion) =>
+      onSave(changes, { showToast: false, currentVersion }),
+    onAcknowledge: edits.commitSnapshot,
+  });
 
   const isParsing = parsing ?? status === SkillStatusSchema.enum.UPLOADING;
   const description = activeVersion?.description ?? skill.description;
-  const saveDisabled = saving || versions.length === 0 || !edits.hasChanges;
 
-  async function handleSave(): Promise<void> {
-    setSaving(true);
-    try {
-      await onSave({
-        files: edits.changedFiles.length > 0 ? edits.changedFiles : undefined,
-        actions:
-          edits.changedActions.length > 0 ? edits.changedActions : undefined,
-      });
-      edits.commitActionsBaseline();
-    } finally {
-      setSaving(false);
-    }
-  }
+  useRegisterSkillAutosave({
+    register,
+    skillId: skill.id,
+    editable,
+    hasChanges: edits.hasChanges,
+    autosave,
+  });
 
   return (
     <div className="border-stroke-subtle-card-rest bg-surface-basic rounded-xl border px-6 pt-6">
-      <SkillCardHeader
+      <SkillCardAutosaveHeader
         name={activeVersion?.name ?? skill.name}
         parsing={isParsing}
         expanded={expanded}
-        onToggle={onToggle}
-        showControls={!isParsing && !detailLoading}
-        saveDisabled={saveDisabled}
-        onSave={() => {
-          void handleSave();
-        }}
+        detailLoading={detailLoading}
+        editable={editable}
         versions={versions}
         selectedVersion={selectedVersion}
+        autosave={autosave}
+        hasChanges={edits.hasChanges}
+        onToggle={onToggle}
         onSelectVersion={onSelectVersion}
         onReplace={onReplace}
         onDownloadZip={onDownloadZip}
@@ -128,6 +175,7 @@ export function SkillCard({
         filesLoading={filesLoading}
         filesProgress={filesProgress}
         filesError={filesError}
+        editable={editable}
         files={edits.files}
         actions={edits.actions}
         originalActions={edits.actionsBaseline}

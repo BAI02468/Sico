@@ -1,30 +1,13 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { render, screen } from "@testing-library/react";
 import type { AxiosInstance } from "axios";
 import type { ReactElement, ReactNode } from "react";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { conversationSummarySchema } from "@/features/chat/schemas/conversation";
+import {
+  type ConversationRunStatus,
+  ConversationRunStatusSchema,
+} from "@/schemas/conversation-run-status";
 import { ApiClientProvider } from "@/services/api-client-context";
 
 // Mock the router Link as a plain <a> carrying `to`/`params` as data attributes
@@ -81,13 +64,20 @@ vi.mock("@/features/chat/hooks/use-pending-conversation-titles", () => ({
   usePendingConversationTitles: () => {},
 }));
 
+type ConversationFixture = {
+  id: number;
+  title: string;
+  agentInstanceId?: number;
+  conversationStatus?: ConversationRunStatus;
+};
+
 // The hook returns a flattened item list plus infinite-scroll controls; tests
 // vary `items` and optionally the paging flags.
 function convResult(
-  items: readonly { id: number; title: string; agentInstanceId?: number }[],
+  items: readonly ConversationFixture[],
   overrides?: { hasNextPage?: boolean; isFetchingNextPage?: boolean },
 ): {
-  items: readonly { id: number; title: string; agentInstanceId?: number }[];
+  items: readonly ConversationFixture[];
   hasNextPage: boolean;
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
@@ -110,10 +100,10 @@ const { DwConversationNav } =
 
 const apiClient = {} as AxiosInstance;
 
-function renderNav(): void {
+function renderNav(readOnly = false): void {
   render(
     <ApiClientProvider client={apiClient}>
-      <DwConversationNav agentInstanceId={7} />
+      <DwConversationNav agentInstanceId={7} readOnly={readOnly} />
     </ApiClientProvider>,
   );
 }
@@ -141,6 +131,16 @@ beforeAll(() => {
 });
 
 describe("DwConversationNav", () => {
+  it("disables New session but keeps history links for an inactive worker", () => {
+    mockUseConversations.mockReturnValue(
+      convResult([{ id: 55, title: "Past chat", agentInstanceId: 7 }]),
+    );
+    renderNav(true);
+
+    expect(screen.getByRole("button", { name: "New session" })).toBeDisabled();
+    expect(screen.getByRole("link", { name: "Past chat" })).toBeInTheDocument();
+  });
+
   it("shows an empty state when there are no conversations", () => {
     renderNav();
     expect(screen.getByText("No conversations yet")).toBeInTheDocument();
@@ -191,6 +191,65 @@ describe("DwConversationNav", () => {
     );
     renderNav();
     expect(screen.getByText("Untitled")).toBeInTheDocument();
+  });
+
+  it("shows an accessible spinner for a running conversation", () => {
+    mockUseConversations.mockReturnValue(
+      convResult([
+        {
+          id: 55,
+          title: "First chat",
+          conversationStatus: ConversationRunStatusSchema.enum.RUNNING,
+        },
+      ]),
+    );
+    renderNav();
+
+    const status = screen.getByRole("status", {
+      name: "Conversation running",
+    });
+    const spinner = status.children.item(0);
+    expect(spinner).not.toBeNull();
+    expect(spinner).toHaveAttribute("aria-hidden", "true");
+    expect(spinner).toHaveClass("animate-spin", "text-foreground-secondary");
+    expect(
+      screen.getByRole("link", { name: "First chat" }),
+    ).toBeInTheDocument();
+  });
+
+  it.each([
+    ["idle", ConversationRunStatusSchema.enum.IDLE],
+    ["unknown", ConversationRunStatusSchema.enum.UNKNOWN],
+    ["missing", undefined],
+  ])("shows no spinner for a %s conversation status", (_name, status) => {
+    mockUseConversations.mockReturnValue(
+      convResult([
+        {
+          id: 55,
+          title: "First chat",
+          conversationStatus: status,
+        },
+      ]),
+    );
+    renderNav();
+
+    expect(
+      screen.queryByRole("status", { name: "Conversation running" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows no spinner after the schema normalizes a forward status", () => {
+    const conversation = conversationSummarySchema.parse({
+      id: 55,
+      title: "First chat",
+      conversationStatus: 999,
+    });
+    mockUseConversations.mockReturnValue(convResult([conversation]));
+    renderNav();
+
+    expect(
+      screen.queryByRole("status", { name: "Conversation running" }),
+    ).not.toBeInTheDocument();
   });
 
   it("marks the active conversation row with data-active", () => {

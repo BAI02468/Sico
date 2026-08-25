@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { cn } from "@sico/ui/lib/utils.ts";
 import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import { type JSX, type KeyboardEvent, useState } from "react";
@@ -32,6 +10,7 @@ export type ImageTileProps = {
   // Omit for a read-only tile (a sent image attachment): the remove control is
   // then not rendered at all.
   onRemove?: () => void;
+  disabled?: boolean;
   // Omit for a non-interactive tile. When set, the tile surface becomes
   // activatable (click + Enter/Space) — a sent image attachment that opens the
   // sidepane preview. Mirrors FileTile.onActivate; `alt` is the button's
@@ -53,6 +32,7 @@ export function ImageTile({
   status = "ready",
   removeLabel = "Remove image",
   onRemove,
+  disabled = false,
   onActivate,
 }: ImageTileProps): JSX.Element {
   // Enter/Space mirror a native button's activation (role="button" gives no
@@ -98,8 +78,7 @@ export function ImageTile({
           aria-label={alt}
           className="bg-surface-icon-tile flex h-full w-full items-center justify-center"
         >
-          {/* Override the global LucideProvider stroke (1) to 1.5 so the broken
-              glyph matches the tile chrome's weight (see file-tile X). */}
+          {/* Match the broken-image glyph to the tile chrome's weight. */}
           <ImageIcon className="text-icon-secondary size-4" strokeWidth={1.5} />
         </div>
       ) : (
@@ -138,6 +117,7 @@ export function ImageTile({
           <button
             type="button"
             aria-label={removeLabel}
+            disabled={disabled}
             className={cn(
               "absolute top-1 right-1 flex size-5 shrink-0 items-center justify-center rounded-sm opacity-80 hover:opacity-100 focus-visible:opacity-100",
               // White X over the sand-12 scrim on a real photo; secondary gray
@@ -153,8 +133,7 @@ export function ImageTile({
               onRemove();
             }}
           >
-            {/* Override the global LucideProvider stroke (1) to 1.5 — matches
-                the tile chrome weight (see file-tile X). */}
+            {/* Match the dismiss X to the tile chrome's weight. */}
             <X className="size-4" strokeWidth={1.5} />
           </button>
         </>

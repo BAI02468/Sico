@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@sico/ui";
 import type { ReactElement } from "react";
 
@@ -37,6 +15,7 @@ type SkillCardDetailsProps = {
   filesLoading: boolean;
   filesProgress: number;
   filesError: string;
+  editable: boolean;
   files: SkillFile[];
   actions: SkillAction[];
   originalActions: SkillAction[];
@@ -44,8 +23,6 @@ type SkillCardDetailsProps = {
   onActionChange: (index: number, action: SkillAction) => void;
 };
 
-// Expanded region of the skill card: full description, "Modified by", and the
-// Files / Tools tabs (legacy StyledExpandSection expanded body).
 export function SkillCardDetails({
   description,
   creatorUsername,
@@ -53,6 +30,7 @@ export function SkillCardDetails({
   filesLoading,
   filesProgress,
   filesError,
+  editable,
   files,
   actions,
   originalActions,
@@ -66,7 +44,7 @@ export function SkillCardDetails({
     <div className="pt-2">
       <div className="flex flex-col gap-3 pb-5">
         {description && (
-          <p className="leading-body text-foreground-emphasis">{description}</p>
+          <p className="text-foreground-emphasis leading-body">{description}</p>
         )}
         {creatorUsername && (
           <p className="text-foreground-tertiary text-sm">
@@ -92,7 +70,7 @@ export function SkillCardDetails({
           <TabsContent value="files" className="h-96">
             <FileExplorer
               files={files}
-              editable
+              editable={editable}
               isLoading={filesLoading}
               progress={filesProgress}
               error={filesError}
@@ -101,6 +79,7 @@ export function SkillCardDetails({
           </TabsContent>
           <TabsContent value="tools">
             <ParsedTools
+              editable={editable}
               actions={actions}
               originalActions={originalActions}
               onActionChange={onActionChange}

@@ -1,34 +1,22 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  type InfiniteData,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import type { AxiosInstance } from "axios";
+import axios, { type AxiosInstance } from "axios";
 import type { ReactElement, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useConversations } from "@/features/chat/hooks/use-conversations";
+import {
+  conversationListQueryOptions,
+  selectConversationsRefetchInterval,
+  useConversations,
+} from "@/features/chat/hooks/use-conversations";
 import type { ConversationSummary } from "@/features/chat/schemas/conversation";
+import type { ConversationListPage } from "@/features/chat/services/conversation";
 import * as service from "@/features/chat/services/conversation";
+import { ConversationRunStatusSchema } from "@/schemas/conversation-run-status";
 import { ApiClientProvider } from "@/services/api-client-context";
 
 vi.mock("@/features/chat/services/conversation");
@@ -69,7 +57,7 @@ describe("useConversations", () => {
     expect(service.listConversations).toHaveBeenCalledWith(
       expect.anything(),
       7,
-      1,
+      { page: 1 },
     );
   });
 
@@ -107,7 +95,7 @@ describe("useConversations", () => {
       2,
       expect.anything(),
       7,
-      2,
+      { page: 2 },
     );
   });
 
@@ -121,5 +109,88 @@ describe("useConversations", () => {
     });
     await waitFor(() => expect(result.current.items).toHaveLength(1));
     expect(result.current.hasNextPage).toBe(false);
+  });
+});
+
+describe("conversationListQueryOptions — query policy", () => {
+  it("selects a 2-second interval when any loaded conversation is running", () => {
+    const data: InfiniteData<ConversationListPage, number> = {
+      pages: [
+        {
+          items: [
+            {
+              ...conv(1),
+              conversationStatus: ConversationRunStatusSchema.enum.IDLE,
+            },
+          ],
+          hasNext: true,
+        },
+        {
+          items: [
+            {
+              ...conv(2),
+              conversationStatus: ConversationRunStatusSchema.enum.RUNNING,
+            },
+          ],
+          hasNext: false,
+        },
+      ],
+      pageParams: [1, 2],
+    };
+
+    expect(selectConversationsRefetchInterval(data)).toBe(2_000);
+  });
+
+  it("selects a 30-second interval before data loads", () => {
+    expect(selectConversationsRefetchInterval(undefined)).toBe(30_000);
+  });
+
+  it("selects a 30-second interval for empty pages", () => {
+    expect(
+      selectConversationsRefetchInterval({
+        pages: [{ items: [], hasNext: false }],
+        pageParams: [1],
+      }),
+    ).toBe(30_000);
+  });
+
+  it("selects a 30-second interval when no conversation is running", () => {
+    const data: InfiniteData<ConversationListPage, number> = {
+      pages: [
+        {
+          items: [
+            {
+              ...conv(1),
+              conversationStatus: ConversationRunStatusSchema.enum.IDLE,
+            },
+            {
+              ...conv(2),
+              conversationStatus: ConversationRunStatusSchema.enum.UNKNOWN,
+            },
+            conv(3),
+          ],
+          hasNext: false,
+        },
+      ],
+      pageParams: [1],
+    };
+
+    expect(selectConversationsRefetchInterval(data)).toBe(30_000);
+  });
+
+  it("preserves existing options and leaves background polling disabled", () => {
+    const options = conversationListQueryOptions(7, axios.create());
+
+    expect(options.queryKey).toEqual([
+      "conversations",
+      "list",
+      { agentInstanceId: 7 },
+    ]);
+    expect(options.initialPageParam).toBe(1);
+    expect(options.staleTime).toBe(30_000);
+    expect(options.refetchOnWindowFocus).toBe(false);
+    expect(options.gcTime).toBe(5 * 60_000);
+    expect(options.refetchInterval).toEqual(expect.any(Function));
+    expect(options.refetchIntervalInBackground).toBeUndefined();
   });
 });

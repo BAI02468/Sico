@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -30,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AssetDetailDeliverable } from "@/features/projects/components/asset-detail-deliverable";
 import type { AssetDetail } from "@/features/projects/hooks/use-asset-detail-query";
+import { projectKeys } from "@/features/projects/query-keys";
 import { deleteDeliverable } from "@/features/projects/services/asset-mutations";
 import { ApiClientProvider } from "@/services/api-client-context";
 import { downloadFile } from "@/utils/download-file";
@@ -46,6 +25,11 @@ vi.mock("@sico/ui", async (importActual) => {
 });
 
 vi.mock("@/features/projects/services/asset-mutations");
+// This test exercises the delete FLOW, so grant the delete gate; the gate's own
+// permission/ownership logic is unit-tested in ownsAsset.
+vi.mock("@/features/projects/hooks/use-asset-delete-gate", () => ({
+  useAssetDeleteGate: () => true,
+}));
 vi.mock("@/utils/download-file", () => ({
   downloadFile: vi.fn(() => Promise.resolve()),
 }));
@@ -89,7 +73,7 @@ function renderContent(
   });
   // Seed the owning project so the breadcrumb's `useProjectDetailQuery`
   // resolves from cache (the harness's empty `apiClient` has no `.get`).
-  queryClient.setQueryData(["projects", "detail", 9], {
+  queryClient.setQueryData(projectKeys.detail(9), {
     id: 9,
     name: "Demo Project",
     description: "",

@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Spinner } from "@sico/ui";
 import type * as React from "react";
 import { type RefObject, useRef } from "react";
@@ -34,6 +13,8 @@ type ProjectsGridProps = {
   // Local-scroll container the grid lives in; forwarded to the infinite
   // scroll sentinel so it observes against that container, not the page.
   rootRef?: RefObject<HTMLElement | null>;
+  // Opens the create-project dialog from the empty state.
+  onCreate?: () => void;
 };
 
 /**
@@ -42,7 +23,9 @@ type ProjectsGridProps = {
  */
 export function ProjectsGrid({
   rootRef,
+  onCreate,
 }: ProjectsGridProps): React.JSX.Element {
+  const { t } = useLingui();
   const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useProjectsInfiniteQuery();
 
@@ -61,7 +44,7 @@ export function ProjectsGrid({
 
   if (items.length === 0) {
     // EmptyState fills + centers itself (MessageState `fill`), so no wrapper.
-    return <EmptyState />;
+    return <EmptyState onCreate={onCreate} />;
   }
 
   return (
@@ -74,7 +57,12 @@ export function ProjectsGrid({
       <div ref={sentinelRef} aria-hidden="true" />
       {isFetchingNextPage ? (
         <div className="flex w-full items-center justify-center py-6">
-          <Spinner aria-label="Loading more" />
+          <Spinner
+            aria-label={t({
+              id: "projects.grid.loadingMore",
+              message: "Loading more",
+            })}
+          />
         </div>
       ) : null}
     </div>

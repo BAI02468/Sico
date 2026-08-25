@@ -1,23 +1,3 @@
-// Copyright (c) 2026 Sico Authors
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package impl
 
 import (
@@ -30,6 +10,7 @@ import (
 	repository "sico-backend/internal/store/skill/repository"
 	skillgrpc "sico-backend/internal/transport/grpc/pb/skill"
 	"sico-backend/internal/transport/http/dto/skill"
+	"sico-backend/internal/transport/http/middleware"
 )
 
 func TestSkillVersionModelToDTOConvertsAssetIDToURL(t *testing.T) {
@@ -100,20 +81,54 @@ func TestSkillVersionModelToDTOExpandsInternalStorageURL(t *testing.T) {
 	}
 }
 
+func TestSkillVersionModelToDTOPreservesAzureBlobCDNURL(t *testing.T) {
+	t.Setenv("STORAGE_TYPE", "azure_blob")
+	t.Setenv("SICO_PUBLIC_ENDPOINT", "https://test.sico.microsoft.com")
+	const cdnURL = "https://cdn.example/test/default_space/asset.zip"
+	svc := &Service{
+		buildDownloadURLFunc: func(_ context.Context, assetID int64) (string, error) {
+			if assetID != 123 {
+				t.Fatalf("unexpected asset id: %d", assetID)
+			}
+			return cdnURL, nil
+		},
+	}
+
+	got := svc.skillVersionModelToDTO(context.Background(), &repository.SkillVersionModel{
+		ID:      7,
+		SkillID: 9,
+		Version: "v1",
+		AssetID: 123,
+	})
+
+	if got.GetUrl() != cdnURL {
+		t.Fatalf("expected Azure Blob CDN url to be preserved, got %q", got.GetUrl())
+	}
+}
+
 type fakeSkillRepo struct {
 	createVersionCalls int
 	createdVersions    []*repository.SkillVersionModel
+	createID           int64
+	deleteCalls        int
+	deletedID          int64
 }
 
-func (f *fakeSkillRepo) Create(context.Context, *repository.SkillModel) (int64, error) { return 0, nil }
-func (f *fakeSkillRepo) Update(context.Context, *repository.SkillModel) error          { return nil }
+func (f *fakeSkillRepo) Create(context.Context, *repository.SkillModel) (int64, error) {
+	return f.createID, nil
+}
+func (f *fakeSkillRepo) Update(context.Context, *repository.SkillModel) error { return nil }
 func (f *fakeSkillRepo) GetByID(context.Context, int64) (*repository.SkillModel, error) {
 	return nil, errors.New("not implemented")
 }
 func (f *fakeSkillRepo) List(context.Context, *repository.SkillFilter) ([]*repository.SkillModel, int64, error) {
 	return nil, 0, nil
 }
-func (f *fakeSkillRepo) Delete(context.Context, int64) error { return nil }
+func (f *fakeSkillRepo) Delete(_ context.Context, id int64) error {
+	f.deleteCalls++
+	f.deletedID = id
+	return nil
+}
 func (f *fakeSkillRepo) CreateVersion(_ context.Context, version *repository.SkillVersionModel) (int64, error) {
 	f.createVersionCalls++
 	f.createdVersions = append(f.createdVersions, version)
@@ -134,14 +149,16 @@ func (f *fakeSkillRepo) ListLatestVersions(context.Context, int64, int) ([]*repo
 func (f *fakeSkillRepo) DeleteVersions(context.Context, int64) error { return nil }
 
 type fakeSkillGrpcClient struct {
-	writeResp *skillgrpc.WriteSkillVersionResponse
-	writeErr  error
+	extractResp *skillgrpc.ExtractSkillResponse
+	extractErr  error
+	writeResp   *skillgrpc.WriteSkillVersionResponse
+	writeErr    error
 }
 
 func (f *fakeSkillGrpcClient) ExtractSkill(
 	context.Context, *skillgrpc.ExtractSkillRequest, ...grpc.CallOption,
 ) (*skillgrpc.ExtractSkillResponse, error) {
-	return nil, errors.New("not implemented")
+	return f.extractResp, f.extractErr
 }
 
 func (f *fakeSkillGrpcClient) GetSkillDetails(
@@ -160,6 +177,32 @@ func (f *fakeSkillGrpcClient) WriteSkillVersion(
 	context.Context, *skillgrpc.WriteSkillVersionRequest, ...grpc.CallOption,
 ) (*skillgrpc.WriteSkillVersionResponse, error) {
 	return f.writeResp, f.writeErr
+}
+
+func TestCreateSkillDeletesSkillWhenExtractionFails(t *testing.T) {
+	repo := &fakeSkillRepo{createID: 283}
+	svc := &Service{
+		Components: &Components{SkillRepo: repo},
+		grpcClient: &fakeSkillGrpcClient{extractResp: &skillgrpc.ExtractSkillResponse{
+			Code:    1,
+			Message: "skill name is required",
+		}},
+		buildDownloadURLFunc: func(context.Context, int64) (string, error) {
+			return "https://assets.example/skill.zip", nil
+		},
+	}
+	ctx := context.WithValue(context.Background(), middleware.ContextUserKey, middleware.UserInfo{Name: "tester@example.com"})
+
+	_, err := svc.CreateSkill(ctx, &skill.CreateSkillRequest{AgentId: "agent-1", AssetId: 123})
+	if err == nil {
+		t.Fatal("expected failed extraction to fail skill creation")
+	}
+	if repo.deleteCalls != 1 || repo.deletedID != repo.createID {
+		t.Fatalf("Delete calls = %d for id %d, want 1 for id %d", repo.deleteCalls, repo.deletedID, repo.createID)
+	}
+	if repo.createVersionCalls != 0 {
+		t.Fatalf("CreateVersion calls = %d, want 0", repo.createVersionCalls)
+	}
 }
 
 func TestWriteManualVersionRejectsInvalidSkillMarkdownWithoutCreatingVersion(t *testing.T) {

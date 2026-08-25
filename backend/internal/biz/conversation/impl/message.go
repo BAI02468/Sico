@@ -1,23 +1,3 @@
-// Copyright (c) 2026 Sico Authors
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package impl
 
 import (
@@ -134,7 +114,7 @@ func (c *Service) resolveConversationIDForMessageListing(
 		if err != nil {
 			return 0, false, err
 		}
-		if conversation == nil || conversation.CreatorUsername != username {
+		if conversation == nil || !canReadConversation(ctx, username, conversation.CreatorUsername) {
 			return 0, false, apperr.New(errcode.CommonNotFound, "conversation not found")
 		}
 		if conversation.AgentInstanceID != req.GetAgentInstanceId() {
@@ -149,7 +129,14 @@ func (c *Service) resolveConversationIDForMessageListing(
 		return conversation.ID, true, nil
 	}
 
-	conversations, hasMore, err := c.conversationRepo.List(ctx, username, "", req.GetAgentInstanceId(), 2, 1)
+	conversations, hasMore, err := c.conversationRepo.List(
+		ctx,
+		conversationReadQueryUsername(ctx, username),
+		"",
+		req.GetAgentInstanceId(),
+		2,
+		1,
+	)
 	if err != nil {
 		return 0, false, err
 	}
@@ -227,7 +214,12 @@ func (c *Service) GetUserMessageByUserAgentTurnID(
 
 	username := middleware.MustGetUsernameFromCtx(ctx)
 
-	conversation, err := c.conversationRepo.Get(ctx, username, req.GetAgentId(), agentInstanceID)
+	conversation, err := c.conversationRepo.Get(
+		ctx,
+		conversationReadQueryUsername(ctx, username),
+		req.GetAgentId(),
+		agentInstanceID,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -693,9 +685,8 @@ func (c *Service) RpcListUserMessageByUserAgentTurnID(
 }
 
 // ListBatchSummaries returns delegated-task batches for a single conversation.
-// The caller MUST own the conversation (creator_username == JWT subject), so a
-// missing/foreign conversation is reported as a generic NotFound to avoid
-// leaking existence.
+// The caller must own the conversation unless they are a platform admin.
+// Missing/inaccessible conversations are reported as NotFound.
 func (c *Service) ListBatchSummaries(
 	ctx context.Context,
 	req *conversationdto.ListBatchSummariesRequest,
@@ -710,7 +701,7 @@ func (c *Service) ListBatchSummaries(
 	if err != nil {
 		return nil, err
 	}
-	if conv == nil || conv.CreatorUsername != username {
+	if conv == nil || !canReadConversation(ctx, username, conv.CreatorUsername) {
 		return nil, apperr.New(errcode.CommonNotFound, "conversation not found")
 	}
 	pageSize := int(req.GetPageSize())

@@ -1,23 +1,3 @@
-# Copyright (c) 2026 Sico Authors
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 from __future__ import annotations
 
 import json
@@ -27,7 +7,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 from app.settings import detect_android_home
 
@@ -39,8 +19,14 @@ class MuMuPaths:
 
 
 class MuMuClient:
-    def __init__(self, mumu_manager_path: str, android_home: str = "", avd_headless: bool = False,
-                 avd_name_prefix: str = "device", avd_base_port: int = 5554):
+    def __init__(
+        self,
+        mumu_manager_path: str,
+        android_home: str = "",
+        avd_headless: bool = False,
+        avd_name_prefix: str = "device",
+        avd_base_port: int = 5554,
+    ):
         self._is_macos = sys.platform == "darwin"
         self._use_avd = False
         self._avd_headless = avd_headless
@@ -72,7 +58,9 @@ class MuMuClient:
                 self._base_port = avd_base_port
                 arch = platform.machine()
                 if arch == "arm64":
-                    self._system_image = "system-images;android-35;google_apis;arm64-v8a"
+                    self._system_image = (
+                        "system-images;android-35;google_apis;arm64-v8a"
+                    )
                 else:
                     self._system_image = "system-images;android-35;google_apis;x86_64"
                 return
@@ -88,13 +76,22 @@ class MuMuClient:
             raise RuntimeError(f"MuMuManager.exe not found at {manager_path}")
 
         if self._is_macos:
-            adb_path = manager_path.parent / "MuMuEmulator.app" / "Contents" / "MacOS" / "tools" / "adb"
+            adb_path = (
+                manager_path.parent
+                / "MuMuEmulator.app"
+                / "Contents"
+                / "MacOS"
+                / "tools"
+                / "adb"
+            )
         else:
             adb_path = manager_path.parent / "adb.exe"
 
         self._paths = MuMuPaths(manager_path=manager_path, adb_path=adb_path)
 
-    def select(self, vm_index: Union[int, List[int], Tuple[int, ...]] = None, *args: int):
+    def select(
+        self, vm_index: Union[int, List[int], Tuple[int, ...]] = None, *args: int
+    ):
         if vm_index is None:
             self._vm_index = "all"
             return self
@@ -143,7 +140,9 @@ class MuMuClient:
     def setting(self) -> "Setting":
         return AVDSetting(self) if self._use_avd else Setting(self)
 
-    def _run_command(self, operate: Union[str, List[str]], args: List[str]) -> Tuple[int, str, str]:
+    def _run_command(
+        self, operate: Union[str, List[str]], args: List[str]
+    ) -> Tuple[int, str, str]:
         if self._is_macos:
             command = self._build_mac_command(operate, args)
         else:
@@ -159,7 +158,9 @@ class MuMuClient:
 
         return result.returncode, result.stdout, result.stderr
 
-    def _build_win_command(self, operate: Union[str, List[str]], args: List[str]) -> List[str]:
+    def _build_win_command(
+        self, operate: Union[str, List[str]], args: List[str]
+    ) -> List[str]:
         command: List[str] = [str(self._paths.manager_path)]
         if isinstance(operate, list):
             command.extend(operate)
@@ -170,7 +171,9 @@ class MuMuClient:
         command.extend(args)
         return command
 
-    def _build_mac_command(self, operate: Union[str, List[str]], args: List[str]) -> List[str]:
+    def _build_mac_command(
+        self, operate: Union[str, List[str]], args: List[str]
+    ) -> List[str]:
         """Translate Windows-style MuMuManager commands to macOS mumutool format."""
         base = str(self._paths.manager_path)
         device = self._vm_index or "0"
@@ -190,7 +193,9 @@ class MuMuClient:
             # mumutool clone <device> — clones the specified device; no count support
             count = _extract_flag_value(args, "-n")
             if count and int(count) > 1:
-                raise NotImplementedError("macOS mumutool clone does not support creating multiple copies at once")
+                raise NotImplementedError(
+                    "macOS mumutool clone does not support creating multiple copies at once"
+                )
             return [base, "clone", device]
 
         if op == "delete":
@@ -220,7 +225,15 @@ class MuMuClient:
         if action == "launch":
             pkg = _extract_flag_value(args, "-pkg")
             if pkg:
-                return [base, "control", device, "--action", "open_app", "--package", pkg]
+                return [
+                    base,
+                    "control",
+                    device,
+                    "--action",
+                    "open_app",
+                    "--package",
+                    pkg,
+                ]
             return [base, "open", device]
 
         if action == "shutdown":
@@ -234,25 +247,59 @@ class MuMuClient:
             if sub == "install":
                 path = _extract_flag_value(args, "-apk")
                 if path:
-                    return [base, "control", device, "--action", "install_apk", "--path", path]
+                    return [
+                        base,
+                        "control",
+                        device,
+                        "--action",
+                        "install_apk",
+                        "--path",
+                        path,
+                    ]
             elif sub == "uninstall":
                 pkg = _extract_flag_value(args, "-pkg")
                 if pkg:
-                    return [base, "control", device, "--action", "uninstall_app", "--package", pkg]
+                    return [
+                        base,
+                        "control",
+                        device,
+                        "--action",
+                        "uninstall_app",
+                        "--package",
+                        pkg,
+                    ]
             elif sub == "launch":
                 pkg = _extract_flag_value(args, "-pkg")
                 if pkg:
-                    return [base, "control", device, "--action", "open_app", "--package", pkg]
+                    return [
+                        base,
+                        "control",
+                        device,
+                        "--action",
+                        "open_app",
+                        "--package",
+                        pkg,
+                    ]
             elif sub == "close":
                 pkg = _extract_flag_value(args, "-pkg")
                 if pkg:
-                    return [base, "control", device, "--action", "close_app", "--package", pkg]
+                    return [
+                        base,
+                        "control",
+                        device,
+                        "--action",
+                        "close_app",
+                        "--package",
+                        pkg,
+                    ]
             elif sub == "info":
                 return [base, "control", device, "--action", "app_status"]
 
         return [base, "control", device] + args
 
-    def _build_mac_adb_proxy(self, base: str, device: str, args: List[str]) -> List[str]:
+    def _build_mac_adb_proxy(
+        self, base: str, device: str, args: List[str]
+    ) -> List[str]:
         if not args:
             return [base, "info", device]
 
@@ -288,7 +335,9 @@ class MuMuClient:
 
     def _build_mac_setting(self, base: str, device: str, args: List[str]) -> List[str]:
         if "-a" in args or "-aw" in args:
-            raise NotImplementedError("Listing all settings is not supported by macOS mumutool")
+            raise NotImplementedError(
+                "Listing all settings is not supported by macOS mumutool"
+            )
 
         settings: Dict[str, str] = {}
         get_keys: List[str] = []
@@ -306,7 +355,9 @@ class MuMuClient:
                 i += 1
 
         if get_keys and not settings:
-            raise NotImplementedError("Getting individual settings is not supported by macOS mumutool")
+            raise NotImplementedError(
+                "Getting individual settings is not supported by macOS mumutool"
+            )
 
         if settings:
             translated = self._translate_mac_settings(settings)
@@ -353,7 +404,11 @@ class MuMuClient:
     def _run_avdmanager(self, args: List[str]) -> Tuple[int, str, str]:
         cmd = [str(self._avdmanager_bin)] + args
         result = subprocess.run(
-            cmd, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8",
+            cmd,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
         )
         return result.returncode, result.stdout or "", result.stderr or ""
 
@@ -381,7 +436,7 @@ class MuMuClient:
         for name in self._list_avd_names():
             if name.startswith(prefix):
                 try:
-                    indices.add(int(name[len(prefix):]))
+                    indices.add(int(name[len(prefix) :]))
                 except ValueError:
                     pass
         return indices
@@ -487,89 +542,94 @@ class App:
     def __init__(self, client: MuMuClient):
         self.client = client
 
-    def install(self, apk_path: str) -> bool:
+    def install(self, apk_path: str, *, adb_serial: Optional[str] = None) -> bool:
         apk_file = Path(apk_path)
         if not apk_file.exists() or not apk_file.is_file():
             raise FileNotFoundError(f"apk_path:{apk_path} not found")
 
-        code, out, err = self.client._run_command("control", ["app", "install", "-apk", str(apk_file)])
-        if code == 0:
-            return True
+        return _mumu_app_then_adb(
+            self.client,
+            ["app", "install", "-apk", str(apk_file)],
+            lambda serial: ["-s", serial, "install", "-r", str(apk_file)],
+            adb_serial,
+        )
 
-        targets = list(_adb_targets(self.client.adb.get_connect_info()))
+    def uninstall(self, package: str, *, adb_serial: Optional[str] = None) -> bool:
+        return _mumu_app_then_adb(
+            self.client,
+            ["app", "uninstall", "-pkg", package],
+            lambda serial: ["-s", serial, "uninstall", package],
+            adb_serial,
+        )
+
+    def launch(self, package: str, *, adb_serial: Optional[str] = None) -> bool:
+        return _mumu_app_then_adb(
+            self.client,
+            ["app", "launch", "-pkg", package],
+            lambda serial: [
+                "-s",
+                serial,
+                "shell",
+                "monkey",
+                "-p",
+                package,
+                "-c",
+                "android.intent.category.LAUNCHER",
+                "1",
+            ],
+            adb_serial,
+        )
+
+    def close(self, package: str, *, adb_serial: Optional[str] = None) -> bool:
+        return _mumu_app_then_adb(
+            self.client,
+            ["app", "close", "-pkg", package],
+            lambda serial: ["-s", serial, "shell", "am", "force-stop", package],
+            adb_serial,
+        )
+
+    def get_installed(
+        self,
+        third_party_only: bool = True,
+        *,
+        app_filter: Optional[str] = None,
+        adb_serial: Optional[str] = None,
+    ) -> List[Dict[str, object]]:
+        """List installed apps with an ``is_system`` annotation."""
+        resolved_filter = _resolve_app_filter(third_party_only, app_filter)
+
+        meta_map: Dict[str, Dict[str, object]] = {}
+        meta_error: Optional[str] = None
+        if resolved_filter != "system":
+            meta_map, meta_error = _mumu_app_metadata(self.client)
+
+        targets = _adb_serial_targets(self.client, adb_serial)
         if not targets:
-            raise RuntimeError(err or out)
-
-        for host, port in targets:
-            _ensure_adb_connected(self.client, host, port)
-            adb_code, adb_out, adb_err = self.client._run_adb(
-                ["-s", f"{host}:{port}", "install", "-r", str(apk_file)]
-            )
-            if adb_code != 0:
-                raise RuntimeError(adb_err or adb_out)
-
-        return True
-
-    def uninstall(self, package: str) -> bool:
-        code, out, err = self.client._run_command("control", ["app", "uninstall", "-pkg", package])
-        if code == 0:
-            return True
-        raise RuntimeError(err or out)
-
-    def launch(self, package: str) -> bool:
-        code, out, err = self.client._run_command("control", ["app", "launch", "-pkg", package])
-        if code == 0:
-            return True
-        raise RuntimeError(err or out)
-
-    def close(self, package: str) -> bool:
-        code, out, err = self.client._run_command("control", ["app", "close", "-pkg", package])
-        if code == 0:
-            return True
-        raise RuntimeError(err or out)
-
-    def get_installed(self, third_party_only: bool = True) -> List[Dict[str, str]]:
-        code, out, err = self.client._run_command("control", ["app", "info", "-i"])
-        if code != 0:
-            raise RuntimeError(err or out)
-
-        data = json.loads(out)
-        installed = []
-        for key, value in data.items():
-            if key == "active":
-                continue
-            installed.append(
-                {
-                    "package": key,
-                    "app_name": value.get("app_name"),
-                    "version": value.get("version"),
-                }
-            )
-        if installed:
-            return installed
-
-        targets = list(_adb_targets(self.client.adb.get_connect_info()))
-        if not targets:
+            if resolved_filter == "user" and meta_map:
+                return _build_app_entries(
+                    set(meta_map), set(), meta_map, resolved_filter
+                )
+            if resolved_filter != "user":
+                raise RuntimeError(
+                    "ADB device not connected; system app listing requires ADB"
+                )
+            if meta_error:
+                raise RuntimeError(
+                    f"ADB device not connected and MuMu app info failed: {meta_error}"
+                )
             return []
 
-        packages = []
-        for host, port in targets:
-            _ensure_adb_connected(self.client, host, port)
-
-            adb_args = ["-s", f"{host}:{port}", "shell", "pm", "list", "packages"]
-            if third_party_only:
-                adb_args.append("-3")
-
-            adb_code, adb_out, adb_err = self.client._run_adb(
-                adb_args
+        user_set: set[str] = set()
+        system_set: set[str] = set()
+        for serial in targets:
+            _ensure_adb_serial_connected(self.client, serial)
+            user_packages, system_packages = _collect_app_package_sets(
+                self.client, serial, resolved_filter
             )
-            if adb_code != 0:
-                raise RuntimeError(adb_err or adb_out)
-            for line in adb_out.splitlines():
-                if line.startswith("package:"):
-                    packages.append({"package": line.replace("package:", "", 1)})
+            user_set.update(user_packages)
+            system_set.update(system_packages)
 
-        return packages
+        return _build_app_entries(user_set, system_set, meta_map, resolved_filter)
 
 
 class Adb:
@@ -619,7 +679,9 @@ class Adb:
             return True
         raise RuntimeError(err or out)
 
-    def swipe(self, from_x: int, from_y: int, to_x: int, to_y: int, duration: int = 500) -> bool:
+    def swipe(
+        self, from_x: int, from_y: int, to_x: int, to_y: int, duration: int = 500
+    ) -> bool:
         code, out, err = self.client._run_command(
             "adb",
             [
@@ -639,13 +701,17 @@ class Adb:
         raise RuntimeError(err or out)
 
     def input_text(self, text: str) -> bool:
-        code, out, err = self.client._run_command("adb", ["-c", "shell", "input", "text", text])
+        code, out, err = self.client._run_command(
+            "adb", ["-c", "shell", "input", "text", text]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)
 
     def key_event(self, key: Union[int, str]) -> bool:
-        code, out, err = self.client._run_command("adb", ["-c", "shell", "input", "keyevent", str(key)])
+        code, out, err = self.client._run_command(
+            "adb", ["-c", "shell", "input", "keyevent", str(key)]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)
@@ -744,7 +810,9 @@ class Adb:
 
         for host, port in _adb_targets(self.get_connect_info()):
             _ensure_adb_connected(self.client, host, port)
-            code, out, err = self.client._run_adb(["-s", f"{host}:{port}", "push", str(src_path), path])
+            code, out, err = self.client._run_adb(
+                ["-s", f"{host}:{port}", "push", str(src_path), path]
+            )
             if code != 0:
                 raise RuntimeError(err or out)
         return True
@@ -756,13 +824,17 @@ class Adb:
     def pull(self, src: str, path: str) -> bool:
         for host, port in _adb_targets(self.get_connect_info()):
             _ensure_adb_connected(self.client, host, port)
-            code, out, err = self.client._run_adb(["-s", f"{host}:{port}", "pull", src, path])
+            code, out, err = self.client._run_adb(
+                ["-s", f"{host}:{port}", "pull", src, path]
+            )
             if code != 0:
                 raise RuntimeError(err or out)
         return True
 
     def clear(self, package: str) -> bool:
-        code, out, err = self.client._run_command("adb", ["-c", "shell", "pm", "clear", package])
+        code, out, err = self.client._run_command(
+            "adb", ["-c", "shell", "pm", "clear", package]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)
@@ -857,6 +929,140 @@ def _ensure_adb_connected(client: MuMuClient, host: str, port: str) -> None:
     raise RuntimeError(text.strip() or f"failed to adb connect {host}:{port}")
 
 
+def _ensure_adb_serial_connected(client: MuMuClient, serial: str) -> None:
+    if ":" not in serial:
+        return
+    host, port = serial.rsplit(":", 1)
+    _ensure_adb_connected(client, host, port)
+
+
+def _adb_serial_targets(
+    client: MuMuClient, adb_serial: Optional[str] = None
+) -> list[str]:
+    if adb_serial:
+        return [adb_serial]
+    return [
+        f"{host}:{port}" for host, port in _adb_targets(client.adb.get_connect_info())
+    ]
+
+
+def _mumu_app_then_adb(
+    client: MuMuClient,
+    mumu_args: List[str],
+    build_adb_args: Callable[[str], List[str]],
+    adb_serial: Optional[str],
+) -> bool:
+    code, out, err = client._run_command("control", mumu_args)
+    if code == 0:
+        return True
+
+    targets = _adb_serial_targets(client, adb_serial)
+    if not targets:
+        raise RuntimeError(err or out)
+
+    for serial in targets:
+        _ensure_adb_serial_connected(client, serial)
+        adb_code, adb_out, adb_err = client._run_adb(build_adb_args(serial))
+        if adb_code != 0:
+            raise RuntimeError(adb_err or adb_out)
+    return True
+
+
+_APP_FILTERS = ("user", "system", "all")
+
+
+def _resolve_app_filter(third_party_only: bool, app_filter: Optional[str]) -> str:
+    if app_filter is not None:
+        if app_filter not in _APP_FILTERS:
+            raise ValueError(
+                f"invalid app_filter: {app_filter!r} (expected one of {_APP_FILTERS})"
+            )
+        return app_filter
+    return "user" if third_party_only else "all"
+
+
+def _mumu_app_metadata(
+    client: MuMuClient,
+) -> tuple[Dict[str, Dict[str, object]], Optional[str]]:
+    code, out, err = client._run_command("control", ["app", "info", "-i"])
+    if code != 0:
+        return {}, err or out or "MuMu app info command failed"
+    if not out:
+        return {}, None
+    try:
+        data = json.loads(out)
+    except json.JSONDecodeError as exc:
+        return {}, f"Invalid MuMu app info JSON: {exc}"
+    if not isinstance(data, dict):
+        return {}, "Invalid MuMu app info JSON: expected object"
+
+    metadata: Dict[str, Dict[str, object]] = {}
+    for key, value in data.items():
+        if key == "active" or not isinstance(value, dict):
+            continue
+        metadata[key] = {
+            "app_name": value.get("app_name"),
+            "version": value.get("version"),
+        }
+    return metadata, None
+
+
+def _adb_list_packages(client: MuMuClient, serial: str, *, system: bool) -> set[str]:
+    flag = "-s" if system else "-3"
+    code, out, err = client._run_adb(
+        ["-s", serial, "shell", "pm", "list", "packages", flag]
+    )
+    if code != 0:
+        raise RuntimeError(err or out)
+    packages: set[str] = set()
+    for line in (out or "").splitlines():
+        line = line.strip()
+        if line.startswith("package:"):
+            package = line.replace("package:", "", 1).strip()
+            if package:
+                packages.add(package)
+    return packages
+
+
+def _collect_app_package_sets(
+    client: MuMuClient, serial: str, app_filter: str
+) -> tuple[set[str], set[str]]:
+    user_set: set[str] = set()
+    system_set: set[str] = set()
+    if app_filter in ("user", "all"):
+        user_set = _adb_list_packages(client, serial, system=False)
+    if app_filter in ("system", "all"):
+        system_set = _adb_list_packages(client, serial, system=True)
+    return user_set, system_set
+
+
+def _build_app_entries(
+    user_set: set[str],
+    system_set: set[str],
+    meta_map: Dict[str, Dict[str, object]],
+    app_filter: str,
+) -> List[Dict[str, object]]:
+    if app_filter == "user":
+        packages = sorted(user_set)
+    elif app_filter == "system":
+        packages = sorted(system_set)
+    else:
+        packages = sorted(user_set | system_set)
+
+    entries: List[Dict[str, object]] = []
+    for package in packages:
+        metadata = meta_map.get(package, {})
+        entries.append(
+            {
+                "package": package,
+                "app_name": metadata.get("app_name"),
+                "version": metadata.get("version"),
+                "is_system": package in system_set,
+            }
+        )
+    return entries
+
+
 def _extract_flag_value(args: List[str], flag: str) -> Optional[str]:
     """Extract the value following a flag (e.g. -pkg, -apk) in an argument list."""
     for i, arg in enumerate(args):
@@ -868,6 +1074,7 @@ def _extract_flag_value(args: List[str], flag: str) -> Optional[str]:
 # =====================================================================
 # AVD implementation classes (macOS / Linux — Android Studio Emulator)
 # =====================================================================
+
 
 class _AVDBase:
     """Shared helper for AVD classes to resolve the selected device index."""
@@ -886,7 +1093,6 @@ class _AVDBase:
 
 
 class AVDCore(_AVDBase):
-
     def create(self, number: int = 1) -> List[int]:
         if number < 1:
             number = 1
@@ -896,13 +1102,19 @@ class AVDCore(_AVDBase):
         for i in range(number):
             idx = next_idx + i
             name = self.client._avd_name(idx)
-            code, out, err = self.client._run_avdmanager([
-                "create", "avd",
-                "-n", name,
-                "-k", self.client._system_image,
-                "-d", "pixel_6",
-                "--force",
-            ])
+            code, out, err = self.client._run_avdmanager(
+                [
+                    "create",
+                    "avd",
+                    "-n",
+                    name,
+                    "-k",
+                    self.client._system_image,
+                    "-d",
+                    "pixel_6",
+                    "--force",
+                ]
+            )
             combined = (out + err).lower()
             if code == 0 or "already exists" in combined:
                 created.append(idx)
@@ -927,9 +1139,16 @@ class AVDCore(_AVDBase):
     def rename(self, name: str) -> bool:
         idx = self._get_index()
         old_name = self.client._avd_name(idx)
-        code, out, err = self.client._run_avdmanager([
-            "move", "avd", "-n", old_name, "-r", name,
-        ])
+        code, out, err = self.client._run_avdmanager(
+            [
+                "move",
+                "avd",
+                "-n",
+                old_name,
+                "-r",
+                name,
+            ]
+        )
         if code == 0:
             return True
         raise RuntimeError(f"Failed to rename AVD {old_name}: {err or out}")
@@ -940,7 +1159,6 @@ class AVDCore(_AVDBase):
 
 
 class AVDPower(_AVDBase):
-
     _BOOT_TIMEOUT = 120  # seconds
 
     def start(self, package: Optional[str] = None) -> bool:
@@ -951,22 +1169,39 @@ class AVDPower(_AVDBase):
 
         if self.client._is_emulator_running(idx):
             if package:
-                self.client._run_adb([
-                    "-s", serial, "shell", "monkey",
-                    "-p", package, "-c", "android.intent.category.LAUNCHER", "1",
-                ])
+                self.client._run_adb(
+                    [
+                        "-s",
+                        serial,
+                        "shell",
+                        "monkey",
+                        "-p",
+                        package,
+                        "-c",
+                        "android.intent.category.LAUNCHER",
+                        "1",
+                    ]
+                )
             return True
 
         cmd = [
-            str(self.client._emulator_bin), "-avd", name,
-            "-port", str(port),
+            str(self.client._emulator_bin),
+            "-avd",
+            name,
+            "-port",
+            str(port),
             "-no-boot-anim",
-            "-gpu", "swiftshader_indirect",
+            "-gpu",
+            "swiftshader_indirect",
         ]
         if self.client._avd_headless:
             cmd.extend(["-no-window", "-no-audio"])
-        proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
-                                start_new_session=True)
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+        )
 
         deadline = time.time() + self._BOOT_TIMEOUT
         while time.time() < deadline:
@@ -974,7 +1209,9 @@ class AVDPower(_AVDBase):
             # Detect early crash: if the process already exited, abort immediately.
             ret = proc.poll()
             if ret is not None:
-                stderr_tail = (proc.stderr.read() or b"").decode("utf-8", errors="replace")[-2000:]
+                stderr_tail = (proc.stderr.read() or b"").decode(
+                    "utf-8", errors="replace"
+                )[-2000:]
                 raise RuntimeError(
                     f"Emulator {name} exited with code {ret} before boot.\n{stderr_tail}"
                 )
@@ -984,10 +1221,19 @@ class AVDPower(_AVDBase):
                 )
                 if out.strip() == "1":
                     if package:
-                        self.client._run_adb([
-                            "-s", serial, "shell", "monkey",
-                            "-p", package, "-c", "android.intent.category.LAUNCHER", "1",
-                        ])
+                        self.client._run_adb(
+                            [
+                                "-s",
+                                serial,
+                                "shell",
+                                "monkey",
+                                "-p",
+                                package,
+                                "-c",
+                                "android.intent.category.LAUNCHER",
+                                "1",
+                            ]
+                        )
                     return True
 
         raise RuntimeError(
@@ -1014,59 +1260,81 @@ class AVDPower(_AVDBase):
 
 
 class AVDApp(_AVDBase):
+    def _resolve_adb_serial(self, adb_serial: Optional[str]) -> str:
+        if adb_serial:
+            _ensure_adb_serial_connected(self.client, adb_serial)
+            return adb_serial
+        return self._get_serial()
 
-    def install(self, apk_path: str) -> bool:
+    def install(self, apk_path: str, *, adb_serial: Optional[str] = None) -> bool:
         apk_file = Path(apk_path)
         if not apk_file.exists() or not apk_file.is_file():
             raise FileNotFoundError(f"apk_path:{apk_path} not found")
-        serial = self._get_serial()
-        _ensure_adb_connected(self.client, "127.0.0.1", str(self.client._adb_port(self._get_index())))
-        code, out, err = self.client._run_adb(["-s", serial, "install", "-r", str(apk_file)])
+        if adb_serial:
+            serial = self._resolve_adb_serial(adb_serial)
+        else:
+            serial = self._get_serial()
+            _ensure_adb_connected(
+                self.client, "127.0.0.1", str(self.client._adb_port(self._get_index()))
+            )
+        code, out, err = self.client._run_adb(
+            ["-s", serial, "install", "-r", str(apk_file)]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)
 
-    def uninstall(self, package: str) -> bool:
-        serial = self._get_serial()
+    def uninstall(self, package: str, *, adb_serial: Optional[str] = None) -> bool:
+        serial = self._resolve_adb_serial(adb_serial)
         code, out, err = self.client._run_adb(["-s", serial, "uninstall", package])
         if code == 0:
             return True
         raise RuntimeError(err or out)
 
-    def launch(self, package: str) -> bool:
-        serial = self._get_serial()
-        code, out, err = self.client._run_adb([
-            "-s", serial, "shell", "monkey",
-            "-p", package, "-c", "android.intent.category.LAUNCHER", "1",
-        ])
+    def launch(self, package: str, *, adb_serial: Optional[str] = None) -> bool:
+        serial = self._resolve_adb_serial(adb_serial)
+        code, out, err = self.client._run_adb(
+            [
+                "-s",
+                serial,
+                "shell",
+                "monkey",
+                "-p",
+                package,
+                "-c",
+                "android.intent.category.LAUNCHER",
+                "1",
+            ]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)
 
-    def close(self, package: str) -> bool:
-        serial = self._get_serial()
-        code, out, err = self.client._run_adb(["-s", serial, "shell", "am", "force-stop", package])
+    def close(self, package: str, *, adb_serial: Optional[str] = None) -> bool:
+        serial = self._resolve_adb_serial(adb_serial)
+        code, out, err = self.client._run_adb(
+            ["-s", serial, "shell", "am", "force-stop", package]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)
 
-    def get_installed(self, third_party_only: bool = True) -> List[Dict[str, str]]:
-        serial = self._get_serial()
-        adb_args = ["-s", serial, "shell", "pm", "list", "packages"]
-        if third_party_only:
-            adb_args.append("-3")
-        code, out, err = self.client._run_adb(adb_args)
-        if code != 0:
-            raise RuntimeError(err or out)
-        packages: List[Dict[str, str]] = []
-        for line in out.splitlines():
-            if line.startswith("package:"):
-                packages.append({"package": line.replace("package:", "", 1).strip()})
-        return packages
+    def get_installed(
+        self,
+        third_party_only: bool = True,
+        *,
+        app_filter: Optional[str] = None,
+        adb_serial: Optional[str] = None,
+    ) -> List[Dict[str, object]]:
+        resolved_filter = _resolve_app_filter(third_party_only, app_filter)
+        serial = self._resolve_adb_serial(adb_serial)
+        user_set, system_set = _collect_app_package_sets(
+            self.client, serial, resolved_filter
+        )
+        return _build_app_entries(user_set, system_set, {}, resolved_filter)
 
 
 class AVDAdb(_AVDBase):
-
     def get_connect_info(self):
         vm = self.client._vm_index
         if vm is None or vm == "all":
@@ -1088,31 +1356,49 @@ class AVDAdb(_AVDBase):
 
     def click(self, x: int, y: int) -> bool:
         serial = self._get_serial()
-        code, out, err = self.client._run_adb(["-s", serial, "shell", "input", "tap", str(x), str(y)])
+        code, out, err = self.client._run_adb(
+            ["-s", serial, "shell", "input", "tap", str(x), str(y)]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)
 
-    def swipe(self, from_x: int, from_y: int, to_x: int, to_y: int, duration: int = 500) -> bool:
+    def swipe(
+        self, from_x: int, from_y: int, to_x: int, to_y: int, duration: int = 500
+    ) -> bool:
         serial = self._get_serial()
-        code, out, err = self.client._run_adb([
-            "-s", serial, "shell", "input", "swipe",
-            str(from_x), str(from_y), str(to_x), str(to_y), str(duration),
-        ])
+        code, out, err = self.client._run_adb(
+            [
+                "-s",
+                serial,
+                "shell",
+                "input",
+                "swipe",
+                str(from_x),
+                str(from_y),
+                str(to_x),
+                str(to_y),
+                str(duration),
+            ]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)
 
     def input_text(self, text: str) -> bool:
         serial = self._get_serial()
-        code, out, err = self.client._run_adb(["-s", serial, "shell", "input", "text", text])
+        code, out, err = self.client._run_adb(
+            ["-s", serial, "shell", "input", "text", text]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)
 
     def key_event(self, key: Union[int, str]) -> bool:
         serial = self._get_serial()
-        code, out, err = self.client._run_adb(["-s", serial, "shell", "input", "keyevent", str(key)])
+        code, out, err = self.client._run_adb(
+            ["-s", serial, "shell", "input", "keyevent", str(key)]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)
@@ -1124,7 +1410,16 @@ class AVDAdb(_AVDBase):
             return False
         _ensure_adb_connected(self.client, "127.0.0.1", str(self.client._adb_port(idx)))
         for cmd in [
-            ["-s", serial, "shell", "settings", "put", "system", "accelerometer_rotation", "0"],
+            [
+                "-s",
+                serial,
+                "shell",
+                "settings",
+                "put",
+                "system",
+                "accelerometer_rotation",
+                "0",
+            ],
             ["-s", serial, "shell", "settings", "put", "system", "user_rotation", "0"],
             ["-s", serial, "shell", "wm", "size", f"{width}x{height}"],
             ["-s", serial, "shell", "wm", "density", str(dpi)],
@@ -1141,7 +1436,9 @@ class AVDAdb(_AVDBase):
         serial = self._get_serial()
         idx = self._get_index()
         _ensure_adb_connected(self.client, "127.0.0.1", str(self.client._adb_port(idx)))
-        code, out, err = self.client._run_adb(["-s", serial, "push", str(src_path), path])
+        code, out, err = self.client._run_adb(
+            ["-s", serial, "push", str(src_path), path]
+        )
         if code != 0:
             raise RuntimeError(err or out)
         return True
@@ -1161,7 +1458,9 @@ class AVDAdb(_AVDBase):
 
     def clear(self, package: str) -> bool:
         serial = self._get_serial()
-        code, out, err = self.client._run_adb(["-s", serial, "shell", "pm", "clear", package])
+        code, out, err = self.client._run_adb(
+            ["-s", serial, "shell", "pm", "clear", package]
+        )
         if code == 0:
             return True
         raise RuntimeError(err or out)

@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { AUTH_EXPIRES_AT_LS, AUTH_TOKEN_LS, AUTH_USER_LS } from "@sico/shared";
 import {
   getItemFromLocalStorage,
@@ -51,6 +29,16 @@ vi.mock("@sico/shared/features/sidebar/components/sidebar.tsx", () => ({
   Sidebar: () => <nav aria-label="Primary navigation" />,
 }));
 
+vi.mock(
+  "@sico/shared/features/organization/hooks/use-organization-query.ts",
+  () => ({
+    useUserOrganizationsQuery: vi.fn(),
+  }),
+);
+vi.mock("@sico/shared/features/rbac/hooks/use-permission-snapshot.ts", () => ({
+  usePermissionSnapshotQuery: vi.fn(),
+}));
+
 // `<DigitalWorkers>` needs QueryClientProvider + ApiClient — out of scope
 // for AuthGate's redirect contract. Stub `agentsQueryOptions` too so the
 // route's `loader` prefetch doesn't hit a real fetcher with `{}` apiClient.
@@ -65,13 +53,19 @@ vi.mock("@sico/shared/features/digital-worker/index.ts", () => ({
 }));
 
 function renderAt(initialPath: string): { router: RegisteredRouter } {
+  // Fresh jotai store per render so `userAtom` doesn't leak across tests; the
+  // router context and the Provider share it so a `context.store` read matches
+  // what the tree renders.
+  const store = createStore();
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [initialPath] }),
-    context: { queryClient: new QueryClient(), apiClient: {} as never },
+    context: {
+      queryClient: new QueryClient(),
+      apiClient: {} as never,
+      store,
+    },
   });
-  // Fresh jotai store per render so `userAtom` doesn't leak across tests.
-  const store = createStore();
   render(
     <Provider store={store}>
       <RouterProvider router={router} />

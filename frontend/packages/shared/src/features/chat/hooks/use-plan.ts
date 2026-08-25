@@ -1,25 +1,5 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { toast } from "@sico/ui";
 import type { AxiosInstance } from "axios";
 import { type createStore, useStore } from "jotai";
@@ -39,7 +19,10 @@ const PLAN_POLL_INTERVAL_MS = 2000;
 // Stable id → sonner dedups repeated failures into one toast, and
 // `toast.dismiss(id)` clears it when polling ends.
 const PLAN_POLL_TOAST_ID = "plan-poll-error";
-const PLAN_POLL_FAILED_COPY = "Couldn't update plan status. Retrying…";
+const PLAN_POLL_FAILED_COPY = msg({
+  id: "chat.plan.pollFailed",
+  message: "Couldn't update plan status. Retrying…",
+});
 
 // Walk a plan's tool-call forest (steps → toolCalls → subCalls) for any
 // deliverable that signals an acquired sandbox. Recursion mirrors the wire's
@@ -184,7 +167,7 @@ async function pollOnce(ctx: PollContext): Promise<void> {
       return;
     }
     logger.warn("chat: plan poll failed", { err });
-    toast.error(PLAN_POLL_FAILED_COPY, { id: PLAN_POLL_TOAST_ID });
+    toast.error(i18n._(PLAN_POLL_FAILED_COPY), { id: PLAN_POLL_TOAST_ID });
   }
 }
 

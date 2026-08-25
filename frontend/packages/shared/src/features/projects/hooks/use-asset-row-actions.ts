@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { toast } from "@sico/ui";
 import { useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
@@ -99,21 +78,23 @@ function downloadFile(sasUrl: string | null | undefined, name: string): void {
 // `useAssetMutation` invalidates the assets list, so the table self-refreshes.
 // Keep the confirm open on failure so the user can retry (silent failure is
 // worse than a frozen dialog). Works for any asset kind — `useAssetMutation`
-// routes the delete to the per-category endpoint off `asset.type`.
+// routes the delete to the per-category endpoint off `asset.type`. Toast copy
+// is resolved by the caller's hook `t` (so lingui extracts it) and passed in.
 function runDelete(
   remove: ReturnType<typeof useAssetMutation>["remove"],
   asset: AssetRowData,
   onDone: () => void,
+  copy: { success: string; error: string },
 ): void {
   remove.mutate(
     { id: asset.id, type: asset.type },
     {
       onSuccess: () => {
-        toast.success(`"${asset.name}" was deleted.`, { invert: true });
+        toast.success(copy.success, { invert: true });
         onDone();
       },
       onError: () => {
-        toast.error("We couldn't delete this. Try again.");
+        toast.error(copy.error);
       },
     },
   );
@@ -164,6 +145,7 @@ export type AssetRowActions = {
 };
 
 export function useAssetRowActions(projectId: number): AssetRowActions {
+  const { t } = useLingui();
   const navigate = useNavigate();
   const { remove } = useAssetMutation(projectId);
   const [editingAsset, setEditingAsset] = useState<KnowledgeRow | undefined>(
@@ -198,7 +180,18 @@ export function useAssetRowActions(projectId: number): AssetRowActions {
 
   const confirmDelete = (): void => {
     if (deletingAsset) {
-      runDelete(remove, deletingAsset, () => setDeletingAsset(undefined));
+      // Resolve the toast copy here with the hook `t` (lingui extracts it) and
+      // hand the finished strings to the module helper.
+      runDelete(remove, deletingAsset, () => setDeletingAsset(undefined), {
+        success: t({
+          id: "projects.assetRowActions.deleteSuccess",
+          message: `"${deletingAsset.name}" was deleted.`,
+        }),
+        error: t({
+          id: "projects.assetRowActions.deleteError",
+          message: "We couldn't delete this. Try again.",
+        }),
+      });
     }
   };
 

@@ -9,35 +9,53 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root";
+import { Route as RegisterRouteImport } from "./routes/register";
 import { Route as LoginRouteImport } from "./routes/login";
 import { Route as AuthedRouteImport } from "./routes/_authed";
+import { Route as IndexRouteImport } from "./routes/index";
 import { Route as AuthedStudioRouteImport } from "./routes/_authed/studio";
 import { Route as AuthedProjectRouteImport } from "./routes/_authed/project";
-import { Route as AuthedProfileRouteImport } from "./routes/_authed/profile";
+import { Route as AuthedOrganizationRouteImport } from "./routes/_authed/organization";
 import { Route as AuthedDigitalWorkerRouteImport } from "./routes/_authed/digital-worker";
 import { Route as AuthedStudioIndexRouteImport } from "./routes/_authed/studio.index";
 import { Route as AuthedProjectIndexRouteImport } from "./routes/_authed/project.index";
+import { Route as AuthedOrganizationIndexRouteImport } from "./routes/_authed/organization.index";
 import { Route as AuthedDigitalWorkerIndexRouteImport } from "./routes/_authed/digital-worker.index";
 import { Route as AuthedStudioSetupRouteImport } from "./routes/_authed/studio.setup";
+import { Route as AuthedStudioEditableRouteImport } from "./routes/_authed/studio.editable";
+import { Route as AuthedStudioCreatedRouteImport } from "./routes/_authed/studio.created";
+import { Route as AuthedStudioAllRouteImport } from "./routes/_authed/studio.all";
 import { Route as AuthedProjectProjectIdRouteImport } from "./routes/_authed/project.$projectId";
+import { Route as AuthedOrganizationProjectsRouteImport } from "./routes/_authed/organization.projects";
+import { Route as AuthedOrganizationMembersRouteImport } from "./routes/_authed/organization.members";
 import { Route as AuthedDigitalWorkerAgentIdRouteImport } from "./routes/_authed/digital-worker.$agentId";
 import { Route as AuthedProjectProjectIdIndexRouteImport } from "./routes/_authed/project.$projectId.index";
 import { Route as AuthedDigitalWorkerAgentIdIndexRouteImport } from "./routes/_authed/digital-worker.$agentId.index";
 import { Route as AuthedStudioAgentIdSetupRouteImport } from "./routes/_authed/studio.$agentId.setup";
+import { Route as AuthedProjectProjectIdTeamRouteImport } from "./routes/_authed/project.$projectId.team";
+import { Route as AuthedProjectProjectIdSandboxRouteImport } from "./routes/_authed/project.$projectId.sandbox";
 import { Route as AuthedProjectProjectIdKnowledgeTagsRouteImport } from "./routes/_authed/project.$projectId.knowledge-tags";
 import { Route as AuthedProjectProjectIdKnowledgeRouteImport } from "./routes/_authed/project.$projectId.knowledge";
 import { Route as AuthedProjectProjectIdExperienceRouteImport } from "./routes/_authed/project.$projectId.experience";
 import { Route as AuthedProjectProjectIdDeliverableRouteImport } from "./routes/_authed/project.$projectId.deliverable";
 import { Route as AuthedDigitalWorkerAgentIdCollaborationRouteImport } from "./routes/_authed/digital-worker.$agentId.collaboration";
+import { Route as AuthedProjectProjectIdTeamIndexRouteImport } from "./routes/_authed/project.$projectId.team.index";
 import { Route as AuthedProjectProjectIdKnowledgeIndexRouteImport } from "./routes/_authed/project.$projectId.knowledge.index";
 import { Route as AuthedProjectProjectIdExperienceIndexRouteImport } from "./routes/_authed/project.$projectId.experience.index";
 import { Route as AuthedProjectProjectIdDeliverableIndexRouteImport } from "./routes/_authed/project.$projectId.deliverable.index";
 import { Route as AuthedDigitalWorkerAgentIdCollaborationIndexRouteImport } from "./routes/_authed/digital-worker.$agentId.collaboration.index";
+import { Route as AuthedProjectProjectIdTeamOperatorsRouteImport } from "./routes/_authed/project.$projectId.team.operators";
+import { Route as AuthedProjectProjectIdTeamDigitalWorkersRouteImport } from "./routes/_authed/project.$projectId.team.digital-workers";
 import { Route as AuthedProjectProjectIdKnowledgeAssetIdRouteImport } from "./routes/_authed/project.$projectId.knowledge.$assetId";
 import { Route as AuthedProjectProjectIdExperienceAssetIdRouteImport } from "./routes/_authed/project.$projectId.experience.$assetId";
 import { Route as AuthedProjectProjectIdDeliverableAssetIdRouteImport } from "./routes/_authed/project.$projectId.deliverable.$assetId";
 import { Route as AuthedDigitalWorkerAgentIdCollaborationConversationIdRouteImport } from "./routes/_authed/digital-worker.$agentId.collaboration.$conversationId";
 
+const RegisterRoute = RegisterRouteImport.update({
+  id: "/register",
+  path: "/register",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const LoginRoute = LoginRouteImport.update({
   id: "/login",
   path: "/login",
@@ -45,6 +63,11 @@ const LoginRoute = LoginRouteImport.update({
 } as any);
 const AuthedRoute = AuthedRouteImport.update({
   id: "/_authed",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const IndexRoute = IndexRouteImport.update({
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
 } as any);
 const AuthedStudioRoute = AuthedStudioRouteImport.update({
@@ -57,9 +80,9 @@ const AuthedProjectRoute = AuthedProjectRouteImport.update({
   path: "/project",
   getParentRoute: () => AuthedRoute,
 } as any);
-const AuthedProfileRoute = AuthedProfileRouteImport.update({
-  id: "/profile",
-  path: "/profile",
+const AuthedOrganizationRoute = AuthedOrganizationRouteImport.update({
+  id: "/organization",
+  path: "/organization",
   getParentRoute: () => AuthedRoute,
 } as any);
 const AuthedDigitalWorkerRoute = AuthedDigitalWorkerRouteImport.update({
@@ -77,6 +100,11 @@ const AuthedProjectIndexRoute = AuthedProjectIndexRouteImport.update({
   path: "/",
   getParentRoute: () => AuthedProjectRoute,
 } as any);
+const AuthedOrganizationIndexRoute = AuthedOrganizationIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => AuthedOrganizationRoute,
+} as any);
 const AuthedDigitalWorkerIndexRoute =
   AuthedDigitalWorkerIndexRouteImport.update({
     id: "/",
@@ -88,11 +116,38 @@ const AuthedStudioSetupRoute = AuthedStudioSetupRouteImport.update({
   path: "/setup",
   getParentRoute: () => AuthedStudioRoute,
 } as any);
+const AuthedStudioEditableRoute = AuthedStudioEditableRouteImport.update({
+  id: "/editable",
+  path: "/editable",
+  getParentRoute: () => AuthedStudioRoute,
+} as any);
+const AuthedStudioCreatedRoute = AuthedStudioCreatedRouteImport.update({
+  id: "/created",
+  path: "/created",
+  getParentRoute: () => AuthedStudioRoute,
+} as any);
+const AuthedStudioAllRoute = AuthedStudioAllRouteImport.update({
+  id: "/all",
+  path: "/all",
+  getParentRoute: () => AuthedStudioRoute,
+} as any);
 const AuthedProjectProjectIdRoute = AuthedProjectProjectIdRouteImport.update({
   id: "/$projectId",
   path: "/$projectId",
   getParentRoute: () => AuthedProjectRoute,
 } as any);
+const AuthedOrganizationProjectsRoute =
+  AuthedOrganizationProjectsRouteImport.update({
+    id: "/projects",
+    path: "/projects",
+    getParentRoute: () => AuthedOrganizationRoute,
+  } as any);
+const AuthedOrganizationMembersRoute =
+  AuthedOrganizationMembersRouteImport.update({
+    id: "/members",
+    path: "/members",
+    getParentRoute: () => AuthedOrganizationRoute,
+  } as any);
 const AuthedDigitalWorkerAgentIdRoute =
   AuthedDigitalWorkerAgentIdRouteImport.update({
     id: "/$agentId",
@@ -116,6 +171,18 @@ const AuthedStudioAgentIdSetupRoute =
     id: "/$agentId/setup",
     path: "/$agentId/setup",
     getParentRoute: () => AuthedStudioRoute,
+  } as any);
+const AuthedProjectProjectIdTeamRoute =
+  AuthedProjectProjectIdTeamRouteImport.update({
+    id: "/team",
+    path: "/team",
+    getParentRoute: () => AuthedProjectProjectIdRoute,
+  } as any);
+const AuthedProjectProjectIdSandboxRoute =
+  AuthedProjectProjectIdSandboxRouteImport.update({
+    id: "/sandbox",
+    path: "/sandbox",
+    getParentRoute: () => AuthedProjectProjectIdRoute,
   } as any);
 const AuthedProjectProjectIdKnowledgeTagsRoute =
   AuthedProjectProjectIdKnowledgeTagsRouteImport.update({
@@ -147,6 +214,12 @@ const AuthedDigitalWorkerAgentIdCollaborationRoute =
     path: "/collaboration",
     getParentRoute: () => AuthedDigitalWorkerAgentIdRoute,
   } as any);
+const AuthedProjectProjectIdTeamIndexRoute =
+  AuthedProjectProjectIdTeamIndexRouteImport.update({
+    id: "/",
+    path: "/",
+    getParentRoute: () => AuthedProjectProjectIdTeamRoute,
+  } as any);
 const AuthedProjectProjectIdKnowledgeIndexRoute =
   AuthedProjectProjectIdKnowledgeIndexRouteImport.update({
     id: "/",
@@ -170,6 +243,18 @@ const AuthedDigitalWorkerAgentIdCollaborationIndexRoute =
     id: "/",
     path: "/",
     getParentRoute: () => AuthedDigitalWorkerAgentIdCollaborationRoute,
+  } as any);
+const AuthedProjectProjectIdTeamOperatorsRoute =
+  AuthedProjectProjectIdTeamOperatorsRouteImport.update({
+    id: "/operators",
+    path: "/operators",
+    getParentRoute: () => AuthedProjectProjectIdTeamRoute,
+  } as any);
+const AuthedProjectProjectIdTeamDigitalWorkersRoute =
+  AuthedProjectProjectIdTeamDigitalWorkersRouteImport.update({
+    id: "/digital-workers",
+    path: "/digital-workers",
+    getParentRoute: () => AuthedProjectProjectIdTeamRoute,
   } as any);
 const AuthedProjectProjectIdKnowledgeAssetIdRoute =
   AuthedProjectProjectIdKnowledgeAssetIdRouteImport.update({
@@ -197,16 +282,23 @@ const AuthedDigitalWorkerAgentIdCollaborationConversationIdRoute =
   } as any);
 
 export interface FileRoutesByFullPath {
-  "/": typeof AuthedRouteWithChildren;
+  "/": typeof IndexRoute;
   "/login": typeof LoginRoute;
+  "/register": typeof RegisterRoute;
   "/digital-worker": typeof AuthedDigitalWorkerRouteWithChildren;
-  "/profile": typeof AuthedProfileRoute;
+  "/organization": typeof AuthedOrganizationRouteWithChildren;
   "/project": typeof AuthedProjectRouteWithChildren;
   "/studio": typeof AuthedStudioRouteWithChildren;
   "/digital-worker/$agentId": typeof AuthedDigitalWorkerAgentIdRouteWithChildren;
+  "/organization/members": typeof AuthedOrganizationMembersRoute;
+  "/organization/projects": typeof AuthedOrganizationProjectsRoute;
   "/project/$projectId": typeof AuthedProjectProjectIdRouteWithChildren;
+  "/studio/all": typeof AuthedStudioAllRoute;
+  "/studio/created": typeof AuthedStudioCreatedRoute;
+  "/studio/editable": typeof AuthedStudioEditableRoute;
   "/studio/setup": typeof AuthedStudioSetupRoute;
   "/digital-worker/": typeof AuthedDigitalWorkerIndexRoute;
+  "/organization/": typeof AuthedOrganizationIndexRoute;
   "/project/": typeof AuthedProjectIndexRoute;
   "/studio/": typeof AuthedStudioIndexRoute;
   "/digital-worker/$agentId/collaboration": typeof AuthedDigitalWorkerAgentIdCollaborationRouteWithChildren;
@@ -214,6 +306,8 @@ export interface FileRoutesByFullPath {
   "/project/$projectId/experience": typeof AuthedProjectProjectIdExperienceRouteWithChildren;
   "/project/$projectId/knowledge": typeof AuthedProjectProjectIdKnowledgeRouteWithChildren;
   "/project/$projectId/knowledge-tags": typeof AuthedProjectProjectIdKnowledgeTagsRoute;
+  "/project/$projectId/sandbox": typeof AuthedProjectProjectIdSandboxRoute;
+  "/project/$projectId/team": typeof AuthedProjectProjectIdTeamRouteWithChildren;
   "/studio/$agentId/setup": typeof AuthedStudioAgentIdSetupRoute;
   "/digital-worker/$agentId/": typeof AuthedDigitalWorkerAgentIdIndexRoute;
   "/project/$projectId/": typeof AuthedProjectProjectIdIndexRoute;
@@ -221,20 +315,30 @@ export interface FileRoutesByFullPath {
   "/project/$projectId/deliverable/$assetId": typeof AuthedProjectProjectIdDeliverableAssetIdRoute;
   "/project/$projectId/experience/$assetId": typeof AuthedProjectProjectIdExperienceAssetIdRoute;
   "/project/$projectId/knowledge/$assetId": typeof AuthedProjectProjectIdKnowledgeAssetIdRoute;
+  "/project/$projectId/team/digital-workers": typeof AuthedProjectProjectIdTeamDigitalWorkersRoute;
+  "/project/$projectId/team/operators": typeof AuthedProjectProjectIdTeamOperatorsRoute;
   "/digital-worker/$agentId/collaboration/": typeof AuthedDigitalWorkerAgentIdCollaborationIndexRoute;
   "/project/$projectId/deliverable/": typeof AuthedProjectProjectIdDeliverableIndexRoute;
   "/project/$projectId/experience/": typeof AuthedProjectProjectIdExperienceIndexRoute;
   "/project/$projectId/knowledge/": typeof AuthedProjectProjectIdKnowledgeIndexRoute;
+  "/project/$projectId/team/": typeof AuthedProjectProjectIdTeamIndexRoute;
 }
 export interface FileRoutesByTo {
-  "/": typeof AuthedRouteWithChildren;
+  "/": typeof IndexRoute;
   "/login": typeof LoginRoute;
-  "/profile": typeof AuthedProfileRoute;
+  "/register": typeof RegisterRoute;
+  "/organization/members": typeof AuthedOrganizationMembersRoute;
+  "/organization/projects": typeof AuthedOrganizationProjectsRoute;
+  "/studio/all": typeof AuthedStudioAllRoute;
+  "/studio/created": typeof AuthedStudioCreatedRoute;
+  "/studio/editable": typeof AuthedStudioEditableRoute;
   "/studio/setup": typeof AuthedStudioSetupRoute;
   "/digital-worker": typeof AuthedDigitalWorkerIndexRoute;
+  "/organization": typeof AuthedOrganizationIndexRoute;
   "/project": typeof AuthedProjectIndexRoute;
   "/studio": typeof AuthedStudioIndexRoute;
   "/project/$projectId/knowledge-tags": typeof AuthedProjectProjectIdKnowledgeTagsRoute;
+  "/project/$projectId/sandbox": typeof AuthedProjectProjectIdSandboxRoute;
   "/studio/$agentId/setup": typeof AuthedStudioAgentIdSetupRoute;
   "/digital-worker/$agentId": typeof AuthedDigitalWorkerAgentIdIndexRoute;
   "/project/$projectId": typeof AuthedProjectProjectIdIndexRoute;
@@ -242,23 +346,34 @@ export interface FileRoutesByTo {
   "/project/$projectId/deliverable/$assetId": typeof AuthedProjectProjectIdDeliverableAssetIdRoute;
   "/project/$projectId/experience/$assetId": typeof AuthedProjectProjectIdExperienceAssetIdRoute;
   "/project/$projectId/knowledge/$assetId": typeof AuthedProjectProjectIdKnowledgeAssetIdRoute;
+  "/project/$projectId/team/digital-workers": typeof AuthedProjectProjectIdTeamDigitalWorkersRoute;
+  "/project/$projectId/team/operators": typeof AuthedProjectProjectIdTeamOperatorsRoute;
   "/digital-worker/$agentId/collaboration": typeof AuthedDigitalWorkerAgentIdCollaborationIndexRoute;
   "/project/$projectId/deliverable": typeof AuthedProjectProjectIdDeliverableIndexRoute;
   "/project/$projectId/experience": typeof AuthedProjectProjectIdExperienceIndexRoute;
   "/project/$projectId/knowledge": typeof AuthedProjectProjectIdKnowledgeIndexRoute;
+  "/project/$projectId/team": typeof AuthedProjectProjectIdTeamIndexRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
   "/_authed": typeof AuthedRouteWithChildren;
   "/login": typeof LoginRoute;
+  "/register": typeof RegisterRoute;
   "/_authed/digital-worker": typeof AuthedDigitalWorkerRouteWithChildren;
-  "/_authed/profile": typeof AuthedProfileRoute;
+  "/_authed/organization": typeof AuthedOrganizationRouteWithChildren;
   "/_authed/project": typeof AuthedProjectRouteWithChildren;
   "/_authed/studio": typeof AuthedStudioRouteWithChildren;
   "/_authed/digital-worker/$agentId": typeof AuthedDigitalWorkerAgentIdRouteWithChildren;
+  "/_authed/organization/members": typeof AuthedOrganizationMembersRoute;
+  "/_authed/organization/projects": typeof AuthedOrganizationProjectsRoute;
   "/_authed/project/$projectId": typeof AuthedProjectProjectIdRouteWithChildren;
+  "/_authed/studio/all": typeof AuthedStudioAllRoute;
+  "/_authed/studio/created": typeof AuthedStudioCreatedRoute;
+  "/_authed/studio/editable": typeof AuthedStudioEditableRoute;
   "/_authed/studio/setup": typeof AuthedStudioSetupRoute;
   "/_authed/digital-worker/": typeof AuthedDigitalWorkerIndexRoute;
+  "/_authed/organization/": typeof AuthedOrganizationIndexRoute;
   "/_authed/project/": typeof AuthedProjectIndexRoute;
   "/_authed/studio/": typeof AuthedStudioIndexRoute;
   "/_authed/digital-worker/$agentId/collaboration": typeof AuthedDigitalWorkerAgentIdCollaborationRouteWithChildren;
@@ -266,6 +381,8 @@ export interface FileRoutesById {
   "/_authed/project/$projectId/experience": typeof AuthedProjectProjectIdExperienceRouteWithChildren;
   "/_authed/project/$projectId/knowledge": typeof AuthedProjectProjectIdKnowledgeRouteWithChildren;
   "/_authed/project/$projectId/knowledge-tags": typeof AuthedProjectProjectIdKnowledgeTagsRoute;
+  "/_authed/project/$projectId/sandbox": typeof AuthedProjectProjectIdSandboxRoute;
+  "/_authed/project/$projectId/team": typeof AuthedProjectProjectIdTeamRouteWithChildren;
   "/_authed/studio/$agentId/setup": typeof AuthedStudioAgentIdSetupRoute;
   "/_authed/digital-worker/$agentId/": typeof AuthedDigitalWorkerAgentIdIndexRoute;
   "/_authed/project/$projectId/": typeof AuthedProjectProjectIdIndexRoute;
@@ -273,24 +390,34 @@ export interface FileRoutesById {
   "/_authed/project/$projectId/deliverable/$assetId": typeof AuthedProjectProjectIdDeliverableAssetIdRoute;
   "/_authed/project/$projectId/experience/$assetId": typeof AuthedProjectProjectIdExperienceAssetIdRoute;
   "/_authed/project/$projectId/knowledge/$assetId": typeof AuthedProjectProjectIdKnowledgeAssetIdRoute;
+  "/_authed/project/$projectId/team/digital-workers": typeof AuthedProjectProjectIdTeamDigitalWorkersRoute;
+  "/_authed/project/$projectId/team/operators": typeof AuthedProjectProjectIdTeamOperatorsRoute;
   "/_authed/digital-worker/$agentId/collaboration/": typeof AuthedDigitalWorkerAgentIdCollaborationIndexRoute;
   "/_authed/project/$projectId/deliverable/": typeof AuthedProjectProjectIdDeliverableIndexRoute;
   "/_authed/project/$projectId/experience/": typeof AuthedProjectProjectIdExperienceIndexRoute;
   "/_authed/project/$projectId/knowledge/": typeof AuthedProjectProjectIdKnowledgeIndexRoute;
+  "/_authed/project/$projectId/team/": typeof AuthedProjectProjectIdTeamIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | "/"
     | "/login"
+    | "/register"
     | "/digital-worker"
-    | "/profile"
+    | "/organization"
     | "/project"
     | "/studio"
     | "/digital-worker/$agentId"
+    | "/organization/members"
+    | "/organization/projects"
     | "/project/$projectId"
+    | "/studio/all"
+    | "/studio/created"
+    | "/studio/editable"
     | "/studio/setup"
     | "/digital-worker/"
+    | "/organization/"
     | "/project/"
     | "/studio/"
     | "/digital-worker/$agentId/collaboration"
@@ -298,6 +425,8 @@ export interface FileRouteTypes {
     | "/project/$projectId/experience"
     | "/project/$projectId/knowledge"
     | "/project/$projectId/knowledge-tags"
+    | "/project/$projectId/sandbox"
+    | "/project/$projectId/team"
     | "/studio/$agentId/setup"
     | "/digital-worker/$agentId/"
     | "/project/$projectId/"
@@ -305,20 +434,30 @@ export interface FileRouteTypes {
     | "/project/$projectId/deliverable/$assetId"
     | "/project/$projectId/experience/$assetId"
     | "/project/$projectId/knowledge/$assetId"
+    | "/project/$projectId/team/digital-workers"
+    | "/project/$projectId/team/operators"
     | "/digital-worker/$agentId/collaboration/"
     | "/project/$projectId/deliverable/"
     | "/project/$projectId/experience/"
-    | "/project/$projectId/knowledge/";
+    | "/project/$projectId/knowledge/"
+    | "/project/$projectId/team/";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
     | "/login"
-    | "/profile"
+    | "/register"
+    | "/organization/members"
+    | "/organization/projects"
+    | "/studio/all"
+    | "/studio/created"
+    | "/studio/editable"
     | "/studio/setup"
     | "/digital-worker"
+    | "/organization"
     | "/project"
     | "/studio"
     | "/project/$projectId/knowledge-tags"
+    | "/project/$projectId/sandbox"
     | "/studio/$agentId/setup"
     | "/digital-worker/$agentId"
     | "/project/$projectId"
@@ -326,22 +465,33 @@ export interface FileRouteTypes {
     | "/project/$projectId/deliverable/$assetId"
     | "/project/$projectId/experience/$assetId"
     | "/project/$projectId/knowledge/$assetId"
+    | "/project/$projectId/team/digital-workers"
+    | "/project/$projectId/team/operators"
     | "/digital-worker/$agentId/collaboration"
     | "/project/$projectId/deliverable"
     | "/project/$projectId/experience"
-    | "/project/$projectId/knowledge";
+    | "/project/$projectId/knowledge"
+    | "/project/$projectId/team";
   id:
     | "__root__"
+    | "/"
     | "/_authed"
     | "/login"
+    | "/register"
     | "/_authed/digital-worker"
-    | "/_authed/profile"
+    | "/_authed/organization"
     | "/_authed/project"
     | "/_authed/studio"
     | "/_authed/digital-worker/$agentId"
+    | "/_authed/organization/members"
+    | "/_authed/organization/projects"
     | "/_authed/project/$projectId"
+    | "/_authed/studio/all"
+    | "/_authed/studio/created"
+    | "/_authed/studio/editable"
     | "/_authed/studio/setup"
     | "/_authed/digital-worker/"
+    | "/_authed/organization/"
     | "/_authed/project/"
     | "/_authed/studio/"
     | "/_authed/digital-worker/$agentId/collaboration"
@@ -349,6 +499,8 @@ export interface FileRouteTypes {
     | "/_authed/project/$projectId/experience"
     | "/_authed/project/$projectId/knowledge"
     | "/_authed/project/$projectId/knowledge-tags"
+    | "/_authed/project/$projectId/sandbox"
+    | "/_authed/project/$projectId/team"
     | "/_authed/studio/$agentId/setup"
     | "/_authed/digital-worker/$agentId/"
     | "/_authed/project/$projectId/"
@@ -356,19 +508,31 @@ export interface FileRouteTypes {
     | "/_authed/project/$projectId/deliverable/$assetId"
     | "/_authed/project/$projectId/experience/$assetId"
     | "/_authed/project/$projectId/knowledge/$assetId"
+    | "/_authed/project/$projectId/team/digital-workers"
+    | "/_authed/project/$projectId/team/operators"
     | "/_authed/digital-worker/$agentId/collaboration/"
     | "/_authed/project/$projectId/deliverable/"
     | "/_authed/project/$projectId/experience/"
-    | "/_authed/project/$projectId/knowledge/";
+    | "/_authed/project/$projectId/knowledge/"
+    | "/_authed/project/$projectId/team/";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute;
   AuthedRoute: typeof AuthedRouteWithChildren;
   LoginRoute: typeof LoginRoute;
+  RegisterRoute: typeof RegisterRoute;
 }
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
+    "/register": {
+      id: "/register";
+      path: "/register";
+      fullPath: "/register";
+      preLoaderRoute: typeof RegisterRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/login": {
       id: "/login";
       path: "/login";
@@ -381,6 +545,13 @@ declare module "@tanstack/react-router" {
       path: "";
       fullPath: "/";
       preLoaderRoute: typeof AuthedRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/_authed/studio": {
@@ -397,11 +568,11 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AuthedProjectRouteImport;
       parentRoute: typeof AuthedRoute;
     };
-    "/_authed/profile": {
-      id: "/_authed/profile";
-      path: "/profile";
-      fullPath: "/profile";
-      preLoaderRoute: typeof AuthedProfileRouteImport;
+    "/_authed/organization": {
+      id: "/_authed/organization";
+      path: "/organization";
+      fullPath: "/organization";
+      preLoaderRoute: typeof AuthedOrganizationRouteImport;
       parentRoute: typeof AuthedRoute;
     };
     "/_authed/digital-worker": {
@@ -425,6 +596,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AuthedProjectIndexRouteImport;
       parentRoute: typeof AuthedProjectRoute;
     };
+    "/_authed/organization/": {
+      id: "/_authed/organization/";
+      path: "/";
+      fullPath: "/organization/";
+      preLoaderRoute: typeof AuthedOrganizationIndexRouteImport;
+      parentRoute: typeof AuthedOrganizationRoute;
+    };
     "/_authed/digital-worker/": {
       id: "/_authed/digital-worker/";
       path: "/";
@@ -439,12 +617,47 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AuthedStudioSetupRouteImport;
       parentRoute: typeof AuthedStudioRoute;
     };
+    "/_authed/studio/editable": {
+      id: "/_authed/studio/editable";
+      path: "/editable";
+      fullPath: "/studio/editable";
+      preLoaderRoute: typeof AuthedStudioEditableRouteImport;
+      parentRoute: typeof AuthedStudioRoute;
+    };
+    "/_authed/studio/created": {
+      id: "/_authed/studio/created";
+      path: "/created";
+      fullPath: "/studio/created";
+      preLoaderRoute: typeof AuthedStudioCreatedRouteImport;
+      parentRoute: typeof AuthedStudioRoute;
+    };
+    "/_authed/studio/all": {
+      id: "/_authed/studio/all";
+      path: "/all";
+      fullPath: "/studio/all";
+      preLoaderRoute: typeof AuthedStudioAllRouteImport;
+      parentRoute: typeof AuthedStudioRoute;
+    };
     "/_authed/project/$projectId": {
       id: "/_authed/project/$projectId";
       path: "/$projectId";
       fullPath: "/project/$projectId";
       preLoaderRoute: typeof AuthedProjectProjectIdRouteImport;
       parentRoute: typeof AuthedProjectRoute;
+    };
+    "/_authed/organization/projects": {
+      id: "/_authed/organization/projects";
+      path: "/projects";
+      fullPath: "/organization/projects";
+      preLoaderRoute: typeof AuthedOrganizationProjectsRouteImport;
+      parentRoute: typeof AuthedOrganizationRoute;
+    };
+    "/_authed/organization/members": {
+      id: "/_authed/organization/members";
+      path: "/members";
+      fullPath: "/organization/members";
+      preLoaderRoute: typeof AuthedOrganizationMembersRouteImport;
+      parentRoute: typeof AuthedOrganizationRoute;
     };
     "/_authed/digital-worker/$agentId": {
       id: "/_authed/digital-worker/$agentId";
@@ -473,6 +686,20 @@ declare module "@tanstack/react-router" {
       fullPath: "/studio/$agentId/setup";
       preLoaderRoute: typeof AuthedStudioAgentIdSetupRouteImport;
       parentRoute: typeof AuthedStudioRoute;
+    };
+    "/_authed/project/$projectId/team": {
+      id: "/_authed/project/$projectId/team";
+      path: "/team";
+      fullPath: "/project/$projectId/team";
+      preLoaderRoute: typeof AuthedProjectProjectIdTeamRouteImport;
+      parentRoute: typeof AuthedProjectProjectIdRoute;
+    };
+    "/_authed/project/$projectId/sandbox": {
+      id: "/_authed/project/$projectId/sandbox";
+      path: "/sandbox";
+      fullPath: "/project/$projectId/sandbox";
+      preLoaderRoute: typeof AuthedProjectProjectIdSandboxRouteImport;
+      parentRoute: typeof AuthedProjectProjectIdRoute;
     };
     "/_authed/project/$projectId/knowledge-tags": {
       id: "/_authed/project/$projectId/knowledge-tags";
@@ -509,6 +736,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AuthedDigitalWorkerAgentIdCollaborationRouteImport;
       parentRoute: typeof AuthedDigitalWorkerAgentIdRoute;
     };
+    "/_authed/project/$projectId/team/": {
+      id: "/_authed/project/$projectId/team/";
+      path: "/";
+      fullPath: "/project/$projectId/team/";
+      preLoaderRoute: typeof AuthedProjectProjectIdTeamIndexRouteImport;
+      parentRoute: typeof AuthedProjectProjectIdTeamRoute;
+    };
     "/_authed/project/$projectId/knowledge/": {
       id: "/_authed/project/$projectId/knowledge/";
       path: "/";
@@ -536,6 +770,20 @@ declare module "@tanstack/react-router" {
       fullPath: "/digital-worker/$agentId/collaboration/";
       preLoaderRoute: typeof AuthedDigitalWorkerAgentIdCollaborationIndexRouteImport;
       parentRoute: typeof AuthedDigitalWorkerAgentIdCollaborationRoute;
+    };
+    "/_authed/project/$projectId/team/operators": {
+      id: "/_authed/project/$projectId/team/operators";
+      path: "/operators";
+      fullPath: "/project/$projectId/team/operators";
+      preLoaderRoute: typeof AuthedProjectProjectIdTeamOperatorsRouteImport;
+      parentRoute: typeof AuthedProjectProjectIdTeamRoute;
+    };
+    "/_authed/project/$projectId/team/digital-workers": {
+      id: "/_authed/project/$projectId/team/digital-workers";
+      path: "/digital-workers";
+      fullPath: "/project/$projectId/team/digital-workers";
+      preLoaderRoute: typeof AuthedProjectProjectIdTeamDigitalWorkersRouteImport;
+      parentRoute: typeof AuthedProjectProjectIdTeamRoute;
     };
     "/_authed/project/$projectId/knowledge/$assetId": {
       id: "/_authed/project/$projectId/knowledge/$assetId";
@@ -616,6 +864,21 @@ const AuthedDigitalWorkerRouteChildren: AuthedDigitalWorkerRouteChildren = {
 const AuthedDigitalWorkerRouteWithChildren =
   AuthedDigitalWorkerRoute._addFileChildren(AuthedDigitalWorkerRouteChildren);
 
+interface AuthedOrganizationRouteChildren {
+  AuthedOrganizationMembersRoute: typeof AuthedOrganizationMembersRoute;
+  AuthedOrganizationProjectsRoute: typeof AuthedOrganizationProjectsRoute;
+  AuthedOrganizationIndexRoute: typeof AuthedOrganizationIndexRoute;
+}
+
+const AuthedOrganizationRouteChildren: AuthedOrganizationRouteChildren = {
+  AuthedOrganizationMembersRoute: AuthedOrganizationMembersRoute,
+  AuthedOrganizationProjectsRoute: AuthedOrganizationProjectsRoute,
+  AuthedOrganizationIndexRoute: AuthedOrganizationIndexRoute,
+};
+
+const AuthedOrganizationRouteWithChildren =
+  AuthedOrganizationRoute._addFileChildren(AuthedOrganizationRouteChildren);
+
 interface AuthedProjectProjectIdDeliverableRouteChildren {
   AuthedProjectProjectIdDeliverableAssetIdRoute: typeof AuthedProjectProjectIdDeliverableAssetIdRoute;
   AuthedProjectProjectIdDeliverableIndexRoute: typeof AuthedProjectProjectIdDeliverableIndexRoute;
@@ -670,11 +933,33 @@ const AuthedProjectProjectIdKnowledgeRouteWithChildren =
     AuthedProjectProjectIdKnowledgeRouteChildren,
   );
 
+interface AuthedProjectProjectIdTeamRouteChildren {
+  AuthedProjectProjectIdTeamDigitalWorkersRoute: typeof AuthedProjectProjectIdTeamDigitalWorkersRoute;
+  AuthedProjectProjectIdTeamOperatorsRoute: typeof AuthedProjectProjectIdTeamOperatorsRoute;
+  AuthedProjectProjectIdTeamIndexRoute: typeof AuthedProjectProjectIdTeamIndexRoute;
+}
+
+const AuthedProjectProjectIdTeamRouteChildren: AuthedProjectProjectIdTeamRouteChildren =
+  {
+    AuthedProjectProjectIdTeamDigitalWorkersRoute:
+      AuthedProjectProjectIdTeamDigitalWorkersRoute,
+    AuthedProjectProjectIdTeamOperatorsRoute:
+      AuthedProjectProjectIdTeamOperatorsRoute,
+    AuthedProjectProjectIdTeamIndexRoute: AuthedProjectProjectIdTeamIndexRoute,
+  };
+
+const AuthedProjectProjectIdTeamRouteWithChildren =
+  AuthedProjectProjectIdTeamRoute._addFileChildren(
+    AuthedProjectProjectIdTeamRouteChildren,
+  );
+
 interface AuthedProjectProjectIdRouteChildren {
   AuthedProjectProjectIdDeliverableRoute: typeof AuthedProjectProjectIdDeliverableRouteWithChildren;
   AuthedProjectProjectIdExperienceRoute: typeof AuthedProjectProjectIdExperienceRouteWithChildren;
   AuthedProjectProjectIdKnowledgeRoute: typeof AuthedProjectProjectIdKnowledgeRouteWithChildren;
   AuthedProjectProjectIdKnowledgeTagsRoute: typeof AuthedProjectProjectIdKnowledgeTagsRoute;
+  AuthedProjectProjectIdSandboxRoute: typeof AuthedProjectProjectIdSandboxRoute;
+  AuthedProjectProjectIdTeamRoute: typeof AuthedProjectProjectIdTeamRouteWithChildren;
   AuthedProjectProjectIdIndexRoute: typeof AuthedProjectProjectIdIndexRoute;
 }
 
@@ -688,6 +973,9 @@ const AuthedProjectProjectIdRouteChildren: AuthedProjectProjectIdRouteChildren =
       AuthedProjectProjectIdKnowledgeRouteWithChildren,
     AuthedProjectProjectIdKnowledgeTagsRoute:
       AuthedProjectProjectIdKnowledgeTagsRoute,
+    AuthedProjectProjectIdSandboxRoute: AuthedProjectProjectIdSandboxRoute,
+    AuthedProjectProjectIdTeamRoute:
+      AuthedProjectProjectIdTeamRouteWithChildren,
     AuthedProjectProjectIdIndexRoute: AuthedProjectProjectIdIndexRoute,
   };
 
@@ -711,12 +999,18 @@ const AuthedProjectRouteWithChildren = AuthedProjectRoute._addFileChildren(
 );
 
 interface AuthedStudioRouteChildren {
+  AuthedStudioAllRoute: typeof AuthedStudioAllRoute;
+  AuthedStudioCreatedRoute: typeof AuthedStudioCreatedRoute;
+  AuthedStudioEditableRoute: typeof AuthedStudioEditableRoute;
   AuthedStudioSetupRoute: typeof AuthedStudioSetupRoute;
   AuthedStudioIndexRoute: typeof AuthedStudioIndexRoute;
   AuthedStudioAgentIdSetupRoute: typeof AuthedStudioAgentIdSetupRoute;
 }
 
 const AuthedStudioRouteChildren: AuthedStudioRouteChildren = {
+  AuthedStudioAllRoute: AuthedStudioAllRoute,
+  AuthedStudioCreatedRoute: AuthedStudioCreatedRoute,
+  AuthedStudioEditableRoute: AuthedStudioEditableRoute,
   AuthedStudioSetupRoute: AuthedStudioSetupRoute,
   AuthedStudioIndexRoute: AuthedStudioIndexRoute,
   AuthedStudioAgentIdSetupRoute: AuthedStudioAgentIdSetupRoute,
@@ -728,14 +1022,14 @@ const AuthedStudioRouteWithChildren = AuthedStudioRoute._addFileChildren(
 
 interface AuthedRouteChildren {
   AuthedDigitalWorkerRoute: typeof AuthedDigitalWorkerRouteWithChildren;
-  AuthedProfileRoute: typeof AuthedProfileRoute;
+  AuthedOrganizationRoute: typeof AuthedOrganizationRouteWithChildren;
   AuthedProjectRoute: typeof AuthedProjectRouteWithChildren;
   AuthedStudioRoute: typeof AuthedStudioRouteWithChildren;
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedDigitalWorkerRoute: AuthedDigitalWorkerRouteWithChildren,
-  AuthedProfileRoute: AuthedProfileRoute,
+  AuthedOrganizationRoute: AuthedOrganizationRouteWithChildren,
   AuthedProjectRoute: AuthedProjectRouteWithChildren,
   AuthedStudioRoute: AuthedStudioRouteWithChildren,
 };
@@ -744,8 +1038,10 @@ const AuthedRouteWithChildren =
   AuthedRoute._addFileChildren(AuthedRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
   LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

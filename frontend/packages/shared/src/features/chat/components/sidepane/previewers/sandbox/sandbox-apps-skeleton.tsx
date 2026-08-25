@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import {
   Skeleton,
   Table,
@@ -33,10 +12,6 @@ import { type JSX } from "react";
 
 const SKELETON_ROW_COUNT = 5;
 
-// Real header labels (not Skeleton bars) so the placeholder reads as the same
-// table and the layout does not reflow when the query resolves.
-const HEADERS = ["Name", "Version"] as const;
-
 // Full-panel loading mirror of <SandboxAppsContent>: the manage-apps header bar,
 // the "All Apps" title, the tabs/install-button row, and the app table are all
 // placeholdered so the whole panel — not just the table — reads as loading and
@@ -44,10 +19,21 @@ const HEADERS = ["Name", "Version"] as const;
 // full-shell skeletons). The header controls render as inert Skeleton squares
 // here; the real, interactive ManageAppsHeader appears once content resolves.
 export function SandboxAppsSkeleton(): JSX.Element {
+  const { t } = useLingui();
+  // Real header labels (not Skeleton bars) so the placeholder reads as the same
+  // table and the layout does not reflow when the query resolves.
+  const headers = [
+    t({ id: "chat.sandboxAppsSkeleton.header.name", message: "Name" }),
+    t({ id: "chat.sandboxAppsSkeleton.header.version", message: "Version" }),
+  ] as const;
+
   return (
     <div
       role="status"
-      aria-label="Loading apps"
+      aria-label={t({
+        id: "chat.sandboxAppsSkeleton.loadingApps",
+        message: "Loading apps",
+      })}
       className="bg-surface-basic flex h-full flex-col"
     >
       <div
@@ -75,12 +61,17 @@ export function SandboxAppsSkeleton(): JSX.Element {
           <Table>
             <TableHeader>
               <TableRow>
-                {HEADERS.map((label) => (
+                {headers.map((label) => (
                   <TableHead key={label} className="text-sm">
                     {label}
                   </TableHead>
                 ))}
-                <TableHead className="text-right text-sm">Actions</TableHead>
+                <TableHead className="text-right text-sm">
+                  {t({
+                    id: "chat.sandboxAppsSkeleton.header.actions",
+                    message: "Actions",
+                  })}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody aria-hidden="true">

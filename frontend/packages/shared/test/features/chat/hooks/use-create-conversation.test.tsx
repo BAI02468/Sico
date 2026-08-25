@@ -1,34 +1,16 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import type { AxiosInstance } from "axios";
 import { createStore, Provider as JotaiProvider } from "jotai";
 import type { ReactElement, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { pendingTitleConversationIdsAtom } from "@/features/chat/atoms/chat-atom";
+import {
+  createFirstConversationIdsAtom,
+  pendingTitleConversationIdsAtom,
+} from "@/features/chat/atoms/chat-atom";
 import { useCreateConversation } from "@/features/chat/hooks/use-create-conversation";
+import { chatKeys } from "@/features/chat/query-keys";
 import * as service from "@/features/chat/services/conversation";
 import { ApiClientProvider } from "@/services/api-client-context";
 
@@ -87,7 +69,7 @@ describe("useCreateConversation", () => {
     expect(created.id).toBe(501);
   });
 
-  it("invalidates the conversation list on success", async () => {
+  it("invalidates only the creating agent's conversation list", async () => {
     vi.mocked(service.createConversation).mockResolvedValue({
       id: 501,
       title: "Hi",
@@ -95,21 +77,21 @@ describe("useCreateConversation", () => {
       agentInstanceId: 7,
     });
     const { Wrapper, queryClient } = makeWrapper();
-    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+    const targetListKey = chatKeys.conversationList(7);
+    const otherListKey = chatKeys.conversationList(8);
+    queryClient.setQueryData(targetListKey, ["target"]);
+    queryClient.setQueryData(otherListKey, ["other"]);
     const { result } = renderHook(() => useCreateConversation(), {
       wrapper: Wrapper,
     });
 
     await result.current.mutateAsync({ agentInstanceId: 7 });
 
-    await waitFor(() =>
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["conversations", "list"],
-      }),
-    );
+    expect(queryClient.getQueryState(targetListKey)?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(otherListKey)?.isInvalidated).toBe(false);
   });
 
-  it("marks the created id as title-pending so the sidebar polls only it", async () => {
+  it("records title-pending before create-first for the created id", async () => {
     vi.mocked(service.createConversation).mockResolvedValue({
       id: 501,
       title: "New Session",
@@ -117,12 +99,29 @@ describe("useCreateConversation", () => {
       agentInstanceId: 7,
     });
     const { Wrapper, store } = makeWrapper();
+    const writeOrder: string[] = [];
+    const unsubscribePending = store.sub(
+      pendingTitleConversationIdsAtom,
+      () => {
+        writeOrder.push("title-pending");
+      },
+    );
+    const unsubscribeCreateFirst = store.sub(
+      createFirstConversationIdsAtom,
+      () => {
+        writeOrder.push("create-first");
+      },
+    );
     const { result } = renderHook(() => useCreateConversation(), {
       wrapper: Wrapper,
     });
 
     await result.current.mutateAsync({ agentInstanceId: 7 });
+    unsubscribePending();
+    unsubscribeCreateFirst();
 
+    expect(writeOrder).toEqual(["title-pending", "create-first"]);
     expect(store.get(pendingTitleConversationIdsAtom).has(501)).toBe(true);
+    expect(store.get(createFirstConversationIdsAtom).has(501)).toBe(true);
   });
 });

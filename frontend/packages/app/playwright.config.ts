@@ -1,24 +1,5 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 import { defineConfig } from "@playwright/test";
 
@@ -26,9 +7,48 @@ import { defineConfig } from "@playwright/test";
 // E2E coverage stays close to what users actually receive.
 const PREVIEW_PORT = 4173;
 
+// Load real-environment credentials from the gitignored `.env.test.local`
+// (zero-dependency parser — avoids adding `dotenv`). Values already in the
+// process env win, so CI secrets override the file. Only vars not yet set are
+// filled, so this never clobbers an explicit `SICO_E2E_URL=… pnpm e2e:real`.
+const envFile = fileURLToPath(new URL("./.env.test.local", import.meta.url));
+if (existsSync(envFile)) {
+  for (const line of readFileSync(envFile, "utf8").split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    if (process.env[key] === undefined) {
+      process.env[key] = trimmed.slice(eq + 1).trim();
+    }
+  }
+}
+
+// Three modes, keyed on two env vars:
+//
+//   • UNIFIED (E2E_PREVIEW_PROXY_TARGET set) → local `vite preview` carrying a
+//     proxy to the deployed backend. ONE baseURL (localhost) serves BOTH mock
+//     specs (page.route intercepts, never leave the browser) AND @real specs
+//     (fall through the proxy to the real backend). No gating — everything runs
+//     together, so a single UI-mode tree shows and runs the whole suite. This is
+//     the local "see it all" mode.
+//
+//   • REAL (SICO_E2E_URL set, no proxy target) → hit the deployed app directly,
+//     run ONLY `@real`. Used by the nightly real-env CI job.
+//
+//   • MOCK (neither set) → local `vite preview`, run everything EXCEPT `@real`
+//     (the hermetic suite). This is the default PR-CI path.
+const proxyTarget = process.env.E2E_PREVIEW_PROXY_TARGET;
+const isUnified = Boolean(proxyTarget);
+const isReal = !isUnified && Boolean(process.env.SICO_E2E_URL);
+
 export default defineConfig({
   testDir: "./e2e",
   testMatch: /.*\.spec\.ts/,
+  // Unified runs both; real runs only @real; mock excludes @real.
+  grep: isReal ? /@real/ : undefined,
+  grepInvert: isReal || isUnified ? undefined : /@real/,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -43,8 +63,12 @@ export default defineConfig({
       ]
     : "list",
   use: {
-    // `SICO_E2E_URL` points CI/smoke jobs at a deployed preview.
-    baseURL: process.env.SICO_E2E_URL ?? `http://localhost:${PREVIEW_PORT}`,
+    // REAL points the browser straight at the deployed app. UNIFIED and MOCK
+    // both load from the local preview (UNIFIED's preview proxies /api onward).
+    baseURL:
+      isReal && process.env.SICO_E2E_URL
+        ? process.env.SICO_E2E_URL
+        : `http://localhost:${PREVIEW_PORT}`,
     headless: true,
     trace: process.env.CI ? "on-first-retry" : "retain-on-failure",
     screenshot: "only-on-failure",
@@ -55,12 +79,16 @@ export default defineConfig({
       use: { browserName: "chromium" },
     },
   ],
-  webServer: process.env.SICO_E2E_URL
+  // REAL hits a remote host, so no local server. UNIFIED and MOCK both boot
+  // preview; UNIFIED passes the proxy target through so /api is forwarded on.
+  webServer: isReal
     ? undefined
     : {
-        command: `pnpm vite preview --port ${PREVIEW_PORT}`,
+        command: isUnified
+          ? `E2E_PREVIEW_PROXY_TARGET=${proxyTarget} pnpm vite preview --port ${PREVIEW_PORT}`
+          : `pnpm vite preview --port ${PREVIEW_PORT}`,
         port: PREVIEW_PORT,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
         timeout: 120_000,
       },
 });

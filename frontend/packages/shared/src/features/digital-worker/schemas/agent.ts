@@ -1,32 +1,11 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { z } from "zod";
+
+import { conversationRunStatusSchema } from "../../../schemas/conversation-run-status";
 
 // Backend `AgentStatus` (single_agent_instance.proto). Values are the wire
 // integers — do not renumber. Modeled as a `z.enum` (the lint bans TS
 // `enum`), mirroring `MemberTypeSchema`; access members via
-// `AgentStatusSchema.enum.ACTIVE`. Drives the optional status indicator on
-// the DW card (shown only when SicoConfig.digitalWorkerCardShowStatus is on).
+// `AgentStatusSchema.enum.ACTIVE`. Drives the status indicator on the DW card.
 export const AgentStatusSchema = z.enum({
   UNKNOWN: 0,
   ONBOARDING: 1,
@@ -83,12 +62,13 @@ export const agentSchema = z.object({
   // employerUsername (the owner). The collaboration header popover's "Operator"
   // row reads this; legacy's MorePopover bound the row to `operatorUsername`.
   operatorUsername: z.string().optional(),
-  // Lifecycle status — drives the optional status badge / NEW dot on the
-  // DW card (gated by SicoConfig.digitalWorkerCardShowStatus). Backend
-  // sends `null` for unset status (Go zero-value marshaling); `.nullish()`
-  // accepts null|undefined. `.catch(undefined)` degrades any out-of-enum
-  // int (proto may add values) to "no badge" rather than failing the whole
-  // `z.array(agentSchema)` parse — a display-only field must never nuke the list.
+  conversationStatus: conversationRunStatusSchema,
+  // Lifecycle status — drives the status badge / NEW dot on the DW card.
+  // Backend sends `null` for unset status (Go zero-value marshaling);
+  // `.nullish()` accepts null|undefined. `.catch(undefined)` degrades any
+  // out-of-enum int (proto may add values) to "no badge" rather than failing
+  // the whole `z.array(agentSchema)` parse — a display-only field must never
+  // nuke the list.
   status: AgentStatusSchema.nullish().catch(undefined),
   // Evaluation progress (onboarding flow). Drives the DW card's onboarding
   // click branch: evaluated → performance, evaluating → executing,

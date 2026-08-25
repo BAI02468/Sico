@@ -1,30 +1,28 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 export { logger } from "./utils/logger";
 export { buildLoginRedirect } from "./utils/build-login-redirect";
+export { normalizeEpochMilliseconds } from "./utils/normalize-epoch-milliseconds";
+export { conversationStatusRefetchInterval } from "./utils/conversation-status-refetch-interval";
 export { resolveLandingPath } from "./utils/resolve-landing-path";
 export * from "./schemas/api";
 export * from "./schemas/auth";
+export { type PlanStatus, PlanStatusSchema } from "./schemas/plan-status";
+export {
+  conversationRunStatusSchema,
+  type ConversationRunStatus,
+  ConversationRunStatusSchema,
+} from "./schemas/conversation-run-status";
+export {
+  commonAttachmentSchema,
+  type CommonAttachment,
+} from "./schemas/common-attachment";
+export { MAX_ATTACHMENT_BYTES } from "./constants/attachment";
+export { uploadAttachment } from "./services/upload-attachment";
+export {
+  AttachmentBar,
+  AttachmentChip,
+  AttachmentPickerButton,
+  type AttachmentUploadItem,
+} from "./components/attachment-input";
 export {
   type Agent,
   agentSchema,
@@ -35,7 +33,9 @@ export {
   updateAgentInstanceStatus,
 } from "./features/digital-worker";
 export * from "./constants/http";
+export * from "./constants/endpoints";
 export * from "./constants/empty-illustration";
+export * from "./constants/form";
 // `getAccessToken` is intentionally NOT re-exported: app code must go
 // through `userAtom`. Direct consumers deep-import from `./utils/auth-storage`.
 export {
@@ -44,13 +44,11 @@ export {
   logoutAtom,
   userAtom,
 } from "./atoms/auth-atom";
-export { userModeAtom } from "./atoms/user-mode-atom";
 export {
   AUTH_EXPIRES_AT_LS,
   AUTH_TOKEN_LS,
   AUTH_USER_LS,
 } from "./utils/local-storage";
-export { OfflineBanner } from "./components/shell/offline-banner";
 export {
   ErrorFallback,
   type ErrorFallbackProps,
@@ -58,7 +56,10 @@ export {
   OuterErrorFallback,
 } from "./components/error-boundary/error-fallback";
 export { AuthGate } from "./components/auth/auth-gate";
-export { ModeGuard } from "./features/rbac-login/mode-guard/mode-guard";
+export {
+  ConfirmDialog,
+  type ConfirmDialogProps,
+} from "./components/confirm-dialog";
 export { Card, type CardProps } from "./components/card";
 export { DwAvatar } from "./components/dw-avatar";
 export { ErrorView, type ErrorViewKind } from "./components/error-view";
@@ -77,25 +78,40 @@ export {
 } from "./components/message-state";
 export { UserAvatar } from "./components/user-avatar";
 export { AppShell } from "./components/shell/app-shell";
-export { type NavItemData } from "./features/sidebar/types";
-export { NavRow } from "./features/sidebar/components/nav-row";
-export { RailNavRow } from "./features/sidebar/components/rail-nav-row";
-export { NavBadge } from "./features/sidebar/components/nav-badge";
-export { useSidebarCollapsed } from "./features/sidebar/hooks/use-sidebar-collapsed";
-export { LoginLayout } from "./components/shell/login-layout";
 export {
+  LoginLayout,
+  type LoginLayoutProps,
+} from "./components/shell/login-layout";
+export {
+  type AuthModeSearch,
   LoginForm,
   type LoginFormProps,
   type LoginMode,
+  LoginPage,
+  type LoginSearch,
+  loginSearchSchema,
+  RegisterForm,
+  type RegisterFormProps,
+  RegisterPage,
+  authModeSearchSchema,
+  modeFromSearch,
+  searchForMode,
 } from "./features/rbac-login";
 export {
   Collaboration,
   DeviceButton,
   DigitalWorkerHome,
 } from "./features/chat";
+export {
+  useBoundOrganizationQuery,
+  useBoundOrganizationSuspenseQuery,
+} from "./hooks/use-bound-organization";
+export {
+  type AttachmentUploadLifecycle,
+  useAttachmentUploadLifecycle,
+} from "./hooks/use-attachment-upload-lifecycle";
 export { useFocusFirstHeading } from "./hooks/use-focus-first-heading";
 export { useInfiniteScrollSentinel } from "./hooks/use-infinite-scroll-sentinel";
-export { useOnlineStatus } from "./hooks/use-online-status";
 export {
   createApiClient,
   type CreateApiClientOptions,
@@ -104,12 +120,12 @@ export {
 export { createQueryClient } from "./services/query-client";
 export { ApiClientProvider, useApiClient } from "./services/api-client-context";
 export {
-  type ChatEndpointsConfig,
   DEFAULT_SICO_CONFIG,
   type SicoConfig,
   SicoConfigProvider,
   useSicoConfig,
 } from "./services/sico-config-context";
+export { I18nProvider } from "./services/i18n/i18n-provider";
 export {
   synthesizeNetworkError,
   type SynthesizedError,

@@ -1,32 +1,12 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import type { AxiosInstance } from "axios";
 import { z } from "zod";
 
+import { SKILL_ENDPOINTS } from "../../../constants/endpoints";
 import { apiResponseSchema, assertOk, unwrapData } from "../../../schemas/api";
 import { type Paged } from "../../../schemas/paginated";
 import { DEFAULT_SKILLS_PAGE_SIZE } from "../constants";
 import {
+  persistedSkillItemSchema,
   type SkillAction,
   type SkillDetail,
   skillDetailSchema,
@@ -46,7 +26,9 @@ const listEnvelope = apiResponseSchema(
     })
     .transform(
       ({ skills, total, hasNext }): Paged<SkillItem> => ({
-        items: skills,
+        items: skills.filter(
+          (skill) => persistedSkillItemSchema.safeParse(skill).success,
+        ),
         total,
         hasNext,
       }),
@@ -76,7 +58,7 @@ export async function fetchSkills(
     status,
   }: SkillsParams,
 ): Promise<Paged<SkillItem>> {
-  const res = await apiClient.get<unknown>("/skills/list", {
+  const res = await apiClient.get<unknown>(SKILL_ENDPOINTS.list, {
     params: { agentId, page, pageSize, projectId, status },
   });
   return unwrapData(listEnvelope.parse(res.data), "fetchSkills");
@@ -86,7 +68,9 @@ export async function fetchSkillDetail(
   apiClient: AxiosInstance,
   id: number,
 ): Promise<SkillDetail> {
-  const res = await apiClient.get<unknown>("/skills", { params: { id } });
+  const res = await apiClient.get<unknown>(SKILL_ENDPOINTS.root, {
+    params: { id },
+  });
   return unwrapData(detailEnvelope.parse(res.data), "fetchSkillDetail");
 }
 
@@ -94,7 +78,7 @@ export async function fetchSkillStatus(
   apiClient: AxiosInstance,
   { id, version }: { id: number; version: string },
 ): Promise<SkillStatus> {
-  const res = await apiClient.get<unknown>("/skills/status", {
+  const res = await apiClient.get<unknown>(SKILL_ENDPOINTS.status, {
     params: { id, version },
   });
   return unwrapData(statusEnvelope.parse(res.data), "fetchSkillStatus").status;
@@ -120,7 +104,7 @@ export async function createSkill(
     projectId,
   }: { agentId: string; assetId: number; projectId?: number },
 ): Promise<SkillItem> {
-  const res = await apiClient.post<unknown>("/skills", {
+  const res = await apiClient.post<unknown>(SKILL_ENDPOINTS.root, {
     agentId,
     assetId,
     projectId,
@@ -140,7 +124,7 @@ export async function updateSkill(
   apiClient: AxiosInstance,
   input: UpdateSkillInput,
 ): Promise<SkillUpdateResult> {
-  const res = await apiClient.put<unknown>("/skills", input);
+  const res = await apiClient.put<unknown>(SKILL_ENDPOINTS.root, input);
   return unwrapData(updateEnvelope.parse(res.data), "updateSkill");
 }
 
@@ -148,6 +132,8 @@ export async function deleteSkill(
   apiClient: AxiosInstance,
   id: number,
 ): Promise<void> {
-  const res = await apiClient.delete<unknown>("/skills", { params: { id } });
+  const res = await apiClient.delete<unknown>(SKILL_ENDPOINTS.root, {
+    params: { id },
+  });
   assertOk(apiResponseSchema(z.unknown()).parse(res.data), "deleteSkill");
 }

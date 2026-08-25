@@ -1,33 +1,17 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 export { Studio } from "./components/studio";
+export type { StudioTab } from "./utils/studio-agent-selectors";
+export { StudioAccessBoundary } from "./components/studio-access-boundary";
+export { StudioLayout } from "./components/studio-layout";
+export { StudioSkeleton } from "./components/studio-skeleton";
 export { StudioCard } from "./components/studio-card";
+export { StudioCardSkeleton } from "./components/studio-card-skeleton";
 export { StudioGrid } from "./components/studio-grid";
+export { StudioGridSkeleton } from "./components/studio-grid-skeleton";
 export { StudioEmpty } from "./components/studio-empty";
 export { DwInitialAvatar } from "./components/dw-initial-avatar";
-export { DeployDialog } from "./components/deploy-dialog";
 export { CreateSetupPage } from "./components/create-setup-page";
 export { AgentSetupPage } from "./components/agent-setup-page";
+export { AgentSetupSkeleton } from "./components/agent-setup-skeleton";
 export {
   agentInfosQueryOptions,
   useAgentInfosQuery,
@@ -36,20 +20,51 @@ export {
 } from "./hooks/use-agent-infos-query";
 export {
   useCreateSingleAgentMutation,
+  usePublishSingleAgentMutation,
   useUpdateSingleAgentMutation,
-  useDeploySingleAgentMutation,
 } from "./hooks/use-single-agent-mutations";
-export { fetchAgentInfos, fetchSingleAgent } from "./services/single-agents";
+export { publishSingleAgent } from "./services/publish-single-agent";
+export {
+  fetchAgentInfos,
+  fetchSingleAgent,
+  fetchStudioAgents,
+  STUDIO_AGENT_INTENT,
+  STUDIO_AGENT_PUBLISH_STATUS_LIST,
+} from "./services/single-agents";
 export {
   singleAgentCardSchema,
   agentInfosPayloadSchema,
   type SingleAgentCard,
 } from "./schemas/single-agent-card";
 export {
+  studioAgentIdSchema,
   singleAgentDetailSchema,
   singleAgentPayloadSchema,
   type SingleAgentDetail,
 } from "./schemas/single-agent";
+export {
+  PublishAccessSchema,
+  PublishAccessStatusSchema,
+  publishSingleAgentSchema,
+  publishSingleAgentSelectionSchema,
+  type PublishAccess,
+  type PublishSingleAgentInput,
+  type PublishSingleAgentSelection,
+} from "./schemas/publish-single-agent";
+export {
+  SingleAgentPublishStatusSchema,
+  studioAgentSchema,
+  studioAgentsPayloadSchema,
+  type SingleAgentPublishStatus,
+  type StudioAgent,
+  type StudioAgentsPayload,
+} from "./schemas/studio-agent";
+export {
+  studioAgentsQueryOptions,
+  useStudioAgentsQuery,
+  useStudioAgentsSuspenseQuery,
+  STUDIO_AGENTS_QUERY_KEY_PREFIX,
+} from "./hooks/use-studio-agents-query";
 export {
   singleAgentQueryOptions,
   useSingleAgentSuspenseQuery,

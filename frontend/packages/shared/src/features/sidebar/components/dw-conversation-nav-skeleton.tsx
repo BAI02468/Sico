@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Skeleton } from "@sico/ui";
 import { ChevronLeft } from "lucide-react";
 import { type JSX } from "react";
@@ -30,10 +9,14 @@ import { DwConversationRowsSkeleton } from "./dw-conversation-rows-skeleton";
 // mirrors the real block's three-row shape — "Session" back-header, "New
 // session" row, then a few conversation rows — so the swap-in doesn't jump.
 export function DwConversationNavSkeleton(): JSX.Element {
+  const { t } = useLingui();
   return (
     <div
       aria-busy="true"
-      aria-label="Loading conversations"
+      aria-label={t({
+        id: "sidebar.dwConversationNavSkeleton.loadingConversations",
+        message: "Loading conversations",
+      })}
       className="flex min-h-0 flex-1 flex-col gap-1"
     >
       {/* Back header — chevron + a short label bar, matching the real

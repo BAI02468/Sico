@@ -1,60 +1,110 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { AxiosInstance } from "axios";
 import type { ReactElement, ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { useDeleteSkillMutation } from "@/features/skill/hooks/use-skill-mutations";
+import { SKILL_DETAIL_QUERY_KEY_PREFIX } from "@/features/skill/hooks/use-skill-detail-query";
+import {
+  useCreateSkillMutation,
+  useDeleteSkillMutation,
+  useUpdateSkillMutation,
+} from "@/features/skill/hooks/use-skill-mutations";
+import { SKILL_STATUS_QUERY_KEY_PREFIX } from "@/features/skill/hooks/use-skill-status-query";
+import { SKILLS_QUERY_KEY_PREFIX } from "@/features/skill/hooks/use-skills-query";
+import { makeOkEnvelope } from "@/schemas/api";
 import { ApiClientProvider } from "@/services/api-client-context";
+import { createTestApiClient } from "@/testing/create-test-api-client";
 
-function makeWrapper(apiClient: AxiosInstance) {
+function makeWrapper(apiClient: AxiosInstance): {
+  Wrapper: ({ children }: { children: ReactNode }) => ReactElement;
+  client: QueryClient;
+} {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return function Wrapper({ children }: { children: ReactNode }): ReactElement {
+
+  function Wrapper({ children }: { children: ReactNode }): ReactElement {
     return (
       <QueryClientProvider client={client}>
         <ApiClientProvider client={apiClient}>{children}</ApiClientProvider>
       </QueryClientProvider>
     );
-  };
+  }
+
+  return { Wrapper, client };
 }
+
+describe("useCreateSkillMutation", () => {
+  it("resets the Skill list after an indeterminate create failure", async () => {
+    const post = vi.fn().mockRejectedValue(new Error("response lost"));
+    const apiClient = createTestApiClient({ post });
+    const { Wrapper, client } = makeWrapper(apiClient);
+    const reset = vi.spyOn(client, "resetQueries");
+    const { result } = renderHook(() => useCreateSkillMutation(), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      await expect(
+        result.current.mutateAsync({ agentId: "agent-1", assetId: 41 }),
+      ).rejects.toThrow("response lost");
+    });
+
+    expect(reset).toHaveBeenCalledWith({
+      queryKey: [SKILLS_QUERY_KEY_PREFIX],
+    });
+  });
+});
 
 describe("useDeleteSkillMutation", () => {
   it("calls deleteSkill and resolves", async () => {
     const del = vi.fn().mockResolvedValue({ data: { code: 0, msg: "ok" } });
-    const apiClient = {
-      delete: del,
-    } as Partial<AxiosInstance> as AxiosInstance;
+    const apiClient = createTestApiClient({ delete: del });
     const { result } = renderHook(() => useDeleteSkillMutation(), {
-      wrapper: makeWrapper(apiClient),
+      wrapper: makeWrapper(apiClient).Wrapper,
     });
     await act(async () => {
       await result.current.mutateAsync(9);
     });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(del).toHaveBeenCalledWith("/skills", { params: { id: 9 } });
+  });
+});
+
+describe("useUpdateSkillMutation", () => {
+  it("invalidates the list, detail, and status caches after a Skill update", async () => {
+    const put = vi.fn().mockResolvedValue({
+      data: makeOkEnvelope({
+        skillId: 9,
+        version: "v2",
+        name: "Search",
+        description: "",
+      }),
+    });
+    const apiClient = createTestApiClient({ put });
+    const { Wrapper, client } = makeWrapper(apiClient);
+    const invalidate = vi.spyOn(client, "invalidateQueries");
+    const { result } = renderHook(() => useUpdateSkillMutation(), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        id: 9,
+        currentVersion: "v1",
+        files: [{ path: "SKILL.md", content: "# Updated" }],
+      });
+    });
+
+    expect(invalidate).toHaveBeenCalledWith({
+      queryKey: [SKILLS_QUERY_KEY_PREFIX],
+    });
+    expect(invalidate).toHaveBeenCalledWith({
+      queryKey: [SKILL_DETAIL_QUERY_KEY_PREFIX, 9],
+    });
+    expect(invalidate).toHaveBeenCalledWith({
+      queryKey: [SKILL_STATUS_QUERY_KEY_PREFIX, 9],
+    });
   });
 });

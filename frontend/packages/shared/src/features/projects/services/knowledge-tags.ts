@@ -1,28 +1,7 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import type { AxiosInstance } from "axios";
 import { z } from "zod";
 
+import { KNOWLEDGE_ENDPOINTS } from "../../../constants/endpoints";
 import { apiResponseSchema, assertOk, unwrapData } from "../../../schemas/api";
 import { type Paged } from "../../../schemas/paginated";
 import {
@@ -51,7 +30,7 @@ export async function fetchKnowledgeTags(
   apiClient: AxiosInstance,
   { projectId, page, pageSize }: KnowledgeTagsParams,
 ): Promise<Paged<KnowledgeTag>> {
-  const response = await apiClient.get<unknown>("/knowledge/tags", {
+  const response = await apiClient.get<unknown>(KNOWLEDGE_ENDPOINTS.tags, {
     params: { projectId, page, pageSize },
   });
   const parsed = knowledgeTagsListEnvelope.parse(response.data);
@@ -71,7 +50,7 @@ export async function createKnowledgeTag(
   apiClient: AxiosInstance,
   body: CreateKnowledgeTagBody,
 ): Promise<number> {
-  const response = await apiClient.post<unknown>("/knowledge/tag", body);
+  const response = await apiClient.post<unknown>(KNOWLEDGE_ENDPOINTS.tag, body);
   const parsed = idEnvelope.parse(response.data);
   return unwrapData(parsed, "createKnowledgeTag").id;
 }
@@ -88,7 +67,7 @@ export async function editKnowledgeTag(
   apiClient: AxiosInstance,
   body: EditKnowledgeTagBody,
 ): Promise<number> {
-  const response = await apiClient.put<unknown>("/knowledge/tag", body);
+  const response = await apiClient.put<unknown>(KNOWLEDGE_ENDPOINTS.tag, body);
   const parsed = apiResponseSchema(z.unknown()).parse(response.data);
   assertOk(parsed, "editKnowledgeTag");
   return body.id;
@@ -98,7 +77,7 @@ export async function deleteKnowledgeTag(
   apiClient: AxiosInstance,
   id: number,
 ): Promise<void> {
-  const response = await apiClient.delete<unknown>("/knowledge/tag", {
+  const response = await apiClient.delete<unknown>(KNOWLEDGE_ENDPOINTS.tag, {
     params: { id },
   });
   const parsed = apiResponseSchema(z.unknown()).parse(response.data);

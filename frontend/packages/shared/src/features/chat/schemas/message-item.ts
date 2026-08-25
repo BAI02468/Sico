@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { z } from "zod";
 
 import {
@@ -27,8 +5,8 @@ import {
   MARKDOWN_CONTENT_TYPE,
   PLAN_CONTENT_TYPE,
 } from "./chat-event";
-import { chatAttachmentRefSchema } from "./chat-request";
 import { type Plan, planSchema } from "./plan";
+import { commonAttachmentSchema } from "../../../schemas/common-attachment";
 import { logger } from "../../../utils/logger";
 import { type Message, type Part } from "../atoms/chat-atom";
 
@@ -36,7 +14,7 @@ import { type Message, type Part } from "../atoms/chat-atom";
 // history item carries but the send payload drops. The SINGLE SOURCE for the
 // store's `MessageAttachment` type. Wire `id` is a number; store-facing type is
 // `id?: string`, so `z.coerce.string()` bridges it (stable merge key, as plan.ts).
-export const messageAttachmentSchema = chatAttachmentRefSchema.extend({
+export const messageAttachmentSchema = commonAttachmentSchema.extend({
   id: z.coerce.string().optional(),
 });
 export type MessageAttachment = z.infer<typeof messageAttachmentSchema>;

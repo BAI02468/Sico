@@ -1,29 +1,8 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLingui } from "@lingui/react/macro";
 import type { BaseSyntheticEvent } from "react";
-import { useRef } from "react";
-import { type Control, useForm } from "react-hook-form";
+import { useEffect, useRef } from "react";
+import { type Control, useForm, type UseFormReturn } from "react-hook-form";
 
 import { useLogin } from "./use-login";
 import type { LoginMode } from "../../../components/shell/login-mode-context";
@@ -41,6 +20,54 @@ type UseLoginFormResult = {
   readonly clearCredentialsError: () => void;
 };
 
+// RHF stores resolved error messages in form state, so a locale switch doesn't
+// retranslate errors already on screen. Re-validate the zod-driven fields that
+// currently show an error (only those — don't surface new ones) so their
+// messages swap to the rebuilt, localized resolver. The credentials/network
+// errors are set manually via `setError` (not the resolver), so re-set those
+// too with freshly localized copy when they're currently shown.
+function useRelocalizeErrors(
+  form: UseFormReturn<LoginFormValues>,
+  copy: { credentials: string; network: string },
+): void {
+  const { i18n } = useLingui();
+  useEffect(() => {
+    const { errors } = form.formState;
+    const errored = (["email", "password"] as const).filter(
+      (field) => errors[field],
+    );
+    if (errored.length > 0) {
+      void form.trigger(errored);
+    }
+    if (errors.root?.credentials) {
+      form.setError("root.credentials", { message: copy.credentials });
+    }
+    if (errors.root?.network) {
+      form.setError("root.network", { message: copy.network });
+    }
+    // `copy` is derived from `i18n.locale`, so listing the locale is enough;
+    // re-running on `copy` identity would loop as setError re-renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.locale, form]);
+}
+
+// Fixed client-side copy for the two backend-message-less failures. Built with
+// the reactive `useLingui().t` so a locale switch retranslates them.
+function useErrorCopy(): { credentials: string; network: string } {
+  const { t } = useLingui();
+  return {
+    credentials: t({
+      id: "rbacLogin.loginForm.credentialsError",
+      message: "Incorrect email or password. Please try again.",
+    }),
+    network: t({
+      id: "rbacLogin.loginForm.networkError",
+      message:
+        "Couldn't reach the server. Please check your connection and try again.",
+    }),
+  };
+}
+
 // All of `<LoginForm>`'s form wiring: RHF + zod resolver, the credentials /
 // network error split from `useLogin`, and the submit-time `mode` snapshot so
 // `onSuccess` routes by the mode the user actually submitted under (not one
@@ -51,8 +78,15 @@ export function useLoginForm(
   onSuccess: (data: LoginResponse, mode: LoginMode) => void,
 ): UseLoginFormResult {
   const { loginPrefillCredentials } = useSicoConfig();
-
+  const errorCopy = useErrorCopy();
+  // Errors already on screen don't retranslate on their own (RHF stores the
+  // resolved string); `useRelocalizeErrors` below re-validates the errored
+  // fields on a locale switch so the zod `error` callback re-runs in the new
+  // locale.
   const form = useForm<LoginFormValues>({
+    // Module-scope schema: zod v4's `error` callback resolves each message via
+    // `i18n._()` at validation time, so it always reflects the active locale
+    // without rebuilding the schema per render.
     resolver: zodResolver(loginFormSchema),
     // Seed account for local dev; kept in sync with e2e + qa.md +
     // docs/infra/local-backend.md. Gated by SicoConfig so downstream apps
@@ -76,14 +110,9 @@ export function useLoginForm(
   const login = useLogin({
     onSuccess: (data) => onSuccess(data, submittedModeRef.current),
     onCredentialsError: () =>
-      form.setError("root.credentials", {
-        message: "Incorrect email or password. Please try again.",
-      }),
+      form.setError("root.credentials", { message: errorCopy.credentials }),
     onNetworkError: () =>
-      form.setError("root.network", {
-        message:
-          "Couldn't reach the server. Please check your connection and try again.",
-      }),
+      form.setError("root.network", { message: errorCopy.network }),
   });
 
   // Backend doesn't tell us which credential was wrong, so editing
@@ -100,6 +129,7 @@ export function useLoginForm(
       void form.trigger(name);
     }
   };
+  useRelocalizeErrors(form, errorCopy);
 
   const onSubmit = form.handleSubmit((values) => {
     submittedModeRef.current = mode;

@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Button, toast } from "@sico/ui";
 import { Copy } from "lucide-react";
 import {
@@ -96,6 +75,7 @@ export type CodeBoxProps = {
 // Fenced code block: a default-open <details> card (language label + copy +
 // PrismLight body). Tolerates a still-open fence (the streaming tail).
 export function CodeBox({ className, children }: CodeBoxProps): JSX.Element {
+  const { t } = useLingui();
   const language = className?.replace("language-", "") ?? "text";
   // Body arrives as a string; guard so a node never stringifies to
   // "[object Object]". Trailing newline trimmed.
@@ -106,11 +86,19 @@ export function CodeBox({ className, children }: CodeBoxProps): JSX.Element {
     // surface a non-blocking error.
     try {
       await navigator.clipboard.writeText(code);
-      toast.success("Copied to clipboard", { invert: true });
+      toast.success(
+        t({ id: "markdown.codeBox.copied", message: "Copied to clipboard" }),
+        { invert: true },
+      );
     } catch {
-      toast.error("Couldn't copy to clipboard");
+      toast.error(
+        t({
+          id: "markdown.codeBox.copyFailed",
+          message: "Couldn't copy to clipboard",
+        }),
+      );
     }
-  }, [code]);
+  }, [code, t]);
 
   return (
     <details
@@ -123,7 +111,10 @@ export function CodeBox({ className, children }: CodeBoxProps): JSX.Element {
           type="button"
           variant="subtle"
           size="icon-sm"
-          aria-label="Copy code"
+          aria-label={t({
+            id: "markdown.codeBox.copyCode",
+            message: "Copy code",
+          })}
           onClick={onCopy}
         >
           <Copy />

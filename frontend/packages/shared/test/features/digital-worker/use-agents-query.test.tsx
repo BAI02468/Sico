@@ -1,26 +1,8 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  type InfiniteData,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { AxiosInstance } from "axios";
 import { type ReactNode } from "react";
@@ -29,12 +11,14 @@ import { describe, expect, it, vi } from "vitest";
 import { DEFAULT_AGENTS_PAGE_SIZE } from "@/features/digital-worker/constants";
 import {
   AGENTS_QUERY_KEY_PREFIX,
+  selectAgentsRefetchInterval,
   selectDedupedAgents,
   useAgentsQuery,
   useDedupedAgents,
 } from "@/features/digital-worker/hooks/use-agents-query";
 import type { Agent } from "@/features/digital-worker/schemas/agent";
 import { makeOkEnvelope } from "@/schemas/api";
+import { ConversationRunStatusSchema } from "@/schemas/conversation-run-status";
 import type { Paged } from "@/schemas/paginated";
 import { ApiClientProvider } from "@/services/api-client-context";
 
@@ -68,6 +52,15 @@ describe("useAgentsQuery", () => {
     expect(AGENTS_QUERY_KEY_PREFIX).toEqual(["agents", "list"]);
   });
 
+  it("does not fetch while disabled", () => {
+    const get = vi.fn();
+    renderHook(() => useAgentsQuery({}, { enabled: false }), {
+      wrapper: makeWrapper(makeClient(get)),
+    });
+
+    expect(get).not.toHaveBeenCalled();
+  });
+
   it("fetches the first page and parses items", async () => {
     const page = {
       instances: [{ id: 1, name: "Alpha" }],
@@ -85,9 +78,14 @@ describe("useAgentsQuery", () => {
     expect(result.current.data?.pages[0]?.items).toHaveLength(1);
     expect(get).toHaveBeenCalledWith("/agent/single_agent_instances", {
       params: {
-        isEmployer: false,
         page: 1,
         pageSize: DEFAULT_AGENTS_PAGE_SIZE,
+        orderBy: 3,
+        sortOrder: 1,
+        fetchConversationStatus: true,
+        // Default (hide inactive) → concrete statuses except INACTIVE (4)
+        // and UNKNOWN (0, which the backend rejects).
+        statusList: "1,2,3,5,7",
       },
     });
     // Short page → no next page.
@@ -152,9 +150,12 @@ describe("useAgentsQuery — infinite", () => {
     expect(result.current.hasNextPage).toBe(false);
     expect(get).toHaveBeenNthCalledWith(2, "/agent/single_agent_instances", {
       params: {
-        isEmployer: false,
         page: 2,
         pageSize: DEFAULT_AGENTS_PAGE_SIZE,
+        orderBy: 3,
+        sortOrder: 1,
+        fetchConversationStatus: true,
+        statusList: "1,2,3,5,7",
       },
     });
   });
@@ -229,7 +230,79 @@ describe("useAgentsQuery — infinite", () => {
 });
 
 describe("useAgentsQuery — query policy", () => {
-  it("pins refetchOnWindowFocus=false, gcTime=5min, staleTime=30s", async () => {
+  it("selects a 2-second interval when any loaded agent is running", () => {
+    const data: InfiniteData<Paged<Agent>, number> = {
+      pages: [
+        {
+          items: [
+            makeAgent({
+              id: 1,
+              name: "Idle",
+              conversationStatus: ConversationRunStatusSchema.enum.IDLE,
+            }),
+          ],
+          total: 2,
+          hasNext: true,
+        },
+        {
+          items: [
+            makeAgent({
+              id: 2,
+              name: "Running",
+              conversationStatus: ConversationRunStatusSchema.enum.RUNNING,
+            }),
+          ],
+          total: 2,
+          hasNext: false,
+        },
+      ],
+      pageParams: [1, 2],
+    };
+
+    expect(selectAgentsRefetchInterval(data)).toBe(2_000);
+  });
+
+  it("selects a 30-second interval before data loads", () => {
+    expect(selectAgentsRefetchInterval(undefined)).toBe(30_000);
+  });
+
+  it("selects a 30-second interval for empty pages", () => {
+    expect(
+      selectAgentsRefetchInterval({
+        pages: [{ items: [], total: 0, hasNext: false }],
+        pageParams: [1],
+      }),
+    ).toBe(30_000);
+  });
+
+  it("selects a 30-second interval when no loaded agent is running", () => {
+    const data: InfiniteData<Paged<Agent>, number> = {
+      pages: [
+        {
+          items: [
+            makeAgent({
+              id: 1,
+              name: "Idle",
+              conversationStatus: ConversationRunStatusSchema.enum.IDLE,
+            }),
+            makeAgent({
+              id: 2,
+              name: "Unknown",
+              conversationStatus: ConversationRunStatusSchema.enum.UNKNOWN,
+            }),
+            makeAgent({ id: 3, name: "Missing" }),
+          ],
+          total: 3,
+          hasNext: false,
+        },
+      ],
+      pageParams: [1],
+    };
+
+    expect(selectAgentsRefetchInterval(data)).toBe(30_000);
+  });
+
+  it("pins existing timing policy and leaves background polling disabled", async () => {
     const get = vi.fn().mockResolvedValue({
       data: makeOkEnvelope({ instances: [], total: 0, hasNext: false }),
     });
@@ -256,10 +329,14 @@ describe("useAgentsQuery — query policy", () => {
       .getQueryCache()
       .findAll({ queryKey: AGENTS_QUERY_KEY_PREFIX })[0];
     const options = cached?.options as {
+      refetchInterval?: unknown;
+      refetchIntervalInBackground?: boolean;
       refetchOnWindowFocus?: boolean;
       gcTime?: number;
       staleTime?: number;
     };
+    expect(options.refetchInterval).toEqual(expect.any(Function));
+    expect(options.refetchIntervalInBackground).toBeUndefined();
     expect(options.refetchOnWindowFocus).toBe(false);
     expect(options.gcTime).toBe(5 * 60_000);
     expect(options.staleTime).toBe(30_000);

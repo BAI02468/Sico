@@ -1,31 +1,12 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { i18n } from "@lingui/core";
 import { produce } from "immer";
 import { type createStore } from "jotai";
 
-import { ChatStreamHttpError, type OpenChatStreamOptions } from "./chat-stream";
+import { ChatStreamHttpError } from "./chat-stream";
 import { reduceFrame } from "./frame-reducer";
+import { createSendLifecycle, type SendMessageContext } from "./send-lifecycle";
 import { logoutAtom } from "../../../atoms/auth-atom";
+import { type CommonAttachment } from "../../../schemas/common-attachment";
 import { assertNever } from "../../../utils/assert-never";
 import { makeId } from "../../../utils/id";
 import { logger } from "../../../utils/logger";
@@ -39,46 +20,10 @@ import {
 } from "../atoms/chat-atom";
 import { HANDOFF_ABORT_REASON, SEND_FAILED_COPY } from "../constants";
 import { type ChatEvent, MARKDOWN_CONTENT_TYPE } from "../schemas/chat-event";
-import {
-  type ChatAttachmentRef,
-  type ChatRequest,
-} from "../schemas/chat-request";
 
 type Store = ReturnType<typeof createStore>;
 
 const HTTP_UNAUTHORIZED = 401;
-
-// Injected transport — the real `openChatStream` with its `url` already bound
-// by the hook, or a fake in tests. The orchestrator supplies only the per-turn
-// options (onOpen/onEvent/signal); the URL is not its concern.
-type OpenChatStream = (
-  payload: ChatRequest,
-  options: Omit<OpenChatStreamOptions, "url">,
-) => Promise<void>;
-
-export type SendMessageContext = {
-  agentInstanceId: number;
-  // Target conversation (dwp multi-conversation). Passed EXPLICITLY (not read
-  // back from the store) so a send is correct even when the conversation slot
-  // hasn't been hydrated yet — the create-first hand-off parks this id and the
-  // consumer forwards it here, racing ahead of `useHistory`'s slot creation.
-  // Omitted for sico (v1), where the backend derives the single conversation.
-  conversationId?: number;
-  openChatStream: OpenChatStream;
-  toastError: (message: string) => void;
-  // Fired once when the turn reaches a terminal state THIS orchestrator owns
-  // after the stream opened — a `done`/`error` frame, or a user Stop-abort of a
-  // streamed reply. By then the turn is (partially) persisted server-side. The
-  // caller uses it to invalidate the history query cache for this conversation,
-  // so a later remount refetches the real turn instead of a stale empty seed
-  // (create-first leaves the history cache seeded empty; nothing else writes sent
-  // messages back into it). NOT fired when: the stream never opened (pre-open
-  // failure/abort/401 — nothing persisted, placeholder dropped); OR a recoverable
-  // drop (truncation / mid-stream transport failure / reconnect hand-off) leaves
-  // the turn `streaming` for the recovery loop, which owns the terminal state and
-  // its own history invalidation (use-reconnect `onSettle`).
-  onSettle?: () => void;
-};
 
 // Immer-produce a single conversation in the Map by client id.
 function updateConversation(
@@ -103,9 +48,10 @@ function updateConversation(
 export async function sendMessage(
   store: Store,
   text: string,
-  attachments: ChatAttachmentRef[],
+  attachments: CommonAttachment[],
   ctx: SendMessageContext,
 ): Promise<void> {
+  const lifecycle = createSendLifecycle(ctx);
   const controller = new AbortController();
 
   // 1. Append the human message synchronously on click + open the slot.
@@ -120,7 +66,7 @@ export async function sendMessage(
     createdAt: Date.now(),
   };
   // Render sent attachments immediately on the optimistic message
-  // (`ChatAttachmentRef` is structurally a `MessageAttachment`). Omit on a
+  // (`CommonAttachment` is structurally a `MessageAttachment`). Omit on a
   // plain turn (absent, not []).
   if (attachments.length > 0) {
     humanMessage.attachments = attachments;
@@ -246,6 +192,7 @@ export async function sendMessage(
     // `lastActivityAtom` at 0, so without this the whole slow-first-token window
     // would read as stale and the recovery watchdog would abort a healthy stream.
     store.set(lastActivityAtom, Date.now());
+    lifecycle.open();
   };
 
   // Pure liveness for the recovery staleness watchdog — fired on EVERY frame
@@ -321,18 +268,26 @@ export async function sendMessage(
         break;
       }
       case "done": {
+        if (sawTerminal) {
+          break;
+        }
         sawTerminal = true;
         flush();
         setStreamingState("done");
-        ctx.onSettle?.();
+        lifecycle.settle();
+        lifecycle.terminal();
         break;
       }
       case "error": {
+        if (sawTerminal) {
+          break;
+        }
         sawTerminal = true;
         flush();
         setStreamingState("error");
-        ctx.toastError(SEND_FAILED_COPY);
-        ctx.onSettle?.();
+        lifecycle.toastError(i18n._(SEND_FAILED_COPY));
+        lifecycle.settle();
+        lifecycle.terminal();
         break;
       }
       default:
@@ -377,7 +332,7 @@ export async function sendMessage(
       if (sawOpen) {
         if (controller.signal.reason !== HANDOFF_ABORT_REASON) {
           setStreamingState("done");
-          ctx.onSettle?.();
+          lifecycle.settle();
         }
       } else {
         // Abort during the ↻ window: placeholder never streamed → drop it.
@@ -421,7 +376,7 @@ export async function sendMessage(
       // Failure before onopen (non-401): drop the placeholder, idle, toast.
       logger.error("chat: send failed before open", { err });
       removePlaceholder();
-      ctx.toastError(SEND_FAILED_COPY);
+      lifecycle.toastError(i18n._(SEND_FAILED_COPY));
     } else {
       // Mid-stream transport failure AFTER open: a recoverable drop (legacy's
       // TypeError branch), not a settled error. Leave the tail `streaming` and
@@ -436,10 +391,12 @@ export async function sendMessage(
     }
   } finally {
     clearHandle();
+    lifecycle.terminal();
   }
 }
 
 // Stop is a separate concern (transport teardown, not per-turn streaming state),
 // so it lives in `stop-turn.ts`. Re-exported here to preserve the public entry —
 // `use-chat` and tests import `stopTurn` / `StopTurnContext` from this module.
+export type { SendMessageContext } from "./send-lifecycle";
 export { stopTurn, type StopTurnContext } from "./stop-turn";

@@ -1,0 +1,53 @@
+import {
+  Canvas,
+  ColorItem,
+  ColorPalette,
+  Controls,
+  Meta,
+} from "@storybook/addon-docs/blocks";
+import * as Stories from "./studio-autosave-status.stories";
+
+<Meta of={Stories} />
+
+# Studio Autosave Status
+
+Persistent feedback for edit-mode Studio autosave. It replaces the manual Save action and keeps failures or version conflicts visible until resolved.
+
+## Examples
+
+<Canvas of={Stories.Saved} />
+<Canvas of={Stories.Saving} />
+<Canvas of={Stories.Failed} />
+<Canvas of={Stories.Conflict} />
+<Canvas of={Stories.Invalid} />
+
+## API
+
+<Controls />
+
+- `status` — queue lifecycle state.
+- `valid` — whether required Basic Info can be persisted.
+- `onRetry` — explicit retry for transient failures.
+- `onDiscard` / `canDiscard` — targeted cleanup for a permanently failed upload.
+- `onConflict` — explicit reload/review action for version conflicts.
+
+## Token Audit
+
+<ColorPalette>
+  <ColorItem
+    title="Secondary foreground"
+    subtitle="--color-foreground-secondary"
+    colors={{ Default: "var(--color-foreground-secondary)" }}
+  />
+  <ColorItem
+    title="Error foreground"
+    subtitle="--color-status-error-foreground"
+    colors={{ Default: "var(--color-status-error-foreground)" }}
+  />
+</ColorPalette>
+
+| Concern                | Utility        |
+| ---------------------- | -------------- |
+| Compact status spacing | `gap-1`        |
+| Status typography      | `text-sm`      |
+| Spinner motion         | `animate-spin` |

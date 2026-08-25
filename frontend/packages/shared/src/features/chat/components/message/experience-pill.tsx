@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Popover,
   PopoverContent,
@@ -48,6 +27,7 @@ export function ExperiencePill({
   planCompleted,
   playbookId,
 }: ExperiencePillProps): JSX.Element | null {
+  const { t } = useLingui();
   const navigate = useNavigate();
   // The owning project for `View more` — read from the live agent (same path as
   // AddToProjectButton). `useAgentQuery` (non-suspense) so the pill never
@@ -64,7 +44,9 @@ export function ExperiencePill({
     return (
       <span className="text-foreground-secondary flex w-fit items-center gap-1 text-sm font-medium">
         <Lightbulb className="text-icon-secondary size-4 shrink-0" />
-        Generating experience
+        <Trans id="chat.experiencePill.generatingExperience">
+          Generating experience
+        </Trans>
       </span>
     );
   }
@@ -73,18 +55,21 @@ export function ExperiencePill({
     <Popover>
       <PopoverTrigger className="bg-button-subtle-fill-rest text-foreground-secondary hover:bg-button-subtle-fill-hover flex h-5 w-fit items-center gap-1 rounded-md px-2 text-xs font-medium">
         <Lightbulb className="text-icon-secondary size-4 shrink-0" />
-        {`Experience + ${experienceCount}`}
+        {t({
+          id: "chat.experiencePill.experienceCount",
+          message: `Experience + ${experienceCount}`,
+        })}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-56 gap-3">
         <PopoverTitle className="flex items-center gap-1.5 text-sm">
-          Experience
+          <Trans id="chat.experiencePill.experience">Experience</Trans>
           <span className="bg-primary-50 text-primary-600 rounded-sm px-1 text-xs">
             {`+ ${experienceCount}`}
           </span>
         </PopoverTitle>
         {/* Count mirrors the title's — a label, not a distinct datum. */}
         <span className="text-foreground-secondary flex items-center justify-between text-xs">
-          New strategies
+          <Trans id="chat.experiencePill.newStrategies">New strategies</Trans>
           <span className="bg-primary-50 text-primary-600 rounded-sm px-1">
             {`+ ${experienceCount}`}
           </span>
@@ -106,7 +91,7 @@ export function ExperiencePill({
           }}
           className="text-foreground-secondary focus-visible:outline-focus-rest flex w-fit items-center gap-1 rounded-sm text-xs focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-default"
         >
-          View more
+          <Trans id="chat.experiencePill.viewMore">View more</Trans>
           <ChevronRight className="size-3 shrink-0" />
         </button>
       </PopoverContent>

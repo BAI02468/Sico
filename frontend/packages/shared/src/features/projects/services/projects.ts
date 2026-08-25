@@ -1,29 +1,8 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import type { AxiosInstance } from "axios";
 import { z } from "zod";
 
-import { apiResponseSchema, unwrapData } from "../../../schemas/api";
+import { PROJECT_ENDPOINTS } from "../../../constants/endpoints";
+import { apiResponseSchema, assertOk, unwrapData } from "../../../schemas/api";
 import { type Paged } from "../../../schemas/paginated";
 import {
   DEFAULT_PROJECT_MEMBER_TYPE,
@@ -31,6 +10,8 @@ import {
 } from "../constants";
 import {
   type MemberType,
+  type OrganizationProject,
+  organizationProjectSchema,
   type Project,
   type ProjectDetail,
   projectDetailSchema,
@@ -73,12 +54,72 @@ export async function fetchProjects(
   }: ProjectsParams = {},
 ): Promise<Paged<Project>> {
   const clampedPageSize = Math.min(pageSize, MAX_PROJECTS_PAGE_SIZE);
-  const response = await apiClient.get<unknown>("/project/user_projects", {
-    params: { page, pageSize: clampedPageSize, memberType },
-  });
+  const response = await apiClient.get<unknown>(
+    PROJECT_ENDPOINTS.userProjects,
+    {
+      params: { page, pageSize: clampedPageSize, memberType },
+    },
+  );
 
   const parsed = envelope.parse(response.data);
   return unwrapData(parsed, "fetchProjects");
+}
+
+const organizationProjectsEnvelope = apiResponseSchema(
+  z
+    .object({
+      projects: z
+        .array(organizationProjectSchema)
+        .nullish()
+        .transform((projects) => projects ?? []),
+      total: z.number().int().nonnegative(),
+      hasNext: z.boolean(),
+    })
+    .transform(
+      ({ projects, ...rest }): Paged<OrganizationProject> => ({
+        items: projects,
+        total: rest.total,
+        hasNext: rest.hasNext,
+      }),
+    ),
+);
+
+const DEFAULT_ORGANIZATION_PROJECT_PAGE_SIZE = 50;
+
+type OrganizationProjectsParams = {
+  page?: number;
+  pageSize?: number;
+};
+
+export async function fetchOrganizationProjects(
+  apiClient: AxiosInstance,
+  organizationId: number,
+  {
+    page = 1,
+    pageSize = DEFAULT_ORGANIZATION_PROJECT_PAGE_SIZE,
+  }: OrganizationProjectsParams = {},
+): Promise<Paged<OrganizationProject>> {
+  const response = await apiClient.get<unknown>(PROJECT_ENDPOINTS.list, {
+    params: {
+      organizationId,
+      page,
+      pageSize: Math.min(pageSize, MAX_PROJECTS_PAGE_SIZE),
+    },
+  });
+  const projects = unwrapData(
+    organizationProjectsEnvelope.parse(response.data),
+    "fetchOrganizationProjects",
+  );
+  if (
+    projects.items.some(
+      (project) =>
+        project.organizationId !== 0 &&
+        project.organizationId !== organizationId,
+    )
+  ) {
+    throw new Error("Project outside requested organization scope");
+  }
+  return projects;
 }
 
 const detailEnvelope = apiResponseSchema(projectDetailSchema);
@@ -87,7 +128,9 @@ export async function fetchProjectDetail(
   apiClient: AxiosInstance,
   id: number,
 ): Promise<ProjectDetail> {
-  const response = await apiClient.get<unknown>("/project", { params: { id } });
+  const response = await apiClient.get<unknown>(PROJECT_ENDPOINTS.root, {
+    params: { id },
+  });
   const parsed = detailEnvelope.parse(response.data);
   return unwrapData(parsed, "fetchProjectDetail");
 }
@@ -109,10 +152,30 @@ type UpdateProjectBody = {
 export async function updateProject(
   apiClient: AxiosInstance,
   body: UpdateProjectBody,
-): Promise<number> {
-  const response = await apiClient.put<unknown>("/project", body);
-  const parsed = idEnvelope.parse(response.data);
-  return unwrapData(parsed, "updateProject").id;
+): Promise<void> {
+  const response = await apiClient.put<unknown>(PROJECT_ENDPOINTS.root, body);
+  // PUT /project returns a bare `{ code, msg }` envelope — no `data.id` (unlike
+  // POST /project). Assert the code only; requiring `data` here would throw
+  // "missing data" on every successful edit.
+  assertOk(
+    apiResponseSchema(z.unknown()).parse(response.data),
+    "updateProject",
+  );
+}
+
+// Delete a project (`DELETE /project?id`). Bare `{ code, msg }` envelope like
+// `updateProject` — assert the code only.
+export async function deleteProject(
+  apiClient: AxiosInstance,
+  id: number,
+): Promise<void> {
+  const response = await apiClient.delete<unknown>(PROJECT_ENDPOINTS.root, {
+    params: { id },
+  });
+  assertOk(
+    apiResponseSchema(z.unknown()).parse(response.data),
+    "deleteProject",
+  );
 }
 
 // Create a project (`POST /project`). Only backend-supported fields are sent.
@@ -129,7 +192,7 @@ export async function createProject(
   apiClient: AxiosInstance,
   { name, description = "", iconUri = "" }: CreateProjectBody,
 ): Promise<number> {
-  const response = await apiClient.post<unknown>("/project", {
+  const response = await apiClient.post<unknown>(PROJECT_ENDPOINTS.root, {
     name,
     description,
     iconUri,
