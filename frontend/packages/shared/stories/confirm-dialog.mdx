@@ -1,0 +1,73 @@
+import {
+  Canvas,
+  ColorItem,
+  ColorPalette,
+  Controls,
+  Description,
+  Meta,
+} from "@storybook/addon-docs/blocks";
+
+import * as ConfirmDialogStories from "./confirm-dialog.stories";
+
+<Meta of={ConfirmDialogStories} />
+
+# ConfirmDialog
+
+Reusable controlled confirmation composer for destructive actions. Consumers
+supply the title, body, confirm verb, and pending verb; visibility remains
+consumer-owned and closes only when `onOpenChange(false)` is requested.
+
+## Examples
+
+### Default
+
+<Description of={ConfirmDialogStories.Default} />
+<Canvas of={ConfirmDialogStories.Default} />
+
+### Pending
+
+<Description of={ConfirmDialogStories.Pending} />
+<Canvas of={ConfirmDialogStories.Pending} />
+
+## API
+
+<Controls of={ConfirmDialogStories.Default} />
+
+---
+
+## Token Audit
+
+`ConfirmDialog` owns composition rather than raw styling. Its surface and action
+colors come from the shared `DialogContent` and `Button` primitives.
+
+### Color tokens
+
+<ColorPalette>
+  <ColorItem
+    title="Confirmation surface"
+    subtitle="Dialog surface, primary copy, and divider border"
+    colors={{
+      Surface: "var(--color-surface-basic)",
+      Foreground: "var(--color-foreground-primary)",
+      Divider: "var(--color-divider)",
+    }}
+  />
+  <ColorItem
+    title="Destructive outline action"
+    subtitle="Confirmation button resting fill, stroke, and foreground"
+    colors={{
+      Fill: "var(--color-button-destructive-outline-fill-rest)",
+      Stroke: "var(--color-button-destructive-outline-stroke-rest)",
+      Foreground: "var(--color-button-destructive-outline-foreground-rest)",
+    }}
+  />
+</ColorPalette>
+
+### Layout and state
+
+| Contract               | Source                               | Value                                |
+| ---------------------- | ------------------------------------ | ------------------------------------ |
+| Confirmation width     | `DialogContent` confirmation variant | `w-150` / 600px                      |
+| Content maximum height | `DialogContent` confirmation variant | `max-h-60` / 240px                   |
+| Pending state          | Confirm button                       | Disabled with spinning `Loader2`     |
+| Footer layout          | `DialogFooter`                       | Stacked below `sm`, inline from `sm` |

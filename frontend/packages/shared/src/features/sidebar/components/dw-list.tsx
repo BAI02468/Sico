@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Skeleton } from "@sico/ui";
 import { Link } from "@tanstack/react-router";
 import { type JSX, type ReactNode } from "react";
@@ -30,6 +9,7 @@ import { useActiveNav } from "../hooks/use-active-nav";
 import { type AgentLite, useDwPreview } from "../hooks/use-dw-preview";
 
 export function DwList(): JSX.Element {
+  const { t } = useLingui();
   const preview = useDwPreview();
   const { nav, agentId } = useActiveNav();
 
@@ -40,14 +20,17 @@ export function DwList(): JSX.Element {
         data-testid="sidebar-dw-error-boundary"
         className="text-foreground-tertiary px-2 py-1.5 text-sm"
       >
-        Couldn&apos;t load agents
+        <Trans id="sidebar.dwList.error">Couldn&apos;t load agents</Trans>
       </p>
     );
   } else if (preview.status === "pending") {
     body = (
       <ul
         aria-busy="true"
-        aria-label="Loading agents"
+        aria-label={t({
+          id: "sidebar.dwList.loading",
+          message: "Loading agents",
+        })}
         className="flex flex-col gap-1"
       >
         {Array.from({ length: DW_PREVIEW }, (_, index) => (
@@ -66,7 +49,7 @@ export function DwList(): JSX.Element {
   } else if (preview.items.length === 0) {
     body = (
       <p className="text-foreground-tertiary px-2 py-1.5 text-sm">
-        No agents yet
+        <Trans id="sidebar.dwList.empty">No agents yet</Trans>
       </p>
     );
   } else {
@@ -99,7 +82,10 @@ export function DwList(): JSX.Element {
   return (
     <div
       role="group"
-      aria-label="Digital Workers list"
+      aria-label={t({
+        id: "sidebar.dwList.label",
+        message: "Digital Workers list",
+      })}
       data-testid="dw-list-container"
       className="w-full min-w-0"
     >

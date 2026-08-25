@@ -1,25 +1,6 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react/macro";
 import {
   Button,
   Dialog,
@@ -30,10 +11,17 @@ import {
   DialogTitle,
   toast,
 } from "@sico/ui";
-import { Loader2 } from "lucide-react";
-import { type ReactElement, useRef, useState } from "react";
+import {
+  type Dispatch,
+  type ReactElement,
+  type SetStateAction,
+  useRef,
+  useState,
+} from "react";
 
+import { SkillFileDropzone } from "./skill-file-dropzone";
 import { SkillFileList } from "./skill-file-list";
+import { UploadButtonContent } from "./upload-button-content";
 import {
   MAX_SKILL_FILE_SIZE_MB,
   MAX_SKILL_FILES,
@@ -44,18 +32,41 @@ import { extOf } from "../../utils";
 
 const MAX_BYTES = MAX_SKILL_FILE_SIZE_MB * 1024 * 1024;
 
-function supportTextFor(mode: "create" | "replace"): string {
-  return mode === "create"
-    ? `Support: zip, md, skill, up to ${MAX_SKILL_FILE_SIZE_MB}MB, ${MAX_SKILL_FILES} files.`
-    : `Support: zip, md, skill, up to ${MAX_SKILL_FILE_SIZE_MB}MB.`;
-}
+// Imperative validation copy (方案 B): resolved at event time via `i18n._`, so
+// these `msg()` descriptors carry no locale subscription — correct for a batch
+// picked in an onChange handler rather than rendered.
+const MAX_FILES_COPY = msg({
+  id: "skill.uploadDialog.maxFiles",
+  message:
+    "{max, plural, one {You can upload up to # file.} other {You can upload up to # files.}}",
+});
+const INVALID_EXTENSION_COPY = msg({
+  id: "skill.uploadDialog.invalidExtension",
+  message: "Please select only .zip, .md, or .skill files.",
+});
+const FILE_TOO_LARGE_COPY = msg({
+  id: "skill.uploadDialog.fileTooLarge",
+  message: `File size exceeds the ${MAX_SKILL_FILE_SIZE_MB}MB limit. Please choose a smaller file.`,
+});
+const DUPLICATES_SKIPPED_COPY = msg({
+  id: "skill.uploadDialog.duplicatesSkipped",
+  message: "Duplicate files were skipped.",
+});
+const SUPPORT_CREATE_COPY = msg({
+  id: "skill.uploadDialog.support.create",
+  message: `Support: zip, md, skill, up to ${MAX_SKILL_FILE_SIZE_MB}MB, ${MAX_SKILL_FILES} files.`,
+});
+const SUPPORT_REPLACE_COPY = msg({
+  id: "skill.uploadDialog.support.replace",
+  message: `Support: zip, md, skill, up to ${MAX_SKILL_FILE_SIZE_MB}MB.`,
+});
 
 // Validate a freshly-picked batch against the remaining slots, allowed
 // extensions, size limit, and existing selection. Toasts mirror legacy wording;
 // returns the files that survive every filter (most-recent-first ordering is
 // applied by the caller).
 function pickValidFiles(picked: File[], existing: File[], max: number): File[] {
-  const maxMsg = `You can upload up to ${max} file${max > 1 ? "s" : ""}.`;
+  const maxMsg = i18n._(MAX_FILES_COPY.id, { max }, MAX_FILES_COPY);
   const remain = max - existing.length;
   if (remain <= 0) {
     toast.info(maxMsg);
@@ -67,14 +78,12 @@ function pickValidFiles(picked: File[], existing: File[], max: number): File[] {
     SKILL_ACCEPT_EXTENSIONS.some((ext) => ext === extOf(file.name)),
   );
   if (extOk.length < sliced.length) {
-    toast.error("Please select only .zip, .md, or .skill files.");
+    toast.error(i18n._(INVALID_EXTENSION_COPY));
   }
 
   const sized = extOk.filter((file) => file.size <= MAX_BYTES);
   if (sized.length < extOk.length) {
-    toast.error(
-      `File size exceeds the ${MAX_SKILL_FILE_SIZE_MB}MB limit. Please choose a smaller file.`,
-    );
+    toast.error(i18n._(FILE_TOO_LARGE_COPY));
   }
 
   const fresh = sized.filter(
@@ -82,12 +91,41 @@ function pickValidFiles(picked: File[], existing: File[], max: number): File[] {
       !existing.some((e) => e.name === file.name && e.size === file.size),
   );
   if (fresh.length < sized.length) {
-    toast.info("Duplicate files were skipped.");
+    toast.info(i18n._(DUPLICATES_SKIPPED_COPY));
   }
   if (picked.length > remain) {
     toast.info(maxMsg);
   }
   return fresh;
+}
+
+function uploadSupportText(mode: "create" | "replace"): string {
+  const copy = mode === "create" ? SUPPORT_CREATE_COPY : SUPPORT_REPLACE_COPY;
+  return i18n._(
+    copy.id,
+    { maxMb: MAX_SKILL_FILE_SIZE_MB, maxFiles: MAX_SKILL_FILES },
+    copy,
+  );
+}
+
+async function confirmUpload({
+  files,
+  onConfirm,
+  setConfirming,
+}: {
+  files: File[];
+  onConfirm: (files: File[]) => void | Promise<void>;
+  setConfirming: Dispatch<SetStateAction<boolean>>;
+}): Promise<void> {
+  setConfirming(true);
+  try {
+    await onConfirm(files);
+  } catch {
+    // The caller owns network feedback. Contain the rejected event promise so
+    // the dialog can keep its selection for retry and reset confirming below.
+  } finally {
+    setConfirming(false);
+  }
 }
 
 // Upload dialog ported from legacy UploadSkillsDialog: pick up to `max` files,
@@ -106,10 +144,12 @@ export function UploadSkillDialog({
   mode: "create" | "replace";
   pending?: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (files: File[]) => void;
+  onConfirm: (files: File[]) => void | Promise<void>;
 }): ReactElement {
+  const { t } = useLingui();
   const max = mode === "create" ? MAX_SKILL_FILES : MAX_UPDATE_FILES;
   const [files, setFiles] = useState<File[]>([]);
+  const [confirming, setConfirming] = useState(false);
   const [prevOpen, setPrevOpen] = useState(open);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -121,7 +161,11 @@ export function UploadSkillDialog({
   }
 
   const accept = SKILL_ACCEPT_EXTENSIONS.map((ext) => `.${ext}`).join(",");
-  const supportText = supportTextFor(mode);
+  const supportText = uploadSupportText(mode);
+  const dialogTitle =
+    mode === "create"
+      ? t({ id: "skill.uploadDialog.title.create", message: "Add skills" })
+      : t({ id: "skill.uploadDialog.title.replace", message: "Replace skill" });
 
   const onPick = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const picked = Array.from(event.target.files ?? []);
@@ -140,63 +184,49 @@ export function UploadSkillDialog({
   const removeFile = (target: File): void => {
     setFiles((prev) => prev.filter((file) => file !== target));
   };
+  const confirm = (): Promise<void> =>
+    confirmUpload({ files, onConfirm, setConfirming });
+  const busy = pending || confirming;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen || !busy) {
+          onOpenChange(nextOpen);
+        }
+      }}
+    >
       <DialogContent className="max-h-fit">
         <DialogHeader>
-          <DialogTitle>
-            {mode === "create" ? "Add skills" : "Replace skill"}
-          </DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-3">
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => inputRef.current?.click()}
-            className="border-divider text-foreground-secondary hover:text-foreground-primary flex h-24 w-full items-center justify-center rounded-lg border border-dashed text-sm transition-colors disabled:pointer-events-none disabled:opacity-60"
-          >
-            Click to choose files
-          </button>
-          <input
-            ref={inputRef}
-            type="file"
-            hidden
+          <SkillFileDropzone
+            inputRef={inputRef}
+            disabled={busy}
             multiple={max > 1}
-            aria-label="Skill files"
             accept={accept}
-            onChange={onPick}
+            supportText={supportText}
+            onPick={onPick}
           />
-          <p className="text-foreground-faint text-sm">{supportText}</p>
 
           {files.length > 0 && (
             <SkillFileList
               files={files}
-              disabled={pending}
+              disabled={busy}
               onRemove={removeFile}
             />
           )}
         </div>
 
         <DialogFooter>
-          <DialogClose
-            render={<Button variant="secondary" disabled={pending} />}
-          >
-            Cancel
+          <DialogClose render={<Button variant="subtle" disabled={busy} />}>
+            {t({ id: "common.action.cancel", message: "Cancel" })}
           </DialogClose>
-          <Button
-            disabled={pending || files.length === 0}
-            onClick={() => onConfirm(files)}
-          >
-            {pending ? (
-              <>
-                <Loader2 className="animate-spin" />
-                Uploading…
-              </>
-            ) : (
-              "Upload"
-            )}
+          <Button disabled={busy || files.length === 0} onClick={confirm}>
+            <UploadButtonContent pending={busy} />
           </Button>
         </DialogFooter>
       </DialogContent>

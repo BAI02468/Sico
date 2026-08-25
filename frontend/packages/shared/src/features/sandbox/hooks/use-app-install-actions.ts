@@ -1,25 +1,5 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { i18n } from "@lingui/core";
+import { msg, t } from "@lingui/core/macro";
 import { toast } from "@sico/ui";
 import { type MutateOptions } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
@@ -27,6 +7,49 @@ import { useEffect, useRef } from "react";
 import { InstallError, useInstallApp } from "./use-install-app";
 import { useUninstallApp } from "./use-uninstall-app";
 import { type EmulatorApp } from "../schemas/emulator-app";
+
+// Dynamic toast copy: descriptors defined at module scope so the message stays
+// a static, extractable literal and the runtime values fill named placeholders
+// via `i18n._({ ...COPY, values })`.
+const INSTALLING_COPY = msg({
+  id: "sandbox.install.status.installing",
+  message: "Installing {name}…",
+});
+const INSTALLED_COPY = msg({
+  id: "sandbox.install.success.installed",
+  message: "{name} installed.",
+});
+const UNINSTALLING_COPY = msg({
+  id: "sandbox.uninstall.status.uninstalling",
+  message: "Uninstalling {name}{scope}…",
+});
+const UNINSTALL_PARTIAL_COPY = msg({
+  id: "sandbox.uninstall.success.partial",
+  message: "{name} uninstalled except {failed}.",
+});
+const UNINSTALL_COMPLETE_COPY = msg({
+  id: "sandbox.uninstall.success.complete",
+  message: "{name} uninstalled{scope}.",
+});
+const UPLOAD_FAILED_COPY = msg({
+  id: "sandbox.install.error.uploadFailed",
+  message: "Couldn't upload {name}. Please try again.",
+});
+const COULD_NOT_INSTALL_ON_DEVICE_COPY = msg({
+  id: "sandbox.install.error.couldNotInstallOnDevice",
+  message: "{name} could not be installed on the device.",
+});
+// `count`-driven plural written as an ICU string (module-scope `msg` has no
+// `count` binding for the `plural` macro); resolved with the count at call time.
+const COULD_NOT_INSTALL_ON_DEVICES_COPY = msg({
+  id: "sandbox.install.error.couldNotInstallOnDevices",
+  message:
+    "{count, plural, one {Couldn't install {name} on # device.} other {Couldn't install {name} on # devices.}}",
+});
+const COULD_NOT_INSTALL_COPY = msg({
+  id: "sandbox.install.error.couldNotInstall",
+  message: "Couldn't install {name}. Please try again.",
+});
 
 // Which devices an install targets: just the device in view, or every attached
 // one. A pure UI discriminant (never crosses a parse boundary), owned here in
@@ -44,9 +67,17 @@ function uninstallMessage(
   failedDeviceNames: string[],
 ): string {
   if (failedDeviceNames.length > 0) {
-    return `${name} uninstalled except ${failedDeviceNames.join(", ")}.`;
+    return i18n._(
+      UNINSTALL_PARTIAL_COPY.id,
+      { name, failed: failedDeviceNames.join(", ") },
+      UNINSTALL_PARTIAL_COPY,
+    );
   }
-  return `${name} uninstalled${scope}.`;
+  return i18n._(
+    UNINSTALL_COMPLETE_COPY.id,
+    { name, scope },
+    UNINSTALL_COMPLETE_COPY,
+  );
 }
 
 export type AppInstallActions = {
@@ -59,6 +90,64 @@ export type AppInstallActions = {
     ids: DeviceScope,
   ) => void;
 };
+
+type InstallMutate = ReturnType<typeof useInstallApp>["mutate"];
+type UninstallMutate = ReturnType<typeof useUninstallApp>["mutate"];
+type Guard = ReturnType<typeof usePendingToastDismiss>;
+
+function createRunInstall(installMutate: InstallMutate, guard: Guard) {
+  return (file: File, scope: InstallScope, ids: DeviceScope): void => {
+    const sandboxIds = scope === "all" ? ids.all : [ids.current];
+    const name = file.name.replace(/\.apk$/i, "");
+    const toastId = toast.loading(
+      i18n._(INSTALLING_COPY.id, { name }, INSTALLING_COPY),
+    );
+    installMutate(
+      { file, sandboxIds },
+      guard(toastId, {
+        onSuccess: () =>
+          toast.success(i18n._(INSTALLED_COPY.id, { name }, INSTALLED_COPY), {
+            id: toastId,
+          }),
+        onError: (error) => handleInstallError(error, name, toastId),
+      }),
+    );
+  };
+}
+
+function createRunUninstall(uninstallMutate: UninstallMutate, guard: Guard) {
+  return (app: EmulatorApp, forAllDevices: boolean, ids: DeviceScope): void => {
+    const sandboxIds = forAllDevices ? ids.all : [ids.current];
+    const name = app.appName.length > 0 ? app.appName : app.package;
+    const scope = forAllDevices
+      ? t({
+          id: "sandbox.uninstall.scope.allDevices",
+          message: " from all devices",
+        })
+      : "";
+    const toastId = toast.loading(
+      i18n._(UNINSTALLING_COPY.id, { name, scope }, UNINSTALLING_COPY),
+    );
+    uninstallMutate(
+      { package: app.package, sandboxIds },
+      guard(toastId, {
+        onSuccess: ({ failedDeviceNames }) => {
+          toast.success(uninstallMessage(name, scope, failedDeviceNames), {
+            id: toastId,
+          });
+        },
+        onError: () =>
+          toast.error(
+            t({
+              id: "sandbox.uninstall.error.failed",
+              message: "Uninstall failed.",
+            }),
+            { id: toastId },
+          ),
+      }),
+    );
+  };
+}
 
 // A failure toast's copy: a title (the clamped 2-line headline) and, for a
 // multi-device rejection, a description carrying the per-device reasons.
@@ -78,23 +167,37 @@ export function installErrorMessage(
 ): InstallErrorToast {
   if (error instanceof InstallError) {
     if (error.phase === "upload") {
-      return { title: `Couldn't upload ${name}. Please try again.` };
+      return {
+        title: i18n._(UPLOAD_FAILED_COPY.id, { name }, UPLOAD_FAILED_COPY),
+      };
     }
     if (error.phase === "device") {
       const [first, ...rest] = error.deviceReasons;
       if (first === undefined) {
-        return { title: `${name} could not be installed on the device.` };
+        return {
+          title: i18n._(
+            COULD_NOT_INSTALL_ON_DEVICE_COPY.id,
+            { name },
+            COULD_NOT_INSTALL_ON_DEVICE_COPY,
+          ),
+        };
       }
       if (rest.length === 0) {
         return { title: first };
       }
       return {
-        title: `Couldn't install ${name} on ${error.deviceReasons.length} devices.`,
+        title: i18n._(
+          COULD_NOT_INSTALL_ON_DEVICES_COPY.id,
+          { name, count: error.deviceReasons.length },
+          COULD_NOT_INSTALL_ON_DEVICES_COPY,
+        ),
         description: error.deviceReasons.join("; "),
       };
     }
   }
-  return { title: `Couldn't install ${name}. Please try again.` };
+  return {
+    title: i18n._(COULD_NOT_INSTALL_COPY.id, { name }, COULD_NOT_INSTALL_COPY),
+  };
 }
 
 // Drive the install failure toast off the phase: a user-driven cancel (panel
@@ -156,44 +259,8 @@ export function useAppInstallActions(
   const uninstall = useUninstallApp(agentInstanceId);
   const guard = usePendingToastDismiss();
 
-  const runInstall = (
-    file: File,
-    scope: InstallScope,
-    ids: DeviceScope,
-  ): void => {
-    const sandboxIds = scope === "all" ? ids.all : [ids.current];
-    const name = file.name.replace(/\.apk$/i, "");
-    const toastId = toast.loading(`Installing ${name}…`);
-    install.mutate(
-      { file, sandboxIds },
-      guard(toastId, {
-        onSuccess: () => toast.success(`${name} installed.`, { id: toastId }),
-        onError: (error) => handleInstallError(error, name, toastId),
-      }),
-    );
-  };
-
-  const runUninstall = (
-    app: EmulatorApp,
-    forAllDevices: boolean,
-    ids: DeviceScope,
-  ): void => {
-    const sandboxIds = forAllDevices ? ids.all : [ids.current];
-    const name = app.appName.length > 0 ? app.appName : app.package;
-    const scope = forAllDevices ? " from all devices" : "";
-    const toastId = toast.loading(`Uninstalling ${name}${scope}…`);
-    uninstall.mutate(
-      { package: app.package, sandboxIds },
-      guard(toastId, {
-        onSuccess: ({ failedDeviceNames }) => {
-          toast.success(uninstallMessage(name, scope, failedDeviceNames), {
-            id: toastId,
-          });
-        },
-        onError: () => toast.error("Uninstall failed.", { id: toastId }),
-      }),
-    );
-  };
+  const runInstall = createRunInstall(install.mutate, guard);
+  const runUninstall = createRunUninstall(uninstall.mutate, guard);
 
   return {
     installPending: install.isPending,

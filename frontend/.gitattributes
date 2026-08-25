@@ -6,3 +6,6 @@
 # don't have to run the plugin to typecheck. Hand-edits will be silently
 # overwritten on the next dev start.
 packages/app/src/routeTree.gen.ts linguist-generated=true
+
+# Keep reviewer-agent diffs stable across operating systems.
+.claude/agents/*-reviewer.md text eol=lf

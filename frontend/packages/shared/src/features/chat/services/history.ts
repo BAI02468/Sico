@@ -1,28 +1,7 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import type { AxiosInstance } from "axios";
 import { z } from "zod";
 
+import { CONVERSATION_ENDPOINTS } from "../../../constants/endpoints";
 import { apiResponseSchema, unwrapData } from "../../../schemas/api";
 import { type Message } from "../atoms/chat-atom";
 import { messageItemSchema } from "../schemas/message-item";
@@ -34,10 +13,6 @@ export type HistoryParams = {
   conversationId?: number;
   page?: number;
   pageSize?: number;
-  // axios-relative history path, resolved from `SicoConfig.chatEndpoints` by
-  // the calling hook (sico's default or dwp's `_v2` variant). Required: the
-  // service stays agnostic about which deployment it serves.
-  messagesPath: string;
 };
 
 // This endpoint carries NO `total` (unlike the generic Paged<T> list
@@ -76,11 +51,11 @@ export async function fetchHistory(
     conversationId,
     page = 1,
     pageSize = DEFAULT_HISTORY_PAGE_SIZE,
-    messagesPath,
   }: HistoryParams,
+  signal?: AbortSignal,
 ): Promise<HistoryPage> {
   const clampedPageSize = Math.min(pageSize, MAX_HISTORY_PAGE_SIZE);
-  const res = await apiClient.get<unknown>(messagesPath, {
+  const res = await apiClient.get<unknown>(CONVERSATION_ENDPOINTS.messages, {
     // `conversationId` is included only when set — sico (v1) omits it and gets
     // the single implicit conversation; dwp targets the addressed one.
     params: {
@@ -89,6 +64,7 @@ export async function fetchHistory(
       pageSize: clampedPageSize,
       ...(conversationId !== undefined && { conversationId }),
     },
+    ...(signal !== undefined && { signal }),
   });
   const parsed = envelope.parse(res.data);
   // Rejects a non-OK code first, then requires `data` — both surface as a

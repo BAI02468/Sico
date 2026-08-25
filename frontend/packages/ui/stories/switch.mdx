@@ -1,0 +1,157 @@
+import {
+  Canvas,
+  ColorItem,
+  ColorPalette,
+  Controls,
+  Description,
+  Meta,
+} from "@storybook/addon-docs/blocks";
+
+import * as SwitchStories from "./switch.stories";
+
+<Meta of={SwitchStories} />
+
+# Switch
+
+Boolean control from shadcn `base-nova` using
+[`@base-ui/react/switch`](https://base-ui.com/react/components/switch). Its
+checked, unchecked, invalid, focus, and disabled treatments are driven by Base
+UI data attributes and ARIA selectors, so both controlled and uncontrolled
+usage share the same styles.
+
+## Examples
+
+### Default
+
+<Description of={SwitchStories.Default} />
+<Canvas of={SwitchStories.Default} />
+
+### Checked
+
+<Description of={SwitchStories.Checked} />
+<Canvas of={SwitchStories.Checked} />
+
+### Small
+
+<Description of={SwitchStories.Small} />
+<Canvas of={SwitchStories.Small} />
+
+### Disabled
+
+<Description of={SwitchStories.Disabled} />
+<Canvas of={SwitchStories.Disabled} />
+
+### Invalid
+
+<Description of={SwitchStories.Invalid} />
+<Canvas of={SwitchStories.Invalid} />
+
+## API
+
+<Controls of={SwitchStories.Default} />
+
+---
+
+## Token Audit
+
+### Color tokens
+
+<ColorPalette>
+  <ColorItem
+    title="Checked track"
+    subtitle="data-checked:bg-switch-track-fill-selected"
+    colors={{
+      "Fill · selected": "var(--color-switch-track-fill-selected)",
+    }}
+  />
+  <ColorItem
+    title="Unchecked track"
+    subtitle="data-unchecked:bg-switch-track-fill-rest"
+    colors={{
+      "Fill · rest": "var(--color-switch-track-fill-rest)",
+    }}
+  />
+  <ColorItem
+    title="Thumb"
+    subtitle="bg-switch-thumb-fill in both states"
+    colors={{
+      "Fill · thumb": "var(--color-switch-thumb-fill)",
+    }}
+  />
+  <ColorItem
+    title="Focus"
+    subtitle="focus-visible border and ring"
+    colors={{
+      "Border & ring · focus": "var(--color-focus-rest)",
+    }}
+  />
+  <ColorItem
+    title="Invalid state"
+    subtitle="aria-invalid input-error border and focus-error ring"
+    colors={{
+      "Border · input error": "var(--color-input-stroke-error)",
+      "Ring · focus error": "var(--color-focus-error)",
+    }}
+  />
+</ColorPalette>
+
+### Sizing & shape
+
+| Property              | Class                                 | Value                                      |
+| --------------------- | ------------------------------------- | ------------------------------------------ |
+| Default track height  | `h-switch-default-height`             | 18.4px (`--spacing-switch-default-height`) |
+| Default track width   | `w-8`                                 | 32px                                       |
+| Small track           | `h-3.5 w-6`                           | 14 × 24px                                  |
+| Default / small thumb | `size-4` / `size-3`                   | 16px / 12px                                |
+| Checked translation   | `translate-x-3.5` / `translate-x-2.5` | 14px / 10px                                |
+| Track and thumb       | `rounded-full`                        | fully rounded                              |
+
+---
+
+## Upstream Audit
+
+Shadcn restyle of `base-nova/switch`.
+
+### Token swaps
+
+| Upstream class                                                         | SICO replacement                                                              |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `data-checked:bg-primary`                                              | `data-checked:bg-switch-track-fill-selected`                                   |
+| `data-unchecked:bg-input`                                              | `data-unchecked:bg-switch-track-fill-rest`                               |
+| `bg-background`                                                        | `bg-switch-thumb-fill`                                                        |
+| `focus-visible:border-ring` / `focus-visible:ring-ring/50`             | `focus-visible:border-focus-rest` / `focus-visible:ring-focus-rest/50`        |
+| `aria-invalid:border-destructive` / `aria-invalid:ring-destructive/20` | `aria-invalid:border-input-stroke-error` / `aria-invalid:ring-focus-error/20` |
+| `data-[size=default]:h-[18.4px]`                                       | `data-[size=default]:h-switch-default-height` (exact 18.4px token)            |
+| `data-[size=default]:w-[32px]`                                         | `data-[size=default]:w-8`                                                     |
+| `data-[size=sm]:h-[14px]`                                              | `data-[size=sm]:h-3.5`                                                        |
+| `data-[size=sm]:w-[24px]`                                              | `data-[size=sm]:w-6`                                                          |
+| `translate-x-[calc(100%-2px)]` (default)                               | `translate-x-3.5` (14px)                                                      |
+| `translate-x-[calc(100%-2px)]` (small)                                 | `translate-x-2.5` (10px)                                                      |
+
+The focus and validation swaps are intentional semantic-role choices, not
+compatibility renames. SICO's cross-control contract names neutral keyboard
+focus (`focus-rest`), a validation border (`input-stroke-error`), and an invalid
+focus ring (`focus-error`) explicitly. `ring` currently bridges to `focus-rest`,
+and `destructive` currently shares danger-500 with `focus-error`, but the invalid
+border deliberately resolves to danger-700. Keeping the generic upstream aliases
+would therefore obscure role ownership and collapse the border/ring distinction;
+token priority selects the explicit semantic roles even where terminal values
+currently match.
+
+### API contract
+
+The public API matches upstream: `SwitchPrimitive.Root.Props` plus the
+upstream `size?: "sm" | "default"` prop. Base UI state selectors and
+accessibility semantics are unchanged. The decorative thumb adds only the stable
+`data-testid="switch-thumb"` test hook required when no semantic role exists.
+The explicit `React.JSX.Element` return type and narrow ESLint annotations for
+Tailwind v4 tokens are compile-time project integration only; neither changes
+the runtime API.
+
+### Deleted from upstream
+
+| Deleted                               | Reason                                                                                 |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| `dark:data-unchecked:bg-input/80`     | SICO has no active dark theme; the component rest token owns the unchecked state.       |
+| Dark invalid border/ring variants     | SICO has no active dark theme; semantic input-error/focus-error tokens own validation. |
+| Dark checked/unchecked thumb variants | SICO has no active dark theme; the component thumb token is shared across states.      |

@@ -1,72 +1,16 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { type AxiosInstance } from "axios";
-import { z } from "zod";
 
-import { HTTP_OK } from "../../../constants/http";
+import { PROJECT_ENDPOINTS } from "../../../constants/endpoints";
 import { unwrapData } from "../../../schemas/api";
-import { type ChatAttachmentRef } from "../schemas/chat-request";
+import { type CommonAttachment } from "../../../schemas/common-attachment";
+import { uploadEnvelopeSchema } from "../../../schemas/upload-attachment";
 import {
   completeAssetUploadRequestSchema,
   createAssetUploadUrlEnvelopeSchema,
   createAssetUploadUrlRequestSchema,
-  uploadEnvelopeSchema,
 } from "../schemas/upload";
 
-const UPLOAD_PATH = "/project/asset";
-const UPLOAD_URL_PATH = "/project/asset/upload_url";
-const UPLOAD_COMPLETE_PATH = "/project/asset/complete";
-
-// Eager single-file upload (domain, plain fn). Holds no state — the caller
-// owns the AbortController and passes `signal`. Returns the ready asset ref or
-// throws (envelope failure / non-OK code / missing data → upload-fail path).
-export async function uploadAttachment(
-  apiClient: AxiosInstance,
-  file: File,
-  signal: AbortSignal,
-): Promise<ChatAttachmentRef> {
-  const form = new FormData();
-  form.append("file", file);
-  const res = await apiClient.post<unknown>(UPLOAD_PATH, form, { signal });
-  const parsed = uploadEnvelopeSchema.parse(res.data);
-  if (parsed.code !== HTTP_OK || !parsed.data) {
-    throw new z.ZodError([
-      {
-        code: "custom",
-        path: ["data"],
-        message: `uploadAttachment: upload rejected (code ${parsed.code})`,
-      },
-    ]);
-  }
-  const asset = parsed.data;
-  return {
-    name: asset.metaInfo.fileName,
-    size: asset.metaInfo.fileSize,
-    type: asset.metaInfo.fileType,
-    uri: asset.uri,
-    sasUrl: asset.sasUrl,
-  };
-}
+export { uploadAttachment } from "../../../services/upload-attachment";
 
 // Reject a step-1 upload URL that isn't http(s) before it reaches `fetch`. The
 // backend mints this URL, but it's `z.string()` on the wire, so a poisoned
@@ -121,13 +65,13 @@ async function putBytesToBlob(
 // `/project/asset` can't carry — the bytes would exceed the backend ingress
 // body limit (→ 412). Mirrors legacy `uploadProjectAssetDirect`: mint a storage
 // URL, PUT the bytes straight to blob storage (past the ingress), then register
-// the asset. Returns the same ready `ChatAttachmentRef` as `uploadAttachment`
+// the asset. Returns the same ready `CommonAttachment` as `uploadAttachment`
 // (the caller only needs `sasUrl`). `signal` cancels the long PUT.
 export async function uploadProjectAssetDirect(
   apiClient: AxiosInstance,
   file: File,
   signal?: AbortSignal,
-): Promise<ChatAttachmentRef> {
+): Promise<CommonAttachment> {
   const contentType = file.type || "application/octet-stream";
   const meta = createAssetUploadUrlRequestSchema.parse({
     fileName: file.name,
@@ -136,9 +80,13 @@ export async function uploadProjectAssetDirect(
   });
 
   // Step 1: mint the short-lived storage URL.
-  const createRes = await apiClient.post<unknown>(UPLOAD_URL_PATH, meta, {
-    signal,
-  });
+  const createRes = await apiClient.post<unknown>(
+    PROJECT_ENDPOINTS.assetUploadUrl,
+    meta,
+    {
+      signal,
+    },
+  );
   const createParsed = createAssetUploadUrlEnvelopeSchema.parse(createRes.data);
   const { uploadUrl, objectKey, method, headers } = unwrapData(
     createParsed,
@@ -161,7 +109,7 @@ export async function uploadProjectAssetDirect(
     contentType,
   });
   const completeRes = await apiClient.post<unknown>(
-    UPLOAD_COMPLETE_PATH,
+    PROJECT_ENDPOINTS.assetComplete,
     completeBody,
     { signal },
   );

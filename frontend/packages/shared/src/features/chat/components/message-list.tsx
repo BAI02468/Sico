@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Button, Spinner } from "@sico/ui";
 import { useAtomValue } from "jotai";
 import { ArrowDown } from "lucide-react";
@@ -40,6 +19,9 @@ export type MessageListProps = {
   hasMore?: boolean;
   fetchOlder?: () => void;
   isFetchingOlder?: boolean;
+  // Conversation-level provenance stays at the list boundary; rows receive only
+  // the derived presentation flag.
+  isScheduledTaskRun?: boolean;
 };
 
 // True when real content (not the anchor's reserve filler) sits below the fold,
@@ -68,6 +50,34 @@ function lastHumanId(history: Message[]): string | undefined {
   return undefined;
 }
 
+function isScheduledInitiator(
+  message: Message,
+  isScheduledTaskRun: boolean,
+): boolean {
+  return (
+    isScheduledTaskRun &&
+    message.author === "human" &&
+    message.turnId === 1 &&
+    message.createdAt !== undefined
+  );
+}
+
+function renderMessageCard(
+  message: Message,
+  isScheduledTaskRun: boolean,
+): JSX.Element {
+  return (
+    <MessageCard
+      key={message.id}
+      message={message}
+      showScheduledTaskMetadata={isScheduledInitiator(
+        message,
+        isScheduledTaskRun,
+      )}
+    />
+  );
+}
+
 /**
  * The scrolling history column. Scroll behaviour is split into three concerns:
  *   • Stay-at-bottom (first load + streamed frames + async layout) is owned by
@@ -93,7 +103,9 @@ export function MessageList({
   hasMore = false,
   fetchOlder,
   isFetchingOlder = false,
+  isScheduledTaskRun = false,
 }: MessageListProps): JSX.Element {
+  const { t } = useLingui();
   // Scoped subscription: only the active conversation's history.
   const history = useAtomValue(activeHistoryAtom);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -182,12 +194,17 @@ export function MessageList({
           <div ref={sentinelRef} aria-hidden="true" />
           {isFetchingOlder && (
             <div className="flex w-full items-center justify-center py-2">
-              <Spinner aria-label="Loading older messages" />
+              <Spinner
+                aria-label={t({
+                  id: "chat.messageList.loadingOlderMessages",
+                  message: "Loading older messages",
+                })}
+              />
             </div>
           )}
-          {history.map((message) => (
-            <MessageCard key={message.id} message={message} />
-          ))}
+          {history.map((message) =>
+            renderMessageCard(message, isScheduledTaskRun),
+          )}
         </div>
         {/* Reserve filler for the ChatGPT-style top anchor. Sized imperatively by
             the hook to make the new question reachable at the top, then shrunk to
@@ -207,9 +224,12 @@ export function MessageList({
           type="button"
           variant="secondary"
           size="icon"
-          aria-label="Scroll to newest message"
+          aria-label={t({
+            id: "chat.messageList.scrollToNewestMessage",
+            message: "Scroll to newest message",
+          })}
           onClick={() => scrollToBottom()}
-          className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full"
+          className="absolute start-1/2 bottom-4 z-10 -translate-x-1/2 rounded-full"
         >
           <ArrowDown />
         </Button>

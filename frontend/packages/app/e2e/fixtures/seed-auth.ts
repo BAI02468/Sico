@@ -1,26 +1,5 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { type Page } from "@playwright/test";
+import { type OrganizationRoleCode } from "@sico/shared/features/rbac/index.ts";
 import { makeOkEnvelope } from "@sico/shared/schemas/api.ts";
 import {
   AUTH_EXPIRES_AT_LS,
@@ -29,7 +8,7 @@ import {
 } from "@sico/shared/utils/local-storage.ts";
 
 // Seed the auth triple via `addInitScript` so the SPA starts logged in.
-// Re-runs on every navigation.
+// Route mode is derived from the URL; it is not persisted in localStorage.
 export async function seedAuth(page: Page): Promise<void> {
   await page.addInitScript(
     ({ tokenKey, userKey, expiresAtKey }) => {
@@ -52,6 +31,80 @@ export async function seedAuth(page: Page): Promise<void> {
       expiresAtKey: AUTH_EXPIRES_AT_LS,
     },
   );
+}
+
+type OrganizationGrant = {
+  roleCode: OrganizationRoleCode;
+  scopeId: number;
+};
+
+type BoundOrganizationAccess = {
+  organizationIds?: number[];
+  grants?: OrganizationGrant[];
+  organizationStatus?: number;
+  rolesStatus?: number;
+};
+
+export async function mockBoundOrganizationAccess(
+  page: Page,
+  {
+    organizationIds = [9],
+    grants,
+    organizationStatus = 200,
+    rolesStatus = 200,
+  }: BoundOrganizationAccess = {},
+): Promise<void> {
+  const boundOrganizationId = organizationIds[0];
+  const resolvedGrants =
+    grants ??
+    (boundOrganizationId === undefined
+      ? []
+      : [{ roleCode: "developer" as const, scopeId: boundOrganizationId }]);
+  await page.route(
+    "**/api/sico/organization/user_organizations*",
+    async (route) => {
+      const organizations = organizationIds.map((id, index) => ({
+        id,
+        name: `SICO ${String(index + 1)}`,
+        description: "",
+        createdAt: 1,
+        updatedAt: 1,
+        creatorUsername: "owner@example.com",
+        roleCodes: ["org_member"],
+        isOwner: false,
+      }));
+      await route.fulfill({
+        status: organizationStatus,
+        contentType: "application/json",
+        body: JSON.stringify(
+          organizationStatus >= 400
+            ? { code: organizationStatus, msg: "organization error", data: {} }
+            : makeOkEnvelope({
+                organizations,
+                total: organizations.length,
+                hasNext: false,
+              }),
+        ),
+      });
+    },
+  );
+  await page.route("**/api/sico/rbac/user_roles*", async (route) => {
+    const roles = resolvedGrants.map(({ roleCode, scopeId }) => ({
+      userId: 1,
+      roleCode,
+      scopeType: "org",
+      scopeId,
+    }));
+    await route.fulfill({
+      status: rolesStatus,
+      contentType: "application/json",
+      body: JSON.stringify(
+        rolesStatus >= 400
+          ? { code: rolesStatus, msg: "roles error", data: {} }
+          : makeOkEnvelope({ roles, total: roles.length, hasNext: false }),
+      ),
+    });
+  });
 }
 
 // Defensive stub so an accidental fetch can't reach the real backend.

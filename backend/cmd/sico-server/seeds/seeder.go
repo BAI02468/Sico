@@ -1,23 +1,3 @@
-// Copyright (c) 2026 Sico Authors
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package seeds
 
 import (
@@ -25,6 +5,7 @@ import (
 	"context"
 	"strconv"
 
+	"sico-backend/internal/biz/rbac"
 	agententity "sico-backend/internal/entity/agent/singleagent"
 	"sico-backend/internal/shared/enum"
 	"sico-backend/internal/shared/types"
@@ -65,7 +46,7 @@ const (
 	defaultOrganizationDesc = "This is the default organization. " +
 		"It is created by the system and contains all projects without specific organization assignment."
 
-	defaultSystemUser   = "system@sico.local"
+	defaultSystemUser   = "SICO"
 	defaultOperatorUser = "operator@sico.local"
 
 	defaultOperatorAlias    = "Operator"
@@ -100,10 +81,10 @@ func (s seedSkillFile) asExtraInfo() types.FileExtraInfo {
 
 func getDefaultProject(iconURI string) *projectrepo.ProjectModel {
 	return &projectrepo.ProjectModel{
-		ID:              defaultProjectId,
-		OrganizationID:  defaultOrganizationId,
-		OwnerUsername:   defaultSystemUser,
-		Name:            "SICO",
+		ID:             defaultProjectId,
+		OrganizationID: defaultOrganizationId,
+		OwnerUsername:  defaultSystemUser,
+		Name:           "SICO",
 		Description: "This is the default project that contains all assets without specific project assignment. " +
 			"It is created by the system and cannot be deleted.",
 		IconURI:         iconURI,
@@ -118,10 +99,12 @@ func getAgentSimpleChat(iconURI string) (*agententity.SingleAgent, *agententity.
 			AgentId:         agentId,
 			CreatorUsername: defaultSystemUser,
 			Name:            "Chat Agent",
-			Role:            enum.AgentRoleAssistant.String(),
+			Role:            enum.AgentRoleGeneral.String(),
 			Desc:            "This is the default chat agent that is created by the system.",
 			IconUri:         iconURI,
 			UpdaterUsername: defaultSystemUser,
+			OrganizationId:  defaultOrganizationId,
+			PublishStatus:   agentdto.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_PUBLISHED,
 		},
 	}
 	instance := &agententity.SingleAgentInstance{
@@ -131,10 +114,11 @@ func getAgentSimpleChat(iconURI string) (*agententity.SingleAgent, *agententity.
 			EmployerUsername: defaultSystemUser,
 			OperatorUsername: defaultOperatorUser,
 			Name:             "Charlie",
-			Role:             enum.AgentRoleAssistant.String(),
+			Role:             enum.AgentRoleGeneral.String(),
 			Desc:             "This is the default chat agent instance that is created by the system.",
 			IconUri:          iconURI,
 			ProjectId:        defaultProjectId,
+			Status:           agentdto.SingleAgentInstanceStatus_INSTANCE_ACTIVE,
 		},
 	}
 	return agent, instance
@@ -147,10 +131,12 @@ func getAgentAndroidTester(iconURI string) (*agententity.SingleAgent, *agententi
 			AgentId:         agentId,
 			CreatorUsername: defaultSystemUser,
 			Name:            "Android Tester Agent",
-			Role:            enum.AgentRoleAndroidTester.String(),
+			Role:            enum.AgentRoleSoftwareTesting.String(),
 			Desc:            "This is an Android tester agent for testing purposes.",
 			IconUri:         iconURI,
 			UpdaterUsername: defaultSystemUser,
+			OrganizationId:  defaultOrganizationId,
+			PublishStatus:   agentdto.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_PUBLISHED,
 		},
 	}
 	instance := &agententity.SingleAgentInstance{
@@ -160,10 +146,11 @@ func getAgentAndroidTester(iconURI string) (*agententity.SingleAgent, *agententi
 			EmployerUsername: defaultSystemUser,
 			OperatorUsername: defaultOperatorUser,
 			Name:             "Max",
-			Role:             enum.AgentRoleAndroidTester.String(),
+			Role:             enum.AgentRoleSoftwareTesting.String(),
 			Desc:             "This is an Android tester agent instance for testing purposes.",
 			IconUri:          iconURI,
 			ProjectId:        defaultProjectId,
+			Status:           agentdto.SingleAgentInstanceStatus_INSTANCE_ACTIVE,
 		},
 	}
 	return agent, instance
@@ -176,10 +163,12 @@ func getAgent3DArtist(iconURI string) (*agententity.SingleAgent, *agententity.Si
 			AgentId:         agentId,
 			CreatorUsername: defaultSystemUser,
 			Name:            "3D Artist Agent",
-			Role:            enum.AgentRole3DArtist.String(),
+			Role:            enum.AgentRoleDesign.String(),
 			Desc:            "This is a 3D artist agent that can generate 3D models based on text or image prompts.",
 			IconUri:         iconURI,
 			UpdaterUsername: defaultSystemUser,
+			OrganizationId:  defaultOrganizationId,
+			PublishStatus:   agentdto.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_PUBLISHED,
 		},
 	}
 	instance := &agententity.SingleAgentInstance{
@@ -189,10 +178,11 @@ func getAgent3DArtist(iconURI string) (*agententity.SingleAgent, *agententity.Si
 			EmployerUsername: defaultSystemUser,
 			OperatorUsername: defaultOperatorUser,
 			Name:             "Luna",
-			Role:             enum.AgentRole3DArtist.String(),
+			Role:             enum.AgentRoleDesign.String(),
 			Desc:             "This is a 3D artist agent instance",
 			IconUri:          iconURI,
 			ProjectId:        defaultProjectId,
+			Status:           agentdto.SingleAgentInstanceStatus_INSTANCE_ACTIVE,
 		},
 	}
 	return agent, instance
@@ -205,11 +195,13 @@ func getAgentProductManager(iconURI string) (*agententity.SingleAgent, *agentent
 			AgentId:         agentId,
 			CreatorUsername: defaultSystemUser,
 			Name:            "Product Manager Agent",
-			Role:            enum.AgentRoleProductManager.String(),
+			Role:            enum.AgentRoleProductDevelopment.String(),
 			Desc: "This is a product manager agent that can help " +
 				"manage product requirements, user stories, and backlogs.",
 			IconUri:         iconURI,
 			UpdaterUsername: defaultSystemUser,
+			OrganizationId:  defaultOrganizationId,
+			PublishStatus:   agentdto.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_PUBLISHED,
 		},
 	}
 	instance := &agententity.SingleAgentInstance{
@@ -219,10 +211,11 @@ func getAgentProductManager(iconURI string) (*agententity.SingleAgent, *agentent
 			EmployerUsername: defaultSystemUser,
 			OperatorUsername: defaultOperatorUser,
 			Name:             "Ethan",
-			Role:             enum.AgentRoleProductManager.String(),
+			Role:             enum.AgentRoleProductDevelopment.String(),
 			Desc:             "This is a product manager agent instance",
 			IconUri:          iconURI,
 			ProjectId:        defaultProjectId,
+			Status:           agentdto.SingleAgentInstanceStatus_INSTANCE_ACTIVE,
 		},
 	}
 	return agent, instance
@@ -240,6 +233,8 @@ func getAgentMarketing(iconURI string) (*agententity.SingleAgent, *agententity.S
 				"market research, content creation, and campaign management.",
 			IconUri:         iconURI,
 			UpdaterUsername: defaultSystemUser,
+			OrganizationId:  defaultOrganizationId,
+			PublishStatus:   agentdto.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_PUBLISHED,
 		},
 	}
 	instance := &agententity.SingleAgentInstance{
@@ -253,6 +248,7 @@ func getAgentMarketing(iconURI string) (*agententity.SingleAgent, *agententity.S
 			Desc:             "This is a marketing agent instance",
 			IconUri:          iconURI,
 			ProjectId:        defaultProjectId,
+			Status:           agentdto.SingleAgentInstanceStatus_INSTANCE_ACTIVE,
 		},
 	}
 	return agent, instance
@@ -283,6 +279,16 @@ func Run(ctx context.Context, injector *di.Injector) error {
 	if err := ensureOrganization(ctx, injector); err != nil {
 		return err
 	}
+	if err := ensureOrganizationMembership(
+		ctx, defaultOrganizationId, defaultOperatorUser, rbac.RoleOrgMember,
+	); err != nil {
+		return err
+	}
+	if err := ensureOrganizationMembership(
+		ctx, defaultOrganizationId, defaultOperatorUser, rbac.RoleOrgAdmin,
+	); err != nil {
+		return err
+	}
 
 	if err := ensureProject(ctx, injector, getDefaultProject(projectIconURI)); err != nil {
 		return err
@@ -291,6 +297,12 @@ func Run(ctx context.Context, injector *di.Injector) error {
 	if err := ensureProjectMembership(
 		ctx, injector, defaultProjectId, defaultOperatorUser,
 		int32(projectdto.MemberType_MEMBER_TYPE_MEMBER),
+	); err != nil {
+		return err
+	}
+	if err := ensureProjectMembership(
+		ctx, injector, defaultProjectId, defaultOperatorUser,
+		int32(projectdto.MemberType_MEMBER_TYPE_ADMIN),
 	); err != nil {
 		return err
 	}

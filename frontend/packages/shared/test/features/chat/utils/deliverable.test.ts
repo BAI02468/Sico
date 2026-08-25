@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { describe, expect, it } from "vitest";
 
 import {
@@ -28,6 +6,10 @@ import {
   toRenderableDeliverables,
 } from "@/features/chat/utils/deliverable";
 import { iconForFilename, UrlIcon } from "@/utils/file-icon";
+
+// The web-preview label the component resolves via `useLingui()` `t` and
+// passes in; the util takes it verbatim, so tests supply it directly.
+const PREVIEW_LABEL = "Preview Page";
 
 // Wire ToolDeliverable shapes (plan.proto types): MARKDOWN=1, FILE=2,
 // WEB_PAGE_PREVIEW_URL=3; everything else (UNKNOWN / BATCH / ACQUIRED_SANDBOX)
@@ -55,7 +37,7 @@ const sandbox = { type: 5, sandboxId: "sb-1" };
 
 describe("toRenderableDeliverables", () => {
   it("narrows a FILE deliverable to its fileName label and 'file' kind", () => {
-    expect(toRenderableDeliverables([file])).toEqual([
+    expect(toRenderableDeliverables([file], PREVIEW_LABEL)).toEqual([
       {
         id: "0",
         label: "report.pdf",
@@ -70,25 +52,27 @@ describe("toRenderableDeliverables", () => {
   it("narrows a MARKDOWN deliverable to its markdownTitle label and 'markdown' kind", () => {
     // No `markdownContent` on the wire → the optional `markdown` body stays
     // absent (not an empty string), so downstream can distinguish "no body".
-    expect(toRenderableDeliverables([markdown])).toEqual([
+    expect(toRenderableDeliverables([markdown], PREVIEW_LABEL)).toEqual([
       { id: "0", label: "Summary", isPreview: false, kind: "markdown" },
     ]);
   });
 
   it("surfaces the markdown body from the wire markdownContent when present", () => {
-    expect(toRenderableDeliverables([markdownWithBody])).toEqual([
-      {
-        id: "0",
-        label: "Summary",
-        isPreview: false,
-        kind: "markdown",
-        markdown: "# Body",
-      },
-    ]);
+    expect(toRenderableDeliverables([markdownWithBody], PREVIEW_LABEL)).toEqual(
+      [
+        {
+          id: "0",
+          label: "Summary",
+          isPreview: false,
+          kind: "markdown",
+          markdown: "# Body",
+        },
+      ],
+    );
   });
 
   it("labels a WEB_PAGE_PREVIEW_URL deliverable 'Preview Page', flags isPreview, and surfaces its url + 'webpage' kind", () => {
-    expect(toRenderableDeliverables([preview])).toEqual([
+    expect(toRenderableDeliverables([preview], PREVIEW_LABEL)).toEqual([
       {
         id: "0",
         label: "Preview Page",
@@ -102,19 +86,21 @@ describe("toRenderableDeliverables", () => {
   it("omits the url when a WEB_PAGE_PREVIEW_URL deliverable carries no webPreviewSasUrl", () => {
     // Mirror of the markdown-no-body case: the optional `url` stays absent (not
     // an empty string) when the wire omits it, so the kind is still resolvable.
-    expect(toRenderableDeliverables([{ type: 3 }])).toEqual([
+    expect(toRenderableDeliverables([{ type: 3 }], PREVIEW_LABEL)).toEqual([
       { id: "0", label: "Preview Page", isPreview: true, kind: "webpage" },
     ]);
   });
 
   it("drops non-renderable types (e.g. sandbox)", () => {
-    expect(toRenderableDeliverables([sandbox])).toEqual([]);
+    expect(toRenderableDeliverables([sandbox], PREVIEW_LABEL)).toEqual([]);
   });
 
   it("keeps the source index as the id while dropping the rest", () => {
     // markdown is at source index 2 → its id is "2", not "1" — the positional
     // id mirrors the schema's own `id: String(index)` step convention.
-    expect(toRenderableDeliverables([file, sandbox, markdown])).toEqual([
+    expect(
+      toRenderableDeliverables([file, sandbox, markdown], PREVIEW_LABEL),
+    ).toEqual([
       {
         id: "0",
         label: "report.pdf",
@@ -134,12 +120,15 @@ describe("toRenderableDeliverables", () => {
     // missing or non-string. All keep `fileUrl` (when present) so the file still
     // previews/downloads — only "Add to project" is unavailable.
     expect(
-      toRenderableDeliverables([
-        { type: 2, fileName: "a.pdf" }, // no `file`, no `fileUrl`
-        { type: 2, fileName: "b.pdf", file: null }, // non-object `file`
-        { type: 2, fileName: "c.pdf", file: { fileUri: 42 } }, // non-string uri
-        { type: 2, fileName: "d.pdf", file: {} }, // `file` without `fileUri`
-      ]),
+      toRenderableDeliverables(
+        [
+          { type: 2, fileName: "a.pdf" }, // no `file`, no `fileUrl`
+          { type: 2, fileName: "b.pdf", file: null }, // non-object `file`
+          { type: 2, fileName: "c.pdf", file: { fileUri: 42 } }, // non-string uri
+          { type: 2, fileName: "d.pdf", file: {} }, // `file` without `fileUri`
+        ],
+        PREVIEW_LABEL,
+      ),
     ).toEqual([
       { id: "0", label: "a.pdf", isPreview: false, kind: "file" },
       { id: "1", label: "b.pdf", isPreview: false, kind: "file" },
@@ -155,26 +144,29 @@ describe("toRenderableDeliverables", () => {
     //   • sico: same-origin relative `/storage/default_space/...`
     //   • DWP:  absolute Azure CDN `https://host/<env>/default_space/...`
     expect(
-      toRenderableDeliverables([
-        {
-          type: 2,
-          fileName: "sico.md",
-          fileUrl: "/storage/default_space/1/abc.md",
-          file: { fileSasUrl: "/storage/default_space/1/abc.md" }, // no fileUri
-        },
-        {
-          type: 2,
-          fileName: "dwp.md",
-          fileUrl: "https://cdn.example/test/default_space/0/xyz.md",
-          file: { fileName: "dwp.md" }, // no fileUri
-        },
-        {
-          type: 2,
-          fileName: "empty.md",
-          fileUrl: "",
-          file: { fileUri: "" }, // both empty → undefined
-        },
-      ]),
+      toRenderableDeliverables(
+        [
+          {
+            type: 2,
+            fileName: "sico.md",
+            fileUrl: "/storage/default_space/1/abc.md",
+            file: { fileSasUrl: "/storage/default_space/1/abc.md" }, // no fileUri
+          },
+          {
+            type: 2,
+            fileName: "dwp.md",
+            fileUrl: "https://cdn.example/test/default_space/0/xyz.md",
+            file: { fileName: "dwp.md" }, // no fileUri
+          },
+          {
+            type: 2,
+            fileName: "empty.md",
+            fileUrl: "",
+            file: { fileUri: "" }, // both empty → undefined
+          },
+        ],
+        PREVIEW_LABEL,
+      ),
     ).toEqual([
       {
         id: "0",
@@ -204,14 +196,17 @@ describe("toRenderableDeliverables", () => {
 
   it("prefers file.fileUri over the fileUrl fallback when both are present", () => {
     expect(
-      toRenderableDeliverables([
-        {
-          type: 2,
-          fileName: "both.md",
-          fileUrl: "/storage/default_space/1/fromurl.md",
-          file: { fileUri: "default_space/1/fromfield.md" },
-        },
-      ]),
+      toRenderableDeliverables(
+        [
+          {
+            type: 2,
+            fileName: "both.md",
+            fileUrl: "/storage/default_space/1/fromurl.md",
+            file: { fileUri: "default_space/1/fromfield.md" },
+          },
+        ],
+        PREVIEW_LABEL,
+      ),
     ).toEqual([
       {
         id: "0",
@@ -226,7 +221,10 @@ describe("toRenderableDeliverables", () => {
 
   it("falls back to an empty label when the title/name field is missing or non-string", () => {
     expect(
-      toRenderableDeliverables([{ type: 1 }, { type: 2, fileName: 42 }]),
+      toRenderableDeliverables(
+        [{ type: 1 }, { type: 2, fileName: 42 }],
+        PREVIEW_LABEL,
+      ),
     ).toEqual([
       { id: "0", label: "", isPreview: false, kind: "markdown" },
       { id: "1", label: "", isPreview: false, kind: "file" },
@@ -234,11 +232,13 @@ describe("toRenderableDeliverables", () => {
   });
 
   it("ignores malformed entries that are not type-bearing objects", () => {
-    expect(toRenderableDeliverables([null, "x", 42, {}])).toEqual([]);
+    expect(
+      toRenderableDeliverables([null, "x", 42, {}], PREVIEW_LABEL),
+    ).toEqual([]);
   });
 
   it("returns an empty array for no deliverables", () => {
-    expect(toRenderableDeliverables([])).toEqual([]);
+    expect(toRenderableDeliverables([], PREVIEW_LABEL)).toEqual([]);
   });
 });
 

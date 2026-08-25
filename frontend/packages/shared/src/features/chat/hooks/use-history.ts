@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 // Studio-mode history hook. TanStack Query owns fetch/cache/dedup ONLY; the
 // jotai `conversationsAtom` is the sole render source-of-truth — this hook
 // fetches newest-first pages and HYDRATES the atom, never rendering from
@@ -27,12 +5,14 @@
 // so the message list (which reads the store) stays mounted across loading /
 // error — a history-fetch failure surfaces as a toast + log, NOT a panel-
 // replacing error screen that would hide the user's just-sent message.
+import { t } from "@lingui/core/macro";
 import { toast } from "@sico/ui";
 import {
   type InfiniteData,
   type QueryClient,
   useInfiniteQuery,
   type UseInfiniteQueryOptions,
+  useQueryClient,
 } from "@tanstack/react-query";
 import type { AxiosInstance } from "axios";
 import { produce } from "immer";
@@ -40,7 +20,6 @@ import { type createStore, useStore } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
 
 import { useApiClient } from "../../../services/api-client-context";
-import { useSicoConfig } from "../../../services/sico-config-context";
 import { makeId } from "../../../utils/id";
 import { logger } from "../../../utils/logger";
 import {
@@ -51,36 +30,16 @@ import {
   type Message,
   plansAtom,
 } from "../atoms/chat-atom";
+import { chatKeys } from "../query-keys";
 import { type Plan } from "../schemas/plan";
-import { resolveChatEndpoints } from "../services/chat-endpoints";
 import { fetchHistory, type HistoryPage } from "../services/history";
 import { groupTurns } from "../utils/group-turns";
+import {
+  invalidateHistoryQuery,
+  markHistoryQueryStale,
+} from "../utils/invalidate-history-query";
 
 type Store = ReturnType<typeof createStore>;
-
-// Keyed on `agentInstanceId` + `conversationId`. `messagesPath` is a
-// deploy-time constant (sico vs dwp are separate builds with separate
-// QueryClients), so it never varies within a runtime and can't collide — keying
-// on it would isolate a cache entry that can never exist. `conversationId`
-// (dwp multi-conversation) DOES vary per active conversation, so it keys the
-// cache — sico (v1) passes `undefined` and gets a single stable entry.
-type HistoryQueryKey = readonly [
-  "history",
-  "messages",
-  { agentInstanceId: number; conversationId: number | undefined },
-];
-
-// The single source of truth for the history cache key. Both the fetch
-// (`historyQueryOptions`) and the create-first seed (`seedEmptyHistory`) build
-// their key here, so a seed and its later read can never drift apart — a
-// mismatch would silently miss the cache and regress the no-skeleton-flash
-// guarantee with no error and no test failure.
-function historyQueryKey(
-  agentInstanceId: number,
-  conversationId?: number,
-): HistoryQueryKey {
-  return ["history", "messages", { agentInstanceId, conversationId }] as const;
-}
 
 // Typed for the NON-suspense `useInfiniteQuery` this hook actually calls (the
 // base options type), not the suspense variant — the two share one cache entry,
@@ -90,7 +49,7 @@ type Options = UseInfiniteQueryOptions<
   HistoryPage,
   Error,
   InfiniteData<HistoryPage>,
-  HistoryQueryKey,
+  ReturnType<typeof chatKeys.history>,
   number
 >;
 
@@ -106,18 +65,20 @@ export type UseHistory = {
 export function historyQueryOptions(
   agentInstanceId: number,
   apiClient: AxiosInstance,
-  messagesPath: string,
   conversationId?: number,
 ): Options {
   return {
-    queryKey: historyQueryKey(agentInstanceId, conversationId),
-    queryFn: ({ pageParam }): Promise<HistoryPage> =>
-      fetchHistory(apiClient, {
-        agentInstanceId,
-        conversationId,
-        page: pageParam,
-        messagesPath,
-      }),
+    queryKey: chatKeys.history(agentInstanceId, conversationId),
+    queryFn: ({ pageParam, signal }): Promise<HistoryPage> =>
+      fetchHistory(
+        apiClient,
+        {
+          agentInstanceId,
+          conversationId,
+          page: pageParam,
+        },
+        signal,
+      ),
     initialPageParam: 1,
     getNextPageParam: (lastPage, _allPages, lastPageParam) =>
       lastPage.hasNext ? lastPageParam + 1 : undefined,
@@ -134,7 +95,7 @@ export function historyQueryOptions(
 // navigating into the chat: with `isPending` already false, the `isPending &&
 // isEmpty` skeleton gate is skipped and the parked message is drained + rendered
 // by ONE `MessageList` instance (no skeleton → real-list swap, so no flash).
-// Builds the key via `historyQueryKey`, the same builder the read uses, so seed
+// Builds the key via `chatKeys.history`, the same builder the read uses, so seed
 // and read can't drift.
 //
 // Seeded as immediately STALE (`updatedAt: 0`), NOT fresh: the seed's only job
@@ -152,7 +113,7 @@ export function seedEmptyHistory(
   agentInstanceId: number,
   conversationId: number,
 ): void {
-  const key = historyQueryKey(agentInstanceId, conversationId);
+  const key = chatKeys.history(agentInstanceId, conversationId);
   // Only seed when nothing is cached — never clobber real fetched history.
   if (queryClient.getQueryData(key) !== undefined) {
     return;
@@ -164,31 +125,29 @@ export function seedEmptyHistory(
   queryClient.setQueryData(key, seed, { updatedAt: 0 });
 }
 
-// Invalidate a conversation's history cache — call when a turn SETTLES
-// (`done`/`error`), by which point the message is persisted server-side. The
-// create-first seed leaves the history cache empty and nothing writes sent
-// messages back into it, so without this a revisit within `staleTime` would
-// re-serve the empty page and render the just-used conversation blank.
+// Invalidate a conversation's history cache on every send-orchestration exit.
+// Cancel a first-page/background request so it cannot complete afterward and
+// make stale data fresh again. An older-page pagination request is preserved
+// and re-invalidated after it settles so the user's scroll is not stranded.
+// Durable exits also need the next mount to read the newly persisted turn
+// instead of the create-first empty seed.
 //
-// `refetchType: "none"` marks the key stale WITHOUT refetching the live
-// observer: the goal is only that the NEXT mount refetches the now-persisted
-// turn. Letting the active observer refetch here would re-hydrate the live view
-// from server rows whose ids are numeric — swapping the optimistic UUID ids the
-// store already renders. That id churn remounts the just-settled `MessageCard`
-// (keyed on `message.id`) and re-fires the new-human-to-top scroll anchor
-// (keyed on the tail id), a visible flash + scroll jump on every turn; it can
-// also race server persistence and re-freshen the cache empty. The live view
-// needs no refetch — the store already holds the settled turn. Uses the same
-// `historyQueryKey` builder as the seed + read, so it can't target the wrong slot.
+// `refetchType: "none"` normally marks the key stale WITHOUT refetching the
+// live observer: the goal is only that the NEXT mount refetches the persisted
+// turn. The exception is an active observer with no data after cancellation —
+// without a replacement request its mounted view stays blank indefinitely.
+// Inspect after cancellation so a route unmount or completed fetch wins before
+// choosing whether to refetch. Uses the same `chatKeys.history` builder as the
+// seed + read, so it can't target the wrong slot.
 export function invalidateHistory(
   queryClient: QueryClient,
   agentInstanceId: number,
   conversationId?: number,
 ): void {
-  void queryClient.invalidateQueries({
-    queryKey: historyQueryKey(agentInstanceId, conversationId),
-    refetchType: "none",
-  });
+  invalidateHistoryQuery(
+    queryClient,
+    chatKeys.history(agentInstanceId, conversationId),
+  );
 }
 
 // Flatten newest-first pages, dedup by id keeping the FIRST occurrence (newest
@@ -224,7 +183,9 @@ function mergeHistory(draft: Conversation, historical: Message[]): void {
   );
   const histIds = new Set(historical.map((m) => m.id));
   const histTurnIds = new Set(
-    historical.map((m) => m.turnId).filter((t): t is number => t !== undefined),
+    historical
+      .map((m) => m.turnId)
+      .filter((turnId): turnId is number => turnId !== undefined),
   );
   const mergedHistorical = historical.map((m) => existingById.get(m.id) ?? m);
   const live = draft.history.filter(
@@ -377,7 +338,12 @@ function useHistoryErrorToast(
     // leaves the cached/store-backed messages on screen, so toasting there would
     // contradict what the user sees.
     if (isLoadingError) {
-      toast.error("Couldn't load messages.");
+      toast.error(
+        t({
+          id: "chat.history.error.loadMessages",
+          message: "Couldn't load messages.",
+        }),
+      );
     }
   }, [error, isLoadingError, agentInstanceId, conversationId]);
 }
@@ -387,18 +353,12 @@ export function useHistory(
   conversationId?: number,
 ): UseHistory {
   const apiClient = useApiClient();
+  const queryClient = useQueryClient();
   const store = useStore();
-  const { chatEndpoints } = useSicoConfig();
-  const { messagesPath } = resolveChatEndpoints(chatEndpoints);
   // Non-suspense: never throws to the ErrorBoundary. Shares one cache entry
   // with any suspense reader of the same key (same pattern as `use-assets-query`).
   const query = useInfiniteQuery(
-    historyQueryOptions(
-      agentInstanceId,
-      apiClient,
-      messagesPath,
-      conversationId,
-    ),
+    historyQueryOptions(agentInstanceId, apiClient, conversationId),
   );
   const { fetchNextPage } = query;
 
@@ -410,10 +370,19 @@ export function useHistory(
     conversationId,
   );
 
-  // `fetchNextPage` is a stable react-query ref, so this wrapper is stable too.
   const fetchOlder = useCallback((): void => {
-    void fetchNextPage();
-  }, [fetchNextPage]);
+    const queryKey = chatKeys.history(agentInstanceId, conversationId);
+    // A page-2 success freshens the whole infinite query while page 1 can still
+    // predate the settled turn. Carry dirty state across every older-page load.
+    const preserveStale =
+      queryClient.getQueryState(queryKey)?.isInvalidated === true;
+    const request = fetchNextPage();
+    if (preserveStale) {
+      const markStale = (): void =>
+        markHistoryQueryStale(queryClient, queryKey);
+      void request.then(markStale, markStale);
+    }
+  }, [fetchNextPage, queryClient, agentInstanceId, conversationId]);
 
   return {
     isPending: query.isPending,

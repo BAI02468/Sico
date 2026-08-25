@@ -1,0 +1,4368 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-07-07 10:37+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/__root.tsx
+msgid "app.notFound.backToHome"
+msgstr "Back to home"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/__root.tsx
+msgid "app.notFound.body"
+msgstr "The page you are looking for does not exist or has been moved."
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/__root.tsx
+msgid "app.notFound.title"
+msgstr "Page not found"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/add-to-project-button.tsx
+msgid "chat.addToProject.add"
+msgstr "Add to project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/add-to-project-button.tsx
+msgid "chat.addToProject.added"
+msgstr "Added to project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/add-to-project-button.tsx
+msgid "chat.addToProject.shareError"
+msgstr "We couldn't add this to the project. Try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/add-to-project-button.tsx
+msgid "chat.addToProject.shareSuccess"
+msgstr "File shared. Everyone in the project can access."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.actions"
+msgstr "Actions"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: app.appName
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.actionsForApp"
+msgstr "Actions for {appName}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.name"
+msgstr "Name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.uninstall"
+msgstr "Uninstall"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.uninstallForAllDevices"
+msgstr "Uninstall for all devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/apps-table.tsx
+msgid "chat.appsTable.version"
+msgstr "Version"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/attachment-input/attachment-chip.tsx
+msgid "chat.attachmentChip.removeAttachment"
+msgstr "Remove attachment"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/hooks/use-composer-attachments.ts
+msgid "chat.composer.fileTooLarge"
+msgstr "That file is over 16 MB. Pick a smaller one."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/disabled-composer-tooltip.tsx
+msgid "chat.composer.inactiveAriaLabel"
+msgstr "Inactive Digital Worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/disabled-composer-tooltip.tsx
+msgid "chat.composer.inactiveTooltip"
+msgstr "This Digital Worker is inactive and cannot receive new tasks."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-input.tsx
+msgid "chat.composer.inputAriaLabel"
+msgstr "Message input"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-input.tsx
+msgid "chat.composer.inputPlaceholder"
+msgstr "Ask anything ..."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-send-button.tsx
+msgid "chat.composer.sending"
+msgstr "Sending…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-send-button.tsx
+msgid "chat.composer.sendMessage"
+msgstr "Send message"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-send-button.tsx
+msgid "chat.composer.stopRequest"
+msgstr "Stop request"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/composer-send-button.tsx
+msgid "chat.composer.stopResponse"
+msgstr "Stop response"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: file.name
+#: packages/shared/src/features/chat/hooks/use-composer-attachments.ts
+msgid "chat.composer.uploadFailed"
+msgstr "Couldn't upload \"{0}\". Try adding it again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/attachment-input/attachment-picker-button.tsx
+msgid "chat.composerAttach.add"
+msgstr "Add attachment"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/attachment-input/attachment-picker-button.tsx
+msgid "chat.composerAttach.fileInput"
+msgstr "Attach a file"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/deliverable.tsx
+#: packages/shared/src/features/chat/components/message/plan-summary.tsx
+msgid "chat.deliverable.previewPage"
+msgstr "Preview Page"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/device-button.tsx
+msgid "chat.deviceButton.label"
+msgstr "Device"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/hooks/use-home-submit.ts
+msgid "chat.dwHomeContent.error.startConversationFailed"
+msgstr "Couldn't start a conversation. Please try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/digital-worker-home/digital-worker-home-hero.tsx
+msgid "chat.dwHomeHero.prompt"
+msgstr "How can I help you today?"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/experience-pill.tsx
+msgid "chat.experiencePill.experience"
+msgstr "Experience"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/experience-pill.tsx
+msgid "chat.experiencePill.experienceCount"
+msgstr "Experience + {experienceCount}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/experience-pill.tsx
+msgid "chat.experiencePill.generatingExperience"
+msgstr "Generating experience"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/experience-pill.tsx
+msgid "chat.experiencePill.newStrategies"
+msgstr "New strategies"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/experience-pill.tsx
+msgid "chat.experiencePill.viewMore"
+msgstr "View more"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/file-previewer.tsx
+msgid "chat.filePreviewer.download"
+msgstr "Download"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/hooks/use-history.ts
+msgid "chat.history.error.loadMessages"
+msgstr "Couldn't load messages."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/install-app-button.tsx
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/install-app-button.tsx
+msgid "chat.installAppButton.installApp"
+msgstr "Install app"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/install-app-button.tsx
+msgid "chat.installAppButton.invalidApk"
+msgstr "Please upload an .apk file."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/install-app-button.tsx
+msgid "chat.installAppButton.toAllAndroidDevices"
+msgstr "To all Android devices ({deviceCount})"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/install-app-button.tsx
+msgid "chat.installAppButton.toThisDevice"
+msgstr "To this device"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/manage-apps-header.tsx
+msgid "chat.manageAppsHeader.backToDevice"
+msgstr "Back to device"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/manage-apps-header.tsx
+msgid "chat.manageAppsHeader.close"
+msgstr "Close"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/manage-apps-header.tsx
+msgid "chat.manageAppsHeader.devices"
+msgstr "Devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/manage-apps-header.tsx
+msgid "chat.manageAppsHeader.maximize"
+msgstr "Maximize"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/manage-apps-header.tsx
+msgid "chat.manageAppsHeader.restore"
+msgstr "Restore"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/markdown-previewer.tsx
+msgid "chat.markdownPreviewer.download"
+msgstr "Download"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/markdown-previewer.tsx
+msgid "chat.markdownPreviewer.empty"
+msgstr "There's nothing to preview here yet."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/markdown-previewer.tsx
+msgid "chat.markdownPreviewer.untitled"
+msgstr "Untitled"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message/message-history-skeleton.tsx
+msgid "chat.messageHistory.loading"
+msgstr "Loading messages"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message-list.tsx
+msgid "chat.messageList.loadingOlderMessages"
+msgstr "Loading older messages"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/message-list.tsx
+msgid "chat.messageList.scrollToNewestMessage"
+msgstr "Scroll to newest message"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/hooks/use-plan.ts
+msgid "chat.plan.pollFailed"
+msgstr "Couldn't update plan status. Retrying…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/failure-analyzed-label.tsx
+msgid "chat.planCard.analysisVerified"
+msgstr "Analysis Verified. New experience saved."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/failure-analyzed-label.tsx
+msgid "chat.planCard.failureAnalyzed"
+msgstr "Failure Analyzed."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/plan-status-text.tsx
+msgid "chat.planCard.status.completed"
+msgstr "Execution completed"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/plan-status-text.tsx
+msgid "chat.planCard.status.failed"
+msgstr "Execution failed"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/plan-status-text.tsx
+msgid "chat.planCard.status.inProgress"
+msgstr "Execution in progress"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/cards/plan-card/plan-status-text.tsx
+msgid "chat.planCard.status.stopped"
+msgstr "Execution stopped"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/hooks/use-reconnect.ts
+msgid "chat.reconnect.reconnecting"
+msgstr "Reconnecting…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-header-shell.tsx
+msgid "chat.sandbox.deviceTitle"
+msgstr "Device"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-empty.tsx
+msgid "chat.sandboxAppsEmpty.body"
+msgstr "Apps will appear here."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-empty.tsx
+msgid "chat.sandboxAppsEmpty.heading"
+msgstr "No apps installed"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-skeleton.tsx
+msgid "chat.sandboxAppsSkeleton.header.actions"
+msgstr "Actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-skeleton.tsx
+msgid "chat.sandboxAppsSkeleton.header.name"
+msgstr "Name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-skeleton.tsx
+msgid "chat.sandboxAppsSkeleton.header.version"
+msgstr "Version"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-apps-skeleton.tsx
+msgid "chat.sandboxAppsSkeleton.loadingApps"
+msgstr "Loading apps"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-instance.tsx
+msgid "chat.sandboxInstance.manageApps"
+msgstr "Manage apps"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-instance.tsx
+msgid "chat.sandboxInstance.stopTakeOver"
+msgstr "Stop take over"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-instance.tsx
+msgid "chat.sandboxInstance.takeOver"
+msgstr "Take over"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-instance.tsx
+msgid "chat.sandboxInstance.takingOver"
+msgstr "You are taking over"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/sandbox-instance.tsx
+msgid "chat.sandboxInstance.unavailable"
+msgstr "This device's live view is unavailable."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox-previewer.tsx
+msgid "chat.sandboxPreviewer.loading"
+msgstr "Loading devices"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: formatDateTime(createdAt)
+#: packages/shared/src/features/chat/components/message/scheduled-task-metadata.tsx
+msgid "chat.scheduledTaskMetadata.label"
+msgstr "Scheduled task · <0>{0}</0>"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/constants.ts
+msgid "chat.send.failed"
+msgstr "Something went wrong. Try sending again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/sidepane.tsx
+msgid "chat.sidepane.regionLabel"
+msgstr "Preview panel"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/sidepane-header.tsx
+msgid "chat.sidepaneHeader.close"
+msgstr "Close"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/sidepane-header.tsx
+msgid "chat.sidepaneHeader.maximize"
+msgstr "Maximize"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/sidepane-header.tsx
+msgid "chat.sidepaneHeader.restore"
+msgstr "Restore"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/constants.ts
+msgid "chat.stop.failed"
+msgstr "There's been a connection error. Please try again later."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/digital-worker-home/suggested-tasks-skeleton.tsx
+#: packages/shared/src/features/chat/components/digital-worker-home/suggested-tasks.tsx
+msgid "chat.suggestedTasks.heading"
+msgstr "Suggested tasks"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/utils/format-date-time.ts
+msgid "chat.timestamp.yesterday"
+msgstr "Yesterday {time}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.bodyAllDevices"
+msgstr "This app will be removed from all devices. This action cannot be undone."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.bodyCurrentDevice"
+msgstr "This app will be removed from this device."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.titleAllDevices"
+msgstr "Uninstall this app for all devices?"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.titleCurrentDevice"
+msgstr "Uninstall this app?"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.uninstall"
+msgstr "Uninstall"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/sandbox/uninstall-confirm-dialog.tsx
+msgid "chat.uninstallConfirmDialog.uninstalling"
+msgstr "Uninstalling…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/webpage-previewer.tsx
+msgid "chat.webpagePreviewer.blocked"
+msgstr "This page can't be shown here. Open it in a new tab to view it."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/previewers/webpage-previewer.tsx
+msgid "chat.webpagePreviewer.title"
+msgstr "Preview Page"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "common.action.add"
+msgstr "Add"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/confirm-dialog/confirm-dialog.tsx
+#: packages/shared/src/features/digital-worker/components/add-dw-dialog.tsx
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+#: packages/shared/src/features/organization/components/manage-devices-dialog.tsx
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form-view.tsx
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "common.action.cancel"
+msgstr "Cancel"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+#: packages/shared/src/features/studio/components/studio-manage-editors-dialog.tsx
+msgid "common.action.close"
+msgstr "Close"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+#: packages/shared/src/features/projects/components/asset-row.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+#: packages/shared/src/features/skill/components/dialogs/delete-skill-dialog.tsx
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "common.action.delete"
+msgstr "Delete"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-row.tsx
+msgid "common.action.download"
+msgstr "Download"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-row.tsx
+msgid "common.action.edit"
+msgstr "Edit"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "common.action.reload"
+msgstr "Reload"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-removal-confirm.tsx
+msgid "common.action.remove"
+msgstr "Remove"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-boundary/inner-error-fallback.tsx
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "common.action.retry"
+msgstr "Retry"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-dialog.tsx
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+#: packages/shared/src/features/organization/components/manage-devices-dialog.tsx
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form-view.tsx
+#: packages/shared/src/features/studio/components/studio-setup-header.tsx
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+msgid "common.action.save"
+msgstr "Save"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "common.action.saving"
+msgstr "Saving…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+#: packages/shared/src/features/organization/components/organization-projects-view.tsx
+#: packages/shared/src/features/skill/components/setup/setup-role-field.tsx
+#: packages/shared/src/features/skill/components/setup/skill-body.tsx
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-organization-status.tsx
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "common.action.tryAgain"
+msgstr "Try again"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+#: packages/shared/src/features/skill/components/dialogs/upload-button-content.tsx
+msgid "common.action.upload"
+msgstr "Upload"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/sidepane/add-to-project-button.tsx
+msgid "common.action.view"
+msgstr "View"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-knowledge-section.tsx
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "common.action.viewAll"
+msgstr "View all"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-email-field.tsx
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "common.field.email"
+msgstr "Email"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/chat/components/digital-worker-home/digital-worker-home-skeleton.tsx
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "common.status.loading"
+msgstr "Loading"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "common.status.saved"
+msgstr "Saved"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-dialog.tsx
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form-view.tsx
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+msgid "common.status.saving"
+msgstr "Saving…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+#: packages/shared/src/features/skill/components/dialogs/upload-button-content.tsx
+msgid "common.status.uploading"
+msgstr "Uploading"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/avatar-field.tsx
+msgid "digitalWorker.addDialog.avatarLabel"
+msgstr "Avatar"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.createProjectButton"
+msgstr "Create Project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/name-field.tsx
+msgid "digitalWorker.addDialog.nameLabel"
+msgstr "Name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/name-field.tsx
+msgid "digitalWorker.addDialog.namePlaceholder"
+msgstr "e.g. Nova"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-dialog-header.tsx
+msgid "digitalWorker.addDialog.operatorNote"
+msgstr "You'll be the Human Operator for this Digital Worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.projectLabel"
+msgstr "Project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.projectPlaceholder"
+msgstr "Select a project…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.projectsEmpty"
+msgstr "No projects yet — create your first one."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.projectsLoadError"
+msgstr "Couldn't load projects. Try reopening the dialog."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/project-field.tsx
+msgid "digitalWorker.addDialog.projectsNoun"
+msgstr "projects"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-dialog-header.tsx
+msgid "digitalWorker.addDialog.title"
+msgstr "Add Digital Worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-fields.tsx
+msgid "digitalWorker.addDialog.validation.nameRequired"
+msgstr "Name is required"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-fields.tsx
+msgid "digitalWorker.addDialog.validation.nameTooLong"
+msgstr "Name is too long"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-fields.tsx
+msgid "digitalWorker.addDialog.validation.projectRequired"
+msgstr "Pick a project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/add-dw-fields.tsx
+msgid "digitalWorker.addDialog.validation.workerRequired"
+msgstr "Pick a digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-field.tsx
+msgid "digitalWorker.addDialog.workerLabel"
+msgstr "Digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-field.tsx
+msgid "digitalWorker.addDialog.workerPlaceholder"
+msgstr "Select a digital worker…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-field.tsx
+msgid "digitalWorker.addDialog.workersEmpty"
+msgstr "No digital workers available yet."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-field.tsx
+msgid "digitalWorker.addDialog.workersLoadError"
+msgstr "Couldn't load digital workers. Try reopening the dialog."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-field.tsx
+msgid "digitalWorker.addDialog.workersNoun"
+msgstr "digital workers"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: i + 1
+#: packages/shared/src/features/digital-worker/components/dw-avatar-picker.tsx
+msgid "digitalWorker.avatarPicker.avatarAria"
+msgstr "Avatar {index}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-avatar-picker.tsx
+msgid "digitalWorker.avatarPicker.changeAvatarAria"
+msgstr "Change avatar"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-avatar-picker.tsx
+msgid "digitalWorker.avatarPicker.groupAria"
+msgstr "Avatar"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-avatar-picker.tsx
+msgid "digitalWorker.avatarPicker.hint"
+msgstr "Click the avatar or Shuffle to generate another one."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-avatar-picker.tsx
+msgid "digitalWorker.avatarPicker.shuffleAvatarAria"
+msgstr "Shuffle avatar"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/empty-state.tsx
+msgid "digitalWorker.emptyState.addButton"
+msgstr "Add Digital Worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/empty-state.tsx
+msgid "digitalWorker.emptyState.createProjectButton"
+msgstr "Create Project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/empty-state.tsx
+msgid "digitalWorker.emptyState.hasProjectBody"
+msgstr "Add your first digital worker to get started."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/empty-state.tsx
+msgid "digitalWorker.emptyState.heading"
+msgstr "Your crew is one hire away"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/empty-state.tsx
+msgid "digitalWorker.emptyState.noProjectBody"
+msgstr "You need a project before adding a digital worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers-grid.tsx
+msgid "digitalWorker.grid.loadingMore"
+msgstr "Loading more"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/inactive-toggle.tsx
+msgid "digitalWorker.inactiveToggle.hide"
+msgstr "Hide inactive digital workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/inactive-toggle.tsx
+msgid "digitalWorker.inactiveToggle.show"
+msgstr "Show inactive digital workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers.tsx
+msgid "digitalWorker.page.actions"
+msgstr "Digital Worker actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers.tsx
+msgid "digitalWorker.page.addMenuItem"
+msgstr "Digital Worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers.tsx
+msgid "digitalWorker.page.scheduledTaskButton"
+msgstr "Scheduled Task"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers.tsx
+msgid "digitalWorker.page.subtitle"
+msgstr "Collaborate with, train, and supervise your Digital Workers."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers.tsx
+msgid "digitalWorker.page.title"
+msgstr "Digital Workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.aborted"
+msgstr "Aborted"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.active"
+msgstr "Active"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.inactive"
+msgstr "Inactive"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.onboarding"
+msgstr "Onboarding"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.unknown"
+msgstr "Unknown"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/dw-status-indicator.tsx
+msgid "digitalWorker.status.working"
+msgstr "Working"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/digital-worker/components/digital-workers-grid-skeleton.tsx
+msgid "dw.gridSkeleton.loading"
+msgstr "Loading digital workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-boundary/inner-error-fallback.tsx
+msgid "errorBoundary.inner.body"
+msgstr "An unexpected error occurred while rendering this section."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-boundary/inner-error-fallback.tsx
+msgid "errorBoundary.inner.title"
+msgstr "Something went wrong on this page."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.network.body"
+msgstr "Check your connection and try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.network.heading"
+msgstr "Can't reach the server"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.schema.body"
+msgstr "We received unexpected data. Try refreshing the page."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.schema.heading"
+msgstr "Unexpected response"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.server.body"
+msgstr "Something went wrong on our end. Try again in a moment."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.server.heading"
+msgstr "Something went wrong"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.unknown.body"
+msgstr "Something went wrong on this page. Try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/error-view/error-view.tsx
+msgid "errorView.unknown.heading"
+msgstr "Something went wrong"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/file-preview/components/viewers/office-viewer.tsx
+msgid "filePreview.office.title"
+msgstr "Office preview"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/file-preview/components/unpreviewable-state.tsx
+msgid "filePreview.unpreviewable.body"
+msgstr "Download the file to view its contents."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/file-preview/components/unpreviewable-state.tsx
+msgid "filePreview.unpreviewable.heading"
+msgstr "Preview not supported for this file type."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-page.tsx
+msgid "login.sessionExpired"
+msgstr "Your session has expired. Please sign in again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/markdown/code-box.tsx
+msgid "markdown.codeBox.copied"
+msgstr "Copied to clipboard"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/markdown/code-box.tsx
+msgid "markdown.codeBox.copyCode"
+msgstr "Copy code"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/components/markdown/code-box.tsx
+msgid "markdown.codeBox.copyFailed"
+msgstr "Couldn't copy to clipboard"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.deliverableShared.body"
+msgstr "Shared {fileName} to {projectName}."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.dwDismissed.body"
+msgstr "Your Digital Worker {dwName} has been dismissed."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.dwDismissed.title"
+msgstr "Digital Worker dismissed"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.dwReassigned.title"
+msgstr "Digital Worker reassigned"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.dwReassigned.toOther"
+msgstr "{dwName} has been assigned to another operator by Admin."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.dwReassigned.toYou"
+msgstr "{dwName} has been assigned to you by Admin."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notifications-empty.tsx
+msgid "notifications.empty.all"
+msgstr "No notifications yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notifications-empty.tsx
+msgid "notifications.empty.heading"
+msgstr "You're all caught up"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notifications-empty.tsx
+msgid "notifications.empty.unread"
+msgstr "No unread notifications"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.fallback.aDw"
+msgstr "A Digital Worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.fallback.aFile"
+msgstr "a file"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.fallback.aProject"
+msgstr "a project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.fallback.someone"
+msgstr "Someone"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.fallback.yourDw"
+msgstr "your Digital Worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.markAllRead"
+msgstr "Mark all as read"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.memberInvitation.body"
+msgstr "You have been invited to join {projectName}."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.memberInvitation.title"
+msgstr "Project invitation"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.memberRemoved.body"
+msgstr "You have been removed from {projectName}."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.memberRemoved.title"
+msgstr "Removed from project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.navRow.label"
+msgstr "Notification"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.neutral.by"
+msgstr "By {senderUsername}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.panel.title"
+msgstr "Notifications"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.role.admin"
+msgstr "Admin"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.role.member"
+msgstr "Member"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.roleChanged.body"
+msgstr "Your role in {projectName} has been changed to {roleLabel}."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/use-notification-card-view.tsx
+msgid "notifications.roleChanged.title"
+msgstr "Role changed"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.completedBody"
+msgstr "\"{taskTitle}\" has completed successfully."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.completedTitle"
+msgstr "Scheduled task completed"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.failedBody"
+msgstr "\"{taskTitle}\" has failed."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.failedTitle"
+msgstr "Scheduled task failed"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.fallbackTitle"
+msgstr "Scheduled task"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.finishedBody"
+msgstr "\"{taskTitle}\" has finished."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/hooks/card-views/scheduled-task-notification-view.tsx
+msgid "notifications.scheduledTask.finishedTitle"
+msgstr "Scheduled task finished"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.tabs.all"
+msgstr "All"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.tabs.unread"
+msgstr "Unread ({unreadCount})"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.days"
+msgstr "{day}d ago"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.hours"
+msgstr "{hr}h ago"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.justNow"
+msgstr "just now"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.minutes"
+msgstr "{min} min ago"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.months"
+msgstr "{month}mo ago"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.weeks"
+msgstr "{week}w ago"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/utils/relative-time.ts
+msgid "notifications.time.years"
+msgstr "{year}y ago"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.trigger.label"
+msgstr "Notifications"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-nav-item.tsx
+msgid "notifications.trigger.unread"
+msgstr "Notifications, {unreadCount} unread"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/notifications/components/notification-card.tsx
+msgid "notifications.unread"
+msgstr "Unread"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.available"
+msgstr "{available, plural, one {# available} other {# available}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.decrease"
+msgstr "Decrease"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.increase"
+msgstr "Increase"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.inUseCount"
+msgstr "<0><1><2/></1><3>{value}</3><4><5/></4></0> <6>in use</6>"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/manage-devices-dialog.tsx
+msgid "organization.devices.manage"
+msgstr "Manage Devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.mobile"
+msgstr "Mobiles"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/manage-devices-dialog.tsx
+msgid "organization.devices.partialFailure"
+msgstr "Some devices may have changed. The list has been refreshed."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/manage-devices-dialog.tsx
+msgid "organization.devices.saved"
+msgstr "Device allocation updated."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/device-stepper.tsx
+msgid "organization.devices.windows"
+msgstr "Windows"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.failed"
+msgstr "Couldn't rename this organization."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.label"
+msgstr "Organization name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-page-content.tsx
+msgid "organization.editName.open"
+msgstr "Rename organization"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.placeholder"
+msgstr "Enter organization name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.success"
+msgstr "Organization name updated."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.title"
+msgstr "Rename Organization"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/edit-org-name-dialog.tsx
+msgid "organization.editName.validation.required"
+msgstr "Organization name is required"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-unavailable.tsx
+msgid "organization.empty.title"
+msgstr "No organization available"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-email-field.tsx
+msgid "organization.invite.emailPlaceholder"
+msgstr "name@company.com"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.failed"
+msgstr "Couldn't invite this user."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-role-field.tsx
+msgid "organization.invite.role.admin"
+msgstr "Can manage organization"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-role-field.tsx
+msgid "organization.invite.role.developer"
+msgstr "Can build new digital worker roles"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-role-field.tsx
+msgid "organization.invite.role.operator"
+msgstr "Can collaborate with digital workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-role-field.tsx
+msgid "organization.invite.roleLabel"
+msgstr "Role"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.send"
+msgstr "Invite"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.success"
+msgstr "Invite sent."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.title"
+msgstr "Invite to {orgName}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.userNotFound"
+msgstr "This user hasn't registered yet."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.validation.emailInvalid"
+msgstr "Enter a valid email"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/invite-org-member-dialog.tsx
+msgid "organization.invite.validation.emailRequired"
+msgstr "Email is required"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.actions"
+msgstr "Member actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-role-cell.tsx
+msgid "organization.members.changeRole"
+msgstr "Change role"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.deleteBody"
+msgstr "Delete \"{display}\" from this organization. This can't be undone."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.deleteTitle"
+msgstr "Delete member"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.deleting"
+msgstr "Deleting…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.empty.body"
+msgstr "Invite your first teammate to start collaborating."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.empty.heading"
+msgstr "No members yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.header.account"
+msgstr "Name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.header.actions"
+msgstr "Action"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.header.joined"
+msgstr "Joined"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.header.role"
+msgstr "Role"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.invite"
+msgstr "Invite"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-page-skeleton.tsx
+msgid "organization.members.loading"
+msgstr "Loading members"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.removed"
+msgstr "Member removed."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.removeDenied"
+msgstr "Available to Owners and Admins only."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.removeFailed"
+msgstr "Couldn't remove this member."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-row.tsx
+msgid "organization.members.roleChangeFailed"
+msgstr "Couldn't change this member's role."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-actions.tsx
+msgid "organization.members.selfRemoveDenied"
+msgstr "You can't remove yourself from the organization."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-members-section.tsx
+msgid "organization.members.title"
+msgstr "Members"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-management-shell.tsx
+msgid "organization.navigation.ariaLabel"
+msgstr "Organization management"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-management-shell.tsx
+msgid "organization.navigation.back"
+msgstr "Back"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-management-shell.tsx
+msgid "organization.navigation.organization"
+msgstr "Organization"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-management-shell.tsx
+msgid "organization.navigation.projects"
+msgstr "Projects"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-management-shell.tsx
+msgid "organization.navigation.title"
+msgstr "Manage Organization"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-project-row.tsx
+msgid "organization.projects.actions"
+msgstr "Project actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.empty.body"
+msgstr "Create your first project to organize your team's work."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.empty.heading"
+msgstr "No projects yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.header.actions"
+msgstr "Action"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.header.created"
+msgstr "Created"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.header.devices"
+msgstr "Devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.header.name"
+msgstr "Project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-table.tsx
+msgid "organization.projects.header.owner"
+msgstr "Owner"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-page-skeleton.tsx
+msgid "organization.projects.loading"
+msgstr "Loading projects"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-view.tsx
+msgid "organization.projects.loadingMore"
+msgstr "Loading more projects"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-view.tsx
+msgid "organization.projects.loadMoreFailed"
+msgstr "Couldn't load more projects."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-project-row.tsx
+msgid "organization.projects.manageDevices"
+msgstr "Manage Devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-project-row.tsx
+msgid "organization.projects.manageDevicesOrgAdminOnly"
+msgstr "Available to Organization Owners and Admins only."
+
+#. js-lingui-explicit-id
+#. placeholder {0}: counts.mobile
+#: packages/shared/src/features/organization/components/org-project-row.tsx
+msgid "organization.projects.mobileCount"
+msgstr "{0, plural, one {Mobile #} other {Mobile #}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-stat-count.tsx
+msgid "organization.projects.stat.availableCount"
+msgstr "<0>{count}</0> <1>Available</1>"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-project-stats.tsx
+msgid "organization.projects.stat.mobiles"
+msgstr "Mobiles"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-project-stats.tsx
+msgid "organization.projects.stat.projects"
+msgstr "Projects"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-stat-count.tsx
+msgid "organization.projects.stat.totalCount"
+msgstr "<0>{count}</0> <1>total</1>"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-project-stats.tsx
+msgid "organization.projects.stat.windows"
+msgstr "Windows"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/organization-projects-view.tsx
+msgid "organization.projects.title"
+msgstr "Projects"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: counts.windows
+#: packages/shared/src/features/organization/components/org-project-row.tsx
+msgid "organization.projects.windowsCount"
+msgstr "{0, plural, one {Windows #} other {Windows #}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/hooks/use-organization-role-labels.ts
+msgid "organization.role.admin"
+msgstr "Admin"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/hooks/use-organization-role-labels.ts
+msgid "organization.role.developer"
+msgstr "Developer"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/hooks/use-organization-role-labels.ts
+msgid "organization.role.operator"
+msgstr "Operator"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/organization/components/org-member-row.tsx
+msgid "organization.role.owner"
+msgstr "Owner"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/_authed/organization.members.tsx
+#: packages/app/src/routes/_authed/organization.projects.tsx
+msgid "organization.route.title"
+msgstr "Manage Organization · SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.action.addFiles"
+msgstr "Add files"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.action.import"
+msgstr "Import from link"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.action.removeFile"
+msgstr "Remove {filename}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.action.removeLink"
+msgstr "Remove {url}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.error.fileTooLarge"
+msgstr "\"{0}\" is larger than 10MB. Try a smaller file."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.error.tooManyFiles"
+msgstr "You can add up to 5 files at a time. Remove one to add another."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.error.unsupportedType"
+msgstr "\"{0}\" isn't a supported type. Use pdf, docx, or xlsx."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.importPlaceholder"
+msgstr "Paste a link to import"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.title"
+msgstr "Add Knowledge"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.toast.failed"
+msgstr "Some items couldn't be added. Try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.toast.invalidLink"
+msgstr "Enter a valid http(s) link."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.toast.success"
+msgstr "Knowledge uploaded — extracting…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.uploadHint1"
+msgstr "Supports pdf, docx, xlsx · up to 10MB · max 5 files"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.uploadHint2"
+msgstr "Files must be publicly accessible."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-dialog.tsx
+msgid "projects.addKnowledge.uploadLabel"
+msgstr "Upload context"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-tag-area.tsx
+msgid "projects.addKnowledgeTagArea.knowledgeTagLabel"
+msgstr "Knowledge tag"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: tag.name
+#: packages/shared/src/features/projects/components/add-knowledge-tag-area.tsx
+msgid "projects.addKnowledgeTagArea.removeTag"
+msgstr "Remove {0}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/add-knowledge-tag-area-skeleton.tsx
+msgid "projects.addKnowledgeTagAreaSkeleton.loadingKnowledgeTags"
+msgstr "Loading knowledge tags"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.actionsAriaLabel"
+msgstr "Asset actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.delete"
+msgstr "Delete"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.deleteBody"
+msgstr "Permanently remove this deliverable across your project."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.deletedSuccess"
+msgstr "\"{name}\" was deleted."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.deleteError"
+msgstr "We couldn't delete this. Try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.deleteTitle"
+msgstr "Delete Deliverable"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.download"
+msgstr "Download"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.unavailableBody"
+msgstr "The deliverable has no file to preview or download."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-deliverable.tsx
+msgid "projects.assetDeliverable.unavailableHeading"
+msgstr "This file isn't available."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-layout.tsx
+msgid "projects.assetDetailLayout.detail"
+msgstr "Detail"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-detail-skeleton.tsx
+msgid "projects.assetDetailSkeleton.loading"
+msgstr "Loading asset"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-row.tsx
+msgid "projects.assetRow.actions"
+msgstr "Asset actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-row.tsx
+msgid "projects.assetRow.deleteDenied"
+msgstr "You can only delete items you created."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/hooks/use-asset-row-actions.ts
+msgid "projects.assetRowActions.deleteError"
+msgstr "We couldn't delete this. Try again."
+
+#. js-lingui-explicit-id
+#. placeholder {0}: deletingAsset.name
+#: packages/shared/src/features/projects/hooks/use-asset-row-actions.ts
+msgid "projects.assetRowActions.deleteSuccess"
+msgstr "\"{0}\" was deleted."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.body.all"
+msgstr "Upload knowledge or wait for your digital workers to produce deliverables."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.body.deliverable"
+msgstr "Deliverables will appear here once your digital workers publish them."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.body.experience"
+msgstr "Experiences will appear here as your digital workers learn from tasks."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.body.knowledge"
+msgstr "Add knowledge to give this project shared context."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.heading"
+msgstr "No assets yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-empty.tsx
+msgid "projects.assetsEmpty.searchBody"
+msgstr "No assets match \"{0}\". Try a different search."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-body.tsx
+msgid "projects.assetsTableRows.actions"
+msgstr "Actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-body.tsx
+msgid "projects.assetsTableRows.assetName"
+msgstr "ASSET NAME"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-body.tsx
+msgid "projects.assetsTableRows.createdTime"
+msgstr "CREATED TIME"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-body.tsx
+msgid "projects.assetsTableRows.creator"
+msgstr "CREATOR"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-hint-row.tsx
+msgid "projects.assetsTableRows.dontShowAgain"
+msgstr "Don't show again"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-body.tsx
+msgid "projects.assetsTableRows.type"
+msgstr "TYPE"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.actions"
+msgstr "ACTIONS"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.assetName"
+msgstr "ASSET NAME"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.createdTime"
+msgstr "CREATED TIME"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.creator"
+msgstr "CREATOR"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.loadingAssets"
+msgstr "Loading assets"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-table-skeleton.tsx
+msgid "projects.assetsTableSkeleton.type"
+msgstr "TYPE"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.addKnowledge"
+msgstr "Add Knowledge"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.search.ariaLabel"
+msgstr "Search assets"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.search.placeholder"
+msgstr "Search assets"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.tabs.all"
+msgstr "All"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.tabs.deliverable"
+msgstr "Deliverable"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.tabs.experience"
+msgstr "Experience"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-toolbar.tsx
+msgid "projects.assetsToolbar.tabs.knowledge"
+msgstr "Knowledge"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-type-cell.tsx
+msgid "projects.assetType.deliverable"
+msgstr "Deliverable"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-type-cell.tsx
+msgid "projects.assetType.experience"
+msgstr "Experience"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-type-cell.tsx
+msgid "projects.assetType.knowledge"
+msgstr "Knowledge"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/collapsible-panel-shell.tsx
+msgid "projects.collapsiblePanelShell.collapsePanel"
+msgstr "Collapse panel"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.change"
+msgstr "Change cover"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.choose"
+msgstr "Choose project cover"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.fileInput"
+msgstr "Project cover file"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.label"
+msgstr "Project cover"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.upload"
+msgstr "Upload a cover"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/cover-field.tsx
+msgid "projects.coverField.uploading"
+msgstr "Uploading…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-description-field.tsx
+msgid "projects.createDialog.descriptionLabel"
+msgstr "Description"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-description-field.tsx
+msgid "projects.createDialog.descriptionPlaceholder"
+msgstr "What is this project trying to do? Who is it for?"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+msgid "projects.createDialog.error"
+msgstr "We couldn't create your project."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-name-field.tsx
+msgid "projects.createDialog.nameLabel"
+msgstr "Name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-name-field.tsx
+msgid "projects.createDialog.namePlaceholder"
+msgstr "e.g. Aurora launch"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+msgid "projects.createDialog.success"
+msgstr "Project created."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-dialog.tsx
+msgid "projects.createDialog.title"
+msgstr "Create Project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-fields.tsx
+msgid "projects.createDialog.validation.descriptionTooLong"
+msgstr "Description must be {max} characters or fewer"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-fields.tsx
+msgid "projects.createDialog.validation.nameRequired"
+msgstr "Name is required"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/create-project-fields.tsx
+msgid "projects.createDialog.validation.nameTooLong"
+msgstr "Name is too long"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/creator-cell.tsx
+msgid "projects.creatorCell.digitalWorker"
+msgstr "Digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.available"
+msgstr "available"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.deviceType.aio"
+msgstr "AIO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.deviceType.android"
+msgstr "Android"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.deviceType.physical"
+msgstr "Physical"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.deviceType.windows"
+msgstr "Windows"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.empty"
+msgstr "No devices yet."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.titleDevices"
+msgstr "Devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-sandbox-section.tsx
+msgid "projects.drawerSandbox.viewAllDevicesAria"
+msgstr "View all devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-team-section.tsx
+msgid "projects.drawerTeam.invite"
+msgstr "Invite"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-team-section.tsx
+msgid "projects.drawerTeam.inviteHuman"
+msgstr "Human Operator"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-team-section.tsx
+msgid "projects.drawerTeam.inviteWorker"
+msgstr "Digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-team-section.tsx
+msgid "projects.drawerTeam.title"
+msgstr "Team"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/team-preview.tsx
+msgid "projects.drawerTeam.workerCount"
+msgstr "{total, plural, one {# worker} other {# workers}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.cancel"
+msgstr "Cancel"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.knowledgeName"
+msgstr "Knowledge name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.nameRequired"
+msgstr "Name is required"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.save"
+msgstr "Save"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.saveError"
+msgstr "We couldn't save your changes. Try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.saveSuccess"
+msgstr "Your changes are saved."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.saving"
+msgstr "Saving…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-asset-dialog.tsx
+msgid "projects.editAsset.title"
+msgstr "Edit"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/empty-state.tsx
+msgid "projects.emptyState.body"
+msgstr "You haven't been added to any projects. Ask a project owner to invite you."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/empty-state.tsx
+msgid "projects.emptyState.createButton"
+msgstr "Create Project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/empty-state.tsx
+msgid "projects.emptyState.heading"
+msgstr "No projects yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/hooks/use-extraction-toasts.ts
+msgid "projects.extraction.complete"
+msgstr "Extraction complete — {ingested} added."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/hooks/use-extraction-toasts.ts
+msgid "projects.extraction.failed"
+msgstr "{failed, plural, one {Extraction failed for # item.} other {Extraction failed for # items.}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/hooks/use-extraction-toasts.ts
+msgid "projects.extraction.partial"
+msgstr "Extraction finished — {ingested} added, {failed} failed."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/projects-grid.tsx
+msgid "projects.grid.loadingMore"
+msgstr "Loading more"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-hint-row.tsx
+msgid "projects.hints.deliverable.description"
+msgstr "Artifacts produced by digital workers."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-hint-row.tsx
+msgid "projects.hints.deliverable.label"
+msgstr "Deliverable:"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-hint-row.tsx
+msgid "projects.hints.experience.description"
+msgstr "Reusable patterns accumulated through execution."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/assets-hint-row.tsx
+msgid "projects.hints.experience.label"
+msgstr "Experience:"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.addTitle"
+msgstr "Add knowledge tag"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.editTitle"
+msgstr "Edit knowledge tag"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.name"
+msgstr "Name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.namePlaceholder"
+msgstr "Name this knowledge tag"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.saveError"
+msgstr "We couldn't save your changes. Try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.saveSuccess"
+msgstr "Knowledge tag saved."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.validation.nameRequired"
+msgstr "Name is required"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.validation.nameTooLong"
+msgstr "Name is too long"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.validation.whenToUseTooLong"
+msgstr "When to use is too long"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.whenToUse"
+msgstr "When to use"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/edit-knowledge-tag-dialog.tsx
+msgid "projects.knowledgeTagDialog.whenToUsePlaceholder"
+msgstr "Describe when your digital workers should use this tag."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.actions.ariaLabel"
+msgstr "Knowledge tag actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.actions.delete"
+msgstr "Delete"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.actions.edit"
+msgstr "Edit"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.addButton"
+msgstr "Add knowledge tag"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.confirmDelete.body"
+msgstr "Assets tagged with it won't be deleted, but they'll lose this tag."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.confirmDelete.title"
+msgstr "Delete this knowledge tag?"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.delete.error"
+msgstr "We couldn't delete this knowledge tag. Try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.delete.success"
+msgstr "Knowledge tag deleted."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-empty-state.tsx
+msgid "projects.knowledgeTagsContent.emptyState.body"
+msgstr "Create a knowledge tag to organize your assets."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-empty-state.tsx
+msgid "projects.knowledgeTagsContent.emptyState.heading"
+msgstr "No knowledge tags yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.header.current"
+msgstr "Knowledge Tags"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.tableHeader.actions"
+msgstr "ACTIONS"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.tableHeader.description"
+msgstr "DESCRIPTION"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tag-table.tsx
+msgid "projects.knowledgeTagsContent.tableHeader.knowledgeTag"
+msgstr "KNOWLEDGE TAG"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-content.tsx
+msgid "projects.knowledgeTagsContent.title"
+msgstr "Knowledge Tags"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-skeleton.tsx
+msgid "projects.knowledgeTagsSkeleton.actions"
+msgstr "ACTIONS"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-skeleton.tsx
+msgid "projects.knowledgeTagsSkeleton.description"
+msgstr "DESCRIPTION"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-skeleton.tsx
+msgid "projects.knowledgeTagsSkeleton.loading"
+msgstr "Loading knowledge tags"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/knowledge-tags-skeleton.tsx
+msgid "projects.knowledgeTagsSkeleton.tag"
+msgstr "KNOWLEDGE TAG"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/projects.tsx
+msgid "projects.page.createButton"
+msgstr "Create Project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/projects.tsx
+msgid "projects.page.subtitle"
+msgstr "Track project performance and knowledge."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/projects.tsx
+msgid "projects.page.title"
+msgstr "Projects"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-type-cell.tsx
+msgid "projects.pollIndicator.failedText"
+msgstr "Extraction failed"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/asset-type-cell.tsx
+msgid "projects.pollIndicator.failedTip"
+msgstr "Make sure the file's permission is open to public, then re-upload."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-actions-menu.tsx
+msgid "projects.projectDrawer.actions"
+msgstr "Project actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-knowledge-section.tsx
+msgid "projects.projectDrawer.addFirstTag"
+msgstr "Add your first tag."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-actions-menu.tsx
+msgid "projects.projectDrawer.deleteProject"
+msgstr "Delete project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-edit-button.tsx
+msgid "projects.projectDrawer.editProject"
+msgstr "Edit project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/drawer-knowledge-section.tsx
+msgid "projects.projectDrawer.knowledgeTags"
+msgstr "Knowledge tags"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/project-drawer.tsx
+msgid "projects.projectDrawer.projectDetails"
+msgstr "Project details"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/project-page-header.tsx
+msgid "projects.projectPageHeader.backButton"
+msgstr "Back"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/projects-grid-skeleton.tsx
+msgid "projects.projectsGridSkeleton.loading"
+msgstr "Loading projects"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/project-workspace-content.tsx
+msgid "projects.projectWorkspaceContent.allProjectsLabel"
+msgstr "All Projects"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/project-workspace-content.tsx
+msgid "projects.projectWorkspaceContent.showPanelAria"
+msgstr "Show panel"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/project-workspace-skeleton.tsx
+msgid "projects.projectWorkspaceSkeleton.loading"
+msgstr "Loading project"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.addTag"
+msgstr "Add tag"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.createError"
+msgstr "We couldn't create the tag. Try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.createNew"
+msgstr "Create new tag"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.empty"
+msgstr "No tags yet."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.nameLabel"
+msgstr "Tag name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/projects/components/tag-select.tsx
+msgid "projects.tagSelect.namePlaceholder"
+msgstr "Input label name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/login-form.ts
+msgid "rbacLogin.email.invalid"
+msgstr "Please enter a valid email"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/login-form.ts
+msgid "rbacLogin.email.max"
+msgstr "Email must be 64 characters or fewer"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/login-form.ts
+msgid "rbacLogin.email.min"
+msgstr "Email must be at least 3 characters"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/email-field.tsx
+msgid "rbacLogin.emailField.label"
+msgstr "Email Address*"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/email-field.tsx
+msgid "rbacLogin.emailField.placeholderYourEmail"
+msgstr "Enter your email address"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.continue"
+msgstr "Continue"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/hooks/use-login-form.ts
+msgid "rbacLogin.loginForm.credentialsError"
+msgstr "Incorrect email or password. Please try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.developerSubtitle"
+msgstr "Build and manage Digital Workers."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.developerSwitchTo"
+msgstr "Go to SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.developerTitle"
+msgstr "Welcome to SICO.Dev"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/hooks/use-login-form.ts
+msgid "rbacLogin.loginForm.networkError"
+msgstr "Couldn't reach the server. Please check your connection and try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.noAccount"
+msgstr "Don't have an account?"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.operatorSubtitle"
+msgstr "Your Digital Workforce Platform."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.operatorSwitchTo"
+msgstr "Go to SICO.Dev"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.operatorTitle"
+msgstr "Sign in"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/login-form.tsx
+msgid "rbacLogin.loginForm.signUp"
+msgstr "Sign up"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/login-form.ts
+msgid "rbacLogin.password.max"
+msgstr "Password must be 128 characters or fewer"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/login-form.ts
+msgid "rbacLogin.password.min"
+msgstr "Password must be at least 6 characters"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/password-field.tsx
+msgid "rbacLogin.passwordField.capsLock"
+msgstr "Caps Lock is on"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/password-field.tsx
+msgid "rbacLogin.passwordField.hide"
+msgstr "Hide password"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/password-field.tsx
+msgid "rbacLogin.passwordField.label"
+msgstr "Password*"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/password-field.tsx
+msgid "rbacLogin.passwordField.placeholder"
+msgstr "Enter your password"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/password-field.tsx
+msgid "rbacLogin.passwordField.show"
+msgstr "Show password"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.email.invalid"
+msgstr "Please enter a valid email"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.email.max"
+msgstr "Email must be 64 characters or fewer"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.email.required"
+msgstr "Please enter your email"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.password.max"
+msgstr "Password must be 128 characters or fewer"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.password.min"
+msgstr "Password must be at least 8 characters"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/schemas/register-form.ts
+msgid "rbacLogin.register.password.required"
+msgstr "Please create a password"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.createAccount"
+msgstr "Create Account"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.developerSubtitle"
+msgstr "Build and manage Digital Workers."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.developerSwitchTo"
+msgstr "Go to SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.developerTitle"
+msgstr "Welcome to SICO.Dev"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.haveAccount"
+msgstr "Already have an account?"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/hooks/use-register-form.ts
+msgid "rbacLogin.registerForm.networkError"
+msgstr "Couldn't reach the server. Please check your connection and try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.operatorSubtitle"
+msgstr "Your Digital Workforce Platform."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.operatorSwitchTo"
+msgstr "Go to SICO.Dev"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.operatorTitle"
+msgstr "Sign up"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.passwordPlaceholder"
+msgstr "Create password"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-form.tsx
+msgid "rbacLogin.registerForm.signIn"
+msgstr "Sign in"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/rbac-login/components/register-page.tsx
+msgid "rbacLogin.registerPage.accountCreated"
+msgstr "Account Created"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.error.couldNotInstall"
+msgstr "Couldn't install {name}. Please try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.error.couldNotInstallOnDevice"
+msgstr "{name} could not be installed on the device."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.error.couldNotInstallOnDevices"
+msgstr "{count, plural, one {Couldn't install {name} on # device.} other {Couldn't install {name} on # devices.}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.error.uploadFailed"
+msgstr "Couldn't upload {name}. Please try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.status.installing"
+msgstr "Installing {name}…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.install.success.installed"
+msgstr "{name} installed."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/components/sandbox-list.tsx
+msgid "sandbox.list.empty"
+msgstr "No devices available."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.uninstall.error.failed"
+msgstr "Uninstall failed."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.uninstall.scope.allDevices"
+msgstr " from all devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.uninstall.status.uninstalling"
+msgstr "Uninstalling {name}{scope}…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.uninstall.success.complete"
+msgstr "{name} uninstalled{scope}."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox/hooks/use-app-install-actions.ts
+msgid "sandbox.uninstall.success.partial"
+msgstr "{name} uninstalled except {failedDevices}."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.action.assign"
+msgstr "Assign"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.action.assignDenied"
+msgstr "Available to Owners and Admins only."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.action.reassign"
+msgstr "Reassign"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.assign"
+msgstr "Assign"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.assigning"
+msgstr "Assigning…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.error.assign"
+msgstr "We couldn't assign the device."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.error.loadWorkers"
+msgstr "We couldn't load digital workers. Try reopening the dialog."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/dw-field.tsx
+msgid "sandboxDevices.assignDialog.placeholder.empty"
+msgstr "No digital workers available"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/dw-field.tsx
+msgid "sandboxDevices.assignDialog.placeholder.loading"
+msgstr "Loading digital workers…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/dw-field.tsx
+msgid "sandboxDevices.assignDialog.placeholder.select"
+msgstr "Select a digital worker…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.success"
+msgstr "Device assigned."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-dialog.tsx
+msgid "sandboxDevices.assignDialog.title"
+msgstr "Assign device"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/assign-device-fields.tsx
+msgid "sandboxDevices.assignDialog.validation.workerRequired"
+msgstr "Pick a digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/dw-field.tsx
+msgid "sandboxDevices.assignDialog.workerLabel"
+msgstr "Digital Worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-body.tsx
+msgid "sandboxDevices.empty.body"
+msgstr "This project has no devices."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-body.tsx
+msgid "sandboxDevices.empty.filteredBody"
+msgstr "No devices match the current filter. Try another tab or search."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-body.tsx
+msgid "sandboxDevices.empty.filteredTitle"
+msgstr "No matching devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-body.tsx
+msgid "sandboxDevices.empty.title"
+msgstr "No devices yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-content.tsx
+msgid "sandboxDevices.filter.all"
+msgstr "All"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-content.tsx
+msgid "sandboxDevices.filter.assigned"
+msgstr "Assigned"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-content.tsx
+msgid "sandboxDevices.filter.available"
+msgstr "Available"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-skeleton.tsx
+msgid "sandboxDevices.loading"
+msgstr "Loading devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-content.tsx
+msgid "sandboxDevices.page.title"
+msgstr "Devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/sandbox-page-content.tsx
+msgid "sandboxDevices.search.label"
+msgstr "Search devices"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.status.assigned"
+msgstr "Assigned"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.status.available"
+msgstr "Available"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/hooks/use-device-header-copy.ts
+msgid "sandboxDevices.table.actions"
+msgstr "ACTIONS"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/hooks/use-device-header-copy.ts
+msgid "sandboxDevices.table.assignedWorker"
+msgstr "ASSIGNED WORKER"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/hooks/use-device-header-copy.ts
+msgid "sandboxDevices.table.device"
+msgstr "DEVICE"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/hooks/use-device-header-copy.ts
+msgid "sandboxDevices.table.status"
+msgstr "STATUS"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/hooks/use-device-header-copy.ts
+msgid "sandboxDevices.table.type"
+msgstr "TYPE"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.type.emulator"
+msgstr "Emulator"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sandbox-devices/components/devices-table.tsx
+msgid "sandboxDevices.type.physical"
+msgstr "Physical"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/hooks/use-scheduled-task-attachments.ts
+msgid "scheduledTask.attachments.fileTooLarge"
+msgstr "That file is over 16 MB. Pick a smaller one."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/hooks/use-scheduled-task-attachments.ts
+msgid "scheduledTask.attachments.uploadFailed"
+msgstr "Couldn't upload \"{fileName}\". Try adding it again."
+
+#. js-lingui-explicit-id
+#. placeholder {0}: task.name
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-card.tsx
+msgid "scheduledTask.card.disableAriaLabel"
+msgstr "Disable {0}"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: task.name
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-card.tsx
+msgid "scheduledTask.card.editAriaLabel"
+msgstr "Edit {0}"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: task.name
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-card.tsx
+msgid "scheduledTask.card.enableAriaLabel"
+msgstr "Enable {0}"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: task.agentInstanceId
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-worker-detail-card.tsx
+msgid "scheduledTask.card.workerFallback"
+msgstr "Digital Worker {0}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+msgid "scheduledTask.dialog.actions"
+msgstr "Scheduled task actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.delete.body"
+msgstr "This action can't be undone."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.delete.confirm"
+msgstr "Delete scheduled task"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.delete.pending"
+msgstr "Deleting…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.delete.title"
+msgstr "Delete scheduled task?"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+msgid "scheduledTask.dialog.deleteFailed"
+msgstr "Couldn't delete scheduled task."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+msgid "scheduledTask.dialog.deleteSuccess"
+msgstr "Scheduled task deleted."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.discard.body"
+msgstr "Your unsaved changes will be lost."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.discard.confirm"
+msgstr "Discard changes"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog-confirmations.tsx
+msgid "scheduledTask.dialog.discard.title"
+msgstr "Discard changes?"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+msgid "scheduledTask.dialog.title"
+msgstr "Scheduled task"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-email-on-complete-field.tsx
+msgid "scheduledTask.form.advancedSettings.heading"
+msgstr "Advanced settings"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form.tsx
+msgid "scheduledTask.form.createFailed"
+msgstr "Couldn't create scheduled task."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form.tsx
+msgid "scheduledTask.form.createSuccess"
+msgstr "Scheduled task created."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.customSchedule.label"
+msgstr "Custom schedule"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-email-on-complete-field.tsx
+msgid "scheduledTask.form.emailOnComplete.label"
+msgstr "Notify me by email when completed"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.frequency.custom"
+msgstr "Custom"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.frequency.daily"
+msgstr "Daily"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.frequency.label"
+msgstr "Frequency"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.frequency.weekly"
+msgstr "Weekly"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form-view.tsx
+msgid "scheduledTask.form.instruction.label"
+msgstr "Instruction"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-name-field.tsx
+msgid "scheduledTask.form.name.label"
+msgstr "Task name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-name-field.tsx
+msgid "scheduledTask.form.name.placeholder"
+msgstr "Name this task"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.scheduleConfiguration.label"
+msgstr "Schedule configuration"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.time.label"
+msgstr "Time"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form.tsx
+msgid "scheduledTask.form.updateFailed"
+msgstr "Couldn't update scheduled task."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-form.tsx
+msgid "scheduledTask.form.updateSuccess"
+msgstr "Scheduled task updated."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.customSchedule.required"
+msgstr "The original custom schedule is unavailable"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.message.required"
+msgstr "Enter task instructions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.name.required"
+msgstr "Enter a task name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.time.invalid"
+msgstr "Select a valid time"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.timezone.invalid"
+msgstr "Select a valid timezone"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.timezone.required"
+msgstr "Select a timezone"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.weekday.required"
+msgstr "Select a day of the week"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/schemas/scheduled-task-form.ts
+msgid "scheduledTask.form.validation.worker.required"
+msgstr "Select a Digital Worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.0"
+msgstr "Sunday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.1"
+msgstr "Monday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.2"
+msgstr "Tuesday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.3"
+msgstr "Wednesday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.4"
+msgstr "Thursday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.5"
+msgstr "Friday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.6"
+msgstr "Saturday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-schedule-fields.tsx
+msgid "scheduledTask.form.weekday.label"
+msgstr "Day of week"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-digital-worker-select.tsx
+msgid "scheduledTask.form.worker.label"
+msgstr "Digital Worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-digital-worker-select.tsx
+msgid "scheduledTask.form.worker.loadError"
+msgstr "Couldn't load Digital Workers. Try again."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-digital-worker-field.tsx
+msgid "scheduledTask.form.worker.loading"
+msgstr "Loading Digital Workers…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-digital-worker-select.tsx
+msgid "scheduledTask.form.worker.loadMore"
+msgstr "Load more workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-digital-worker-field.tsx
+msgid "scheduledTask.form.worker.placeholder"
+msgstr "Choose Digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/fields/scheduled-task-instruction-field.tsx
+msgid "scheduledTask.instruction.inputPlaceholder"
+msgstr "Describe what this task should do..."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+#: packages/shared/src/features/scheduled-task/components/scheduled-tasks-dialog.tsx
+msgid "scheduledTask.list.create"
+msgstr "Create New"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+msgid "scheduledTask.list.emptyDescription"
+msgstr "Automate recurring work - digest, standups, reviews - by scheduling your first task"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+msgid "scheduledTask.list.emptyTitle"
+msgstr "No task yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-view.tsx
+msgid "scheduledTask.list.initialError"
+msgstr "Couldn't load scheduled tasks."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+msgid "scheduledTask.list.nextPageError"
+msgstr "Couldn't load more scheduled tasks."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-view.tsx
+msgid "scheduledTask.list.retry"
+msgstr "Retry"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/components/scheduled-task-list-content.tsx
+msgid "scheduledTask.list.retryMore"
+msgstr "Retry loading more"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/hooks/use-scheduled-task-mutations.ts
+msgid "scheduledTask.mutations.toggleFailed"
+msgstr "Failed to update scheduled task."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.schedule.custom"
+msgstr "Custom schedule"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.schedule.daily"
+msgstr "Every day · {time}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.schedule.weekly"
+msgstr "Every {weekday} · {time}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.friday"
+msgstr "Friday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.monday"
+msgstr "Monday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.saturday"
+msgstr "Saturday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.sunday"
+msgstr "Sunday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.thursday"
+msgstr "Thursday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.tuesday"
+msgstr "Tuesday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/scheduled-task/utils/format-schedule.ts
+msgid "scheduledTask.weekday.wednesday"
+msgstr "Wednesday"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/collapsed-rail.tsx
+msgid "sidebar.collapsed.expand"
+msgstr "Expand sidebar"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-nav.tsx
+msgid "sidebar.dwConversationNav.back"
+msgstr "Back"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-nav.tsx
+msgid "sidebar.dwConversationNav.backAriaLabel"
+msgstr "Back to Digital Workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-nav.tsx
+msgid "sidebar.dwConversationNav.empty"
+msgstr "No conversations yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-new-session-button.tsx
+msgid "sidebar.dwConversationNav.newSession"
+msgstr "New session"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-row.tsx
+msgid "sidebar.dwConversationNav.runningAriaLabel"
+msgstr "Conversation running"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-row.tsx
+msgid "sidebar.dwConversationNav.untitled"
+msgstr "Untitled"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-conversation-nav-skeleton.tsx
+msgid "sidebar.dwConversationNavSkeleton.loadingConversations"
+msgstr "Loading conversations"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-list.tsx
+msgid "sidebar.dwList.empty"
+msgstr "No agents yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-list.tsx
+msgid "sidebar.dwList.error"
+msgstr "Couldn't load agents"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-list.tsx
+msgid "sidebar.dwList.label"
+msgstr "Digital Workers list"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-list.tsx
+msgid "sidebar.dwList.loading"
+msgstr "Loading agents"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-section.tsx
+msgid "sidebar.dwSection.title"
+msgstr "Digital workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-section.tsx
+msgid "sidebar.dwSection.viewAll"
+msgstr "View all"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/dw-section.tsx
+msgid "sidebar.dwSection.viewAllAriaLabel"
+msgstr "View all digital workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/expanded-sidebar.tsx
+msgid "sidebar.expanded.collapse"
+msgstr "Collapse sidebar"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar-account-menu.tsx
+msgid "sidebar.footer.accountOptions"
+msgstr "Account options"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar-account-menu.tsx
+msgid "sidebar.footer.goToSico"
+msgstr "Go to SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/switch-to-sico-dev-menu-item.tsx
+msgid "sidebar.footer.goToSicoDev"
+msgstr "Go to SICO.Dev"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar-account-menu.tsx
+msgid "sidebar.footer.language"
+msgstr "Language"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar-account-menu.tsx
+msgid "sidebar.footer.logout"
+msgstr "Log out"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/manage-organization-menu-item.tsx
+msgid "sidebar.footer.manageOrganization"
+msgstr "Manage Organization"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar-menu.tsx
+msgid "sidebar.menu.studio"
+msgstr "Studio"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/sidebar.tsx
+msgid "sidebar.nav.ariaLabel"
+msgstr "Primary navigation"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/rail-conversation-body.tsx
+msgid "sidebar.rail.backToDigitalWorkers"
+msgstr "Back to Digital Workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/rail-body.tsx
+msgid "sidebar.rail.digitalWorkers"
+msgstr "Digital Workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/rail-conversation-body.tsx
+msgid "sidebar.rail.newSession"
+msgstr "New session"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/rail-body.tsx
+msgid "sidebar.rail.projects"
+msgstr "Projects"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/rail-body.tsx
+msgid "sidebar.rail.studio"
+msgstr "Studio"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/sidebar/components/standard-menu.tsx
+msgid "sidebar.standardMenu.projects"
+msgstr "Projects"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.downloadBlocked"
+msgstr "This file can't be downloaded."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.replaceFailed"
+msgstr "Failed to replace skill"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.saved"
+msgstr "Skill saved"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.saveFailed"
+msgstr "Failed to save skill"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.saving"
+msgstr "Saving changes ..."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/hooks/use-skill-card-actions.ts
+msgid "skill.cardActions.skillReplaced"
+msgstr "Skill replaced"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-card-delete-dialog.tsx
+msgid "skill.cardContainer.deleteFailed"
+msgstr "Failed to delete skill"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-card-delete-dialog.tsx
+msgid "skill.cardContainer.skillDeleted"
+msgstr "Skill deleted"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/delete-skill-dialog.tsx
+msgid "skill.deleteDialog.deleting"
+msgstr "Deleting…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/delete-skill-dialog.tsx
+msgid "skill.deleteDialog.description"
+msgstr "Delete “{skillName}”? This cannot be undone."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/delete-skill-dialog.tsx
+msgid "skill.deleteDialog.title"
+msgstr "Delete skill"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/explorer-view.tsx
+msgid "skill.explorerView.toggleFullscreen"
+msgstr "Toggle fullscreen"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/explorer-view.tsx
+msgid "skill.explorerView.toggleSidebar"
+msgstr "Toggle sidebar"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/file-explorer.tsx
+msgid "skill.fileExplorer.fileFallback"
+msgstr "file"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/file-explorer.tsx
+msgid "skill.fileExplorer.filesWillAppear"
+msgstr "Files will appear here once the skill is set up."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/file-explorer.tsx
+msgid "skill.fileExplorer.loadingFiles"
+msgstr "Loading files ..."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/file-explorer/file-explorer.tsx
+msgid "skill.fileExplorer.noFilesYet"
+msgstr "No files yet"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/role-select.tsx
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "skill.roleSelect.placeholder"
+msgstr "Select a role..."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/role-select.tsx
+msgid "skill.roleSelect.roleAria"
+msgstr "Industry Type"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-name-field.tsx
+msgid "skill.setupBasicInfo.namePlaceholder"
+msgstr "e.g. Ryan"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-name-field.tsx
+msgid "skill.setupBasicInfo.originalName"
+msgstr "Role Name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-role-field.tsx
+#: packages/shared/src/features/skill/components/setup/setup-role-field.tsx
+msgid "skill.setupBasicInfo.role"
+msgstr "Industry Type"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-basic-info.tsx
+msgid "skill.setupBasicInfo.sectionTitle"
+msgstr "BASIC INFO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-skill-section.tsx
+msgid "skill.setupSkillSection.addSkills"
+msgstr "Add skills"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/skill-body.tsx
+msgid "skill.setupSkillSection.emptyList"
+msgstr "Empty List"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/skill-body.tsx
+msgid "skill.setupSkillSection.loadingMore"
+msgstr "Loading more"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/skill-body.tsx
+msgid "skill.setupSkillSection.loadMoreFailed"
+msgstr "Couldn't load more skills."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/skill-body.tsx
+msgid "skill.setupSkillSection.noSkillsYet"
+msgstr "No skills yet."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-skill-section.tsx
+msgid "skill.setupSkillSection.skillsAdded"
+msgstr "Skills added successfully."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-skill-section.tsx
+msgid "skill.setupSkillSection.skillsUploading"
+msgstr "Skills are uploading."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-skill-section.tsx
+msgid "skill.setupSkillSection.title"
+msgstr "SKILL"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-skill-section.tsx
+msgid "skill.setupSkillSection.uploadFailure"
+msgstr "Some skills couldn't be added."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-list/skill-actions-menu.tsx
+msgid "skill.skillActionsMenu.actions"
+msgstr "Actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-list/skill-actions-menu.tsx
+msgid "skill.skillActionsMenu.delete"
+msgstr "Delete"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-list/skill-actions-menu.tsx
+msgid "skill.skillActionsMenu.downloadZip"
+msgstr "Download ZIP"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-list/skill-actions-menu.tsx
+msgid "skill.skillActionsMenu.replace"
+msgstr "Replace"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+msgid "skill.stagedDraft.failed"
+msgstr "Failed"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+msgid "skill.stagedDraft.pending"
+msgstr "Pending"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+msgid "skill.stagedDraft.remove"
+msgstr "Remove skill"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/staged-skill-draft-list.tsx
+msgid "skill.stagedDraft.saved"
+msgstr "Saved"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/tools/tool-item.tsx
+msgid "skill.toolItem.advancedSettings"
+msgstr "Advanced settings"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/tools/tool-item.tsx
+msgid "skill.toolItem.describeTool"
+msgstr "Describe what this tool does"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/tools/tool-item.tsx
+msgid "skill.toolItem.description"
+msgstr "Description"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/tools/tool-item.tsx
+msgid "skill.toolItem.enterToolName"
+msgstr "Enter tool name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/tools/tool-item.tsx
+msgid "skill.toolItem.name"
+msgstr "Name"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.duplicatesSkipped"
+msgstr "Duplicate files were skipped."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/skill-file-dropzone.tsx
+msgid "skill.uploadDialog.filesAria"
+msgstr "Skill files"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.fileTooLarge"
+msgstr "File size exceeds the {maxMb}MB limit. Please choose a smaller file."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.invalidExtension"
+msgstr "Please select only .zip, .md, or .skill files."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.maxFiles"
+msgstr "{max, plural, one {You can upload up to # file.} other {You can upload up to # files.}}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/skill-file-dropzone.tsx
+msgid "skill.uploadDialog.pickFiles"
+msgstr "Click to choose files"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.support.create"
+msgstr "Support: zip, md, skill, up to {maxMb}MB, {maxFiles} files."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.support.replace"
+msgstr "Support: zip, md, skill, up to {maxMb}MB."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.title.create"
+msgstr "Add skills"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/dialogs/upload-skill-dialog.tsx
+msgid "skill.uploadDialog.title.replace"
+msgstr "Replace skill"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/skill-list/version-dropdown.tsx
+msgid "skill.versionDropdown.version"
+msgstr "Version"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-access-boundary.tsx
+msgid "studio.access.denied.body"
+msgstr "You need an Organization Admin or Developer role to use Studio."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-access-boundary.tsx
+msgid "studio.access.denied.heading"
+msgstr "Studio access required"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/agent-setup-skeleton.tsx
+msgid "studio.agentSetup.loading"
+msgstr "Loading digital worker setup"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/_authed/studio.$agentId.setup.tsx
+msgid "studio.agentSetup.route.title"
+msgstr "Setup · SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "studio.autosave.conflict"
+msgstr "Newer version available"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "studio.autosave.discardFailed"
+msgstr "Discard failed upload"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "studio.autosave.failed"
+msgstr "Couldn't save"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-autosave-status.tsx
+msgid "studio.autosave.invalid"
+msgstr "Complete required fields"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-card.tsx
+msgid "studio.card.openSetup"
+msgstr "Open {name}'s setup"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+msgid "studio.createDialog.continue"
+msgstr "Continue"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+msgid "studio.createDialog.description"
+msgstr "Enter the Digital Worker's basic information."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog.tsx
+msgid "studio.createDialog.error"
+msgstr "We couldn't create this Digital Worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog.tsx
+msgid "studio.createDialog.navigationError"
+msgstr "This Digital Worker was created, but we couldn't open its setup."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-organization-status.tsx
+msgid "studio.createDialog.organizationLoadFailed"
+msgstr "We couldn't load your organization."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-organization-status.tsx
+msgid "studio.createDialog.organizationLoading"
+msgstr "Loading your organization…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-organization-status.tsx
+msgid "studio.createDialog.organizationUnavailable"
+msgstr "No organization is available for your account."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "studio.createDialog.roleNamePlaceholder"
+msgstr "e.g. software tester"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "studio.createDialog.rolesEmpty"
+msgstr "No roles available"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "studio.createDialog.rolesLoadError"
+msgstr "We couldn't load roles."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "studio.createDialog.rolesLoadFailed"
+msgstr "Couldn't load roles"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-fields.tsx
+msgid "studio.createDialog.rolesLoading"
+msgstr "Loading roles…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-studio-agent-dialog-view.tsx
+msgid "studio.createDialog.title"
+msgstr "Create new Digital Worker role"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/create-setup-body-skeleton.tsx
+msgid "studio.createSetupBody.loading"
+msgstr "Loading digital worker setup form"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "studio.deleteDialog.deleting"
+msgstr "Deleting…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "studio.deleteDialog.description"
+msgstr "Delete “{agentName}”? This cannot be undone."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "studio.deleteDialog.failed"
+msgstr "Couldn't delete this digital worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "studio.deleteDialog.success"
+msgstr "Digital worker deleted."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-delete-agent-dialog.tsx
+msgid "studio.deleteDialog.title"
+msgstr "Delete digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-grid-skeleton.tsx
+msgid "studio.grid.loading"
+msgstr "Loading digital workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-skeleton.tsx
+msgid "studio.loading"
+msgstr "Loading Studio"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.alreadyEditor"
+msgstr "This person is already an editor."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "studio.manageEditors.creator"
+msgstr "Creator"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.creatorCannotBeEditor"
+msgstr "The creator already has access."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "studio.manageEditors.editor"
+msgstr "Editor"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.emailInvalid"
+msgstr "Enter a valid email address."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-invite-form.tsx
+msgid "studio.manageEditors.emailLabel"
+msgstr "Email address"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.emailRequired"
+msgstr "Enter an email address."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-invite-form.tsx
+msgid "studio.manageEditors.invite"
+msgstr "Invite"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-manage-editors-dialog.tsx
+msgid "studio.manageEditors.inviteDescription"
+msgstr "Invite and manage digital worker editors."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.inviteFailed"
+msgstr "Couldn't add this editor."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-invite-form.tsx
+msgid "studio.manageEditors.invitePlaceholder"
+msgstr "Invite editors with email"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-manage-editors-dialog.tsx
+msgid "studio.manageEditors.inviteTitle"
+msgstr "Invite editor"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "studio.manageEditors.loadFailed"
+msgstr "Couldn't load editors."
+
+#. js-lingui-explicit-id
+#. placeholder {0}: editor?.email ?? ""
+#: packages/shared/src/features/studio/components/studio-editor-removal-confirm.tsx
+msgid "studio.manageEditors.removeDescription"
+msgstr "Remove {0} as an editor?"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: editor.email
+#: packages/shared/src/features/studio/components/studio-editor-roster.tsx
+msgid "studio.manageEditors.removeEditor"
+msgstr "Remove {0}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.removeFailed"
+msgstr "Couldn't remove this editor."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-removal-confirm.tsx
+msgid "studio.manageEditors.removeTitle"
+msgstr "Remove editor"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-editor-removal-confirm.tsx
+msgid "studio.manageEditors.removing"
+msgstr "Removing…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/studio-editor-management.ts
+msgid "studio.manageEditors.userNotFound"
+msgstr "No user found with that email address."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio.tsx
+msgid "studio.page.create"
+msgstr "Create"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio.tsx
+msgid "studio.page.subtitle"
+msgstr "Configure and deploy digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio.tsx
+msgid "studio.page.title"
+msgstr "Studio"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+msgid "studio.publishDialog.access"
+msgstr "Access"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+msgid "studio.publishDialog.description"
+msgstr "Choose who can use this digital worker in Sico after it’s published."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-publish-dialog.tsx
+msgid "studio.publishDialog.failed"
+msgstr "Couldn't publish this digital worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+msgid "studio.publishDialog.onlyMe"
+msgstr "Only Me"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+msgid "studio.publishDialog.onlyMeDescription"
+msgstr "Only you can add and use this digital worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+msgid "studio.publishDialog.organization"
+msgstr "My Organization"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-field.tsx
+msgid "studio.publishDialog.organizationDescription"
+msgstr "Anyone in your organization can add and use this digital worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+msgid "studio.publishDialog.publish"
+msgstr "Publish"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+msgid "studio.publishDialog.publishing"
+msgstr "Publishing…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-publish-dialog.tsx
+msgid "studio.publishDialog.success"
+msgstr "Digital worker published."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/publish-access-dialog.tsx
+msgid "studio.publishDialog.title"
+msgstr "Publish digital worker"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/_authed/-studio-tab-route.tsx
+msgid "studio.route.title"
+msgstr "Studio · SICO"
+
+#. js-lingui-explicit-id
+#: packages/app/src/routes/_authed/studio.setup.tsx
+msgid "studio.setup.route.title"
+msgstr "Create Digital Worker · SICO"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/skill/components/setup/setup-basic-info.tsx
+msgid "studio.setupEditor.createdBy"
+msgstr "Created by {creatorUsername}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-unsaved-changes-guard.tsx
+msgid "studio.setupEditor.discard.body"
+msgstr "Your unsaved changes will be lost."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-unsaved-changes-guard.tsx
+msgid "studio.setupEditor.discard.confirm"
+msgstr "Discard"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-unsaved-changes-guard.tsx
+msgid "studio.setupEditor.discard.title"
+msgstr "Discard changes"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/use-studio-setup-save.ts
+msgid "studio.setupEditor.savedSuccessfully"
+msgstr "Saved successfully!"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-editor-content.tsx
+#: packages/shared/src/features/studio/hooks/use-studio-setup-save.ts
+msgid "studio.setupEditor.saveFailed"
+msgstr "Failed to save changes."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/use-studio-setup-save.ts
+msgid "studio.setupEditor.savePartiallyFailed"
+msgstr "Some changes could not be saved."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/use-studio-setup-form.ts
+msgid "studio.setupEditor.validation.industryTypeRequired"
+msgstr "Industry Type is required"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/hooks/use-studio-setup-form.ts
+msgid "studio.setupEditor.validation.roleNameRequired"
+msgstr "Role Name is required"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header.tsx
+msgid "studio.setupHeader.backToStudio"
+msgstr "Back to Studio"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header-actions.tsx
+msgid "studio.setupHeader.delete"
+msgstr "Delete digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header-actions.tsx
+msgid "studio.setupHeader.manageEditors"
+msgstr "Manage editors"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header-actions.tsx
+msgid "studio.setupHeader.moreActions"
+msgstr "More setup actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header.tsx
+msgid "studio.setupHeader.publish"
+msgstr "Publish"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-setup-header.tsx
+msgid "studio.setupHeader.title"
+msgstr "Digital Worker Setup"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-tabs.tsx
+msgid "studio.tabs.all"
+msgstr "All"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-tabs.tsx
+msgid "studio.tabs.created"
+msgstr "Created"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/studio/components/studio-tabs.tsx
+msgid "studio.tabs.editable"
+msgstr "Editable"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-dismiss-agent.ts
+msgid "team.dismissAgent.error"
+msgstr "We couldn't dismiss this worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-dismiss-agent.ts
+msgid "team.dismissAgent.success"
+msgstr "Digital Worker dismissed."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.actions"
+msgstr "Digital Worker actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismiss"
+msgstr "Dismiss"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismissDenied"
+msgstr "You can only dismiss workers you invited."
+
+#. js-lingui-explicit-id
+#. placeholder {0}: agent.name
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismissDialog.body"
+msgstr "Remove \"{0}\" from this project. This can't be undone."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismissDialog.confirm"
+msgstr "Dismiss"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismissDialog.pending"
+msgstr "Dismissing…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.dismissDialog.title"
+msgstr "Dismiss digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-actions-cell.tsx
+msgid "team.dwActions.reassign"
+msgstr "Reassign"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-role-cell.tsx
+msgid "team.humanRow.changeRole"
+msgstr "Change role"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-member-row-actions.ts
+msgid "team.humanRow.changeRole.error"
+msgstr "We couldn't change the role."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-member-row-actions.ts
+msgid "team.humanRow.changeRole.success"
+msgstr "Role updated."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-actions-menu.tsx
+msgid "team.humanRow.memberActions"
+msgstr "Member actions"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-role-cell.tsx
+msgid "team.humanRow.owner"
+msgstr "Owner"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-actions-menu.tsx
+msgid "team.humanRow.remove"
+msgstr "Remove"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-row.tsx
+msgid "team.humanRow.removeMember.body"
+msgstr "Remove \"{display}\" from this project. This can't be undone."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-row.tsx
+msgid "team.humanRow.removeMember.confirm"
+msgstr "Remove"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-member-row-actions.ts
+msgid "team.humanRow.removeMember.error"
+msgstr "We couldn't remove the member."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-row.tsx
+msgid "team.humanRow.removeMember.pending"
+msgstr "Removing…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-member-row-actions.ts
+msgid "team.humanRow.removeMember.success"
+msgstr "Member removed."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/human-row.tsx
+msgid "team.humanRow.removeMember.title"
+msgstr "Remove member"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+msgid "team.inviteDw.error.addFailed"
+msgstr "We couldn't add the digital worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+msgid "team.inviteDw.error.mustSignIn"
+msgstr "You must be signed in to add a digital worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-dw-dialog.tsx
+msgid "team.inviteDw.success.added"
+msgstr "Digital Worker added."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.action.invite"
+msgstr "Invite"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.emailPlaceholder"
+msgstr "colleague@company.com"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.error.inviteFailed"
+msgstr "We couldn't invite this user."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.error.userNotRegistered"
+msgstr "This user isn't registered yet."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.roleAria"
+msgstr "Role"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.status.inviting"
+msgstr "Inviting…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.success.memberInvited"
+msgstr "Member invited."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.title"
+msgstr "Invite to {projectName}"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.validation.emailInvalid"
+msgstr "Enter a valid email"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/invite-member-dialog.tsx
+msgid "team.inviteMember.validation.emailRequired"
+msgstr "Email is required"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.invite"
+msgstr "Invite"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.inviteHuman"
+msgstr "Human Operator"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.inviteWorker"
+msgstr "Digital worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.tabs.humans"
+msgstr "Human Operators"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.tabs.workers"
+msgstr "Digital workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-page-content.tsx
+#: packages/shared/src/features/team/components/members-page-content.tsx
+msgid "team.page.title"
+msgstr "Team"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.cancel"
+msgstr "Cancel"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.error.loadMembers"
+msgstr "We couldn't load members. Try reopening the dialog."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.error.reassignFailed"
+msgstr "We couldn't reassign this worker."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.newOperator"
+msgstr "New operator"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.placeholder.loadingMembers"
+msgstr "Loading members…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.placeholder.loadMembersFailed"
+msgstr "Couldn't load members"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.placeholder.noMembers"
+msgstr "No members to reassign to"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.placeholder.selectMember"
+msgstr "Select a member…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.reassign"
+msgstr "Reassign"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.reassigning"
+msgstr "Reassigning…"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.success.reassigned"
+msgstr "Digital worker reassigned."
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/reassign-dw-dialog.tsx
+msgid "team.reassignDwDialog.title"
+msgstr "Reassign Digital Worker"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-role-labels.ts
+msgid "team.role.admin"
+msgstr "Admin"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/hooks/use-role-labels.ts
+msgid "team.role.member"
+msgstr "Member"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-table.tsx
+#: packages/shared/src/features/team/components/humans-table.tsx
+msgid "team.table.header.actions"
+msgstr "ACTIONS"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-table.tsx
+#: packages/shared/src/features/team/components/humans-table.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.header.lastActive"
+msgstr "LAST ACTIVE"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-table.tsx
+#: packages/shared/src/features/team/components/humans-table.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.header.name"
+msgstr "NAME"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-table.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.header.operator"
+msgstr "OPERATOR"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/humans-table.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.header.role"
+msgstr "ROLE"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-table.tsx
+#: packages/shared/src/features/team/components/members-page-skeleton.tsx
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.header.status"
+msgstr "STATUS"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.loading.members"
+msgstr "Loading members"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/members-tab-body.tsx
+msgid "team.table.loading.workers"
+msgstr "Loading digital workers"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-status-cell.tsx
+msgid "team.table.status.active"
+msgstr "Active"
+
+#. js-lingui-explicit-id
+#: packages/shared/src/features/team/components/dw-status-cell.tsx
+msgid "team.table.status.inactive"
+msgstr "Inactive"

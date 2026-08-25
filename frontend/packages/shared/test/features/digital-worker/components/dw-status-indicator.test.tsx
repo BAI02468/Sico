@@ -1,30 +1,9 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import {
   DwStatusIndicator,
+  resolveStatusIndicator,
   STATUS_INDICATOR,
   type StatusTone,
 } from "@/features/digital-worker/components/dw-status-indicator";
@@ -32,6 +11,10 @@ import {
   type AgentStatus,
   AgentStatusSchema,
 } from "@/features/digital-worker/schemas/agent";
+import {
+  type ConversationRunStatus,
+  ConversationRunStatusSchema,
+} from "@/schemas/conversation-run-status";
 
 describe("<DwStatusIndicator>", () => {
   // The indicator is a same-colour dot + label on a transparent background
@@ -63,8 +46,10 @@ describe("<DwStatusIndicator>", () => {
 });
 
 describe("STATUS_INDICATOR mapping", () => {
-  // Each AgentStatus maps to the right {tone, label}. Onboarding-saved
-  // collapses to Onboarding; NEW reads as Active.
+  // Each AgentStatus maps to the right {tone, label}. `label` is a Lingui
+  // MessageDescriptor (resolved with `useLingui().t` at the call site), so
+  // assert its source `message`. Onboarding-saved collapses to Onboarding;
+  // NEW reads as Active.
   it.each<[AgentStatus, StatusTone, string]>([
     [AgentStatusSchema.enum.ACTIVE, "success", "Active"],
     [AgentStatusSchema.enum.NEW, "success", "Active"],
@@ -74,6 +59,65 @@ describe("STATUS_INDICATOR mapping", () => {
     [AgentStatusSchema.enum.ABORTED, "muted", "Aborted"],
     [AgentStatusSchema.enum.UNKNOWN, "info", "Unknown"],
   ])("status %i → tone %s, label %s", (status, tone, label) => {
-    expect(STATUS_INDICATOR[status]).toEqual({ tone, label });
+    const meta = STATUS_INDICATOR[status];
+    expect(meta.tone).toBe(tone);
+    expect(meta.label.message).toBe(label);
   });
+});
+
+describe("resolveStatusIndicator", () => {
+  it.each<[AgentStatus]>([
+    [AgentStatusSchema.enum.ACTIVE],
+    [AgentStatusSchema.enum.NEW],
+  ])("resolves running lifecycle status %i to Working", (status) => {
+    const meta = resolveStatusIndicator(
+      status,
+      ConversationRunStatusSchema.enum.RUNNING,
+    );
+    expect(meta?.tone).toBe("info");
+    expect(meta?.label).toMatchObject({
+      id: "digitalWorker.status.working",
+      message: "Working",
+    });
+  });
+
+  it.each<[AgentStatus, ConversationRunStatus | undefined]>([
+    [AgentStatusSchema.enum.ACTIVE, ConversationRunStatusSchema.enum.IDLE],
+    [AgentStatusSchema.enum.ACTIVE, ConversationRunStatusSchema.enum.UNKNOWN],
+    [AgentStatusSchema.enum.ACTIVE, undefined],
+    [AgentStatusSchema.enum.NEW, ConversationRunStatusSchema.enum.IDLE],
+    [AgentStatusSchema.enum.NEW, ConversationRunStatusSchema.enum.UNKNOWN],
+    [AgentStatusSchema.enum.NEW, undefined],
+  ])(
+    "keeps lifecycle status %i for non-running conversation status %s",
+    (status, conversationStatus) => {
+      expect(resolveStatusIndicator(status, conversationStatus)).toBe(
+        STATUS_INDICATOR[status],
+      );
+    },
+  );
+
+  it.each<[AgentStatus]>([
+    [AgentStatusSchema.enum.ONBOARDING],
+    [AgentStatusSchema.enum.ONBOARDING_SAVED],
+    [AgentStatusSchema.enum.INACTIVE],
+    [AgentStatusSchema.enum.ABORTED],
+    [AgentStatusSchema.enum.UNKNOWN],
+  ])("protects lifecycle status %i while running", (status) => {
+    expect(
+      resolveStatusIndicator(status, ConversationRunStatusSchema.enum.RUNNING),
+    ).toBe(STATUS_INDICATOR[status]);
+  });
+
+  it.each<[null | undefined]>([[null], [undefined]])(
+    "returns no indicator for missing lifecycle status %s",
+    (status) => {
+      expect(
+        resolveStatusIndicator(
+          status,
+          ConversationRunStatusSchema.enum.RUNNING,
+        ),
+      ).toBeUndefined();
+    },
+  );
 });

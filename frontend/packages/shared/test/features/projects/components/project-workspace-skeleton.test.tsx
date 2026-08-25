@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
@@ -45,5 +23,46 @@ describe("<ProjectWorkspaceSkeleton>", () => {
     // the right column does not reflow into the rich ProjectDrawer when the
     // project-detail + knowledge tags queries resolve.
     expect(screen.getByTestId("project-drawer-skeleton")).toBeInTheDocument();
+  });
+
+  it("mirrors the drawer title and right-aligned collapse control", () => {
+    render(<ProjectWorkspaceSkeleton />);
+
+    const header = screen.getByTestId("project-drawer-skeleton-header");
+    const title = screen.getByTestId("project-drawer-skeleton-title");
+    const action = screen.getByTestId("project-drawer-skeleton-action");
+    const collapse = screen.getByTestId("project-drawer-skeleton-collapse");
+
+    expect(header).toHaveClass("justify-between", "pr-5", "pl-5");
+    expect(header.firstElementChild).toBe(title);
+    expect(title).toContainElement(action);
+    expect(title).not.toContainElement(collapse);
+    expect(header.lastElementChild).toBe(collapse);
+  });
+
+  it("matches the drawer body padding and local scrolling", () => {
+    render(<ProjectWorkspaceSkeleton />);
+
+    expect(screen.getByTestId("project-drawer-skeleton-body")).toHaveClass(
+      "scrollbar",
+      "overflow-y-auto",
+      "pt-8",
+      "pr-5",
+      "pb-5",
+      "pl-5",
+    );
+  });
+
+  it("traces the project avatar actions row and metadata copy", () => {
+    render(<ProjectWorkspaceSkeleton />);
+
+    expect(screen.getByTestId("project-drawer-skeleton-meta-row")).toHaveClass(
+      "items-start",
+      "justify-between",
+      "gap-1",
+    );
+    expect(screen.getByTestId("project-drawer-skeleton-meta-copy")).toHaveClass(
+      "gap-0.5",
+    );
   });
 });

@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import {
   type QueryClient,
   useMutation,
@@ -32,6 +10,7 @@ import type { AssetDetail } from "./use-asset-detail-query";
 import type { Paged } from "../../../schemas/paginated";
 import { useApiClient } from "../../../services/api-client-context";
 import { assertNever } from "../../../utils/assert-never";
+import { projectKeys } from "../query-keys";
 import type { KnowledgeTag } from "../schemas/knowledge-tag";
 import {
   deleteDeliverable,
@@ -83,21 +62,19 @@ async function optimisticRetag(
   projectId: number,
   vars: EditVars,
 ): Promise<EditContext> {
-  await queryClient.cancelQueries({ queryKey: ["projects", "asset-detail"] });
-  const knowledgeTags = queryClient.getQueryData<Paged<KnowledgeTag>>([
-    "projects",
-    "knowledge-tags",
-    projectId,
-  ]);
+  await queryClient.cancelQueries({ queryKey: projectKeys.assetDetails() });
+  const knowledgeTags = queryClient.getQueryData<Paged<KnowledgeTag>>(
+    projectKeys.knowledgeTags(projectId),
+  );
   const nextTags = vars.tagIds.map((id) => ({
     id,
     name: knowledgeTags?.items.find((tag) => tag.id === id)?.name ?? "",
   }));
   const snapshot = queryClient.getQueriesData({
-    queryKey: ["projects", "asset-detail"],
+    queryKey: projectKeys.assetDetails(),
   });
   queryClient.setQueriesData<AssetDetail>(
-    { queryKey: ["projects", "asset-detail"] },
+    { queryKey: projectKeys.assetDetails() },
     (old) =>
       old && old.type === "knowledge" && old.id === vars.id
         ? { ...old, tags: nextTags }
@@ -116,7 +93,7 @@ export function useAssetMutation(projectId: number): UseAssetMutationResult {
   const queryClient = useQueryClient();
   const invalidate = (): Promise<void> =>
     queryClient.invalidateQueries({
-      queryKey: ["projects", "assets", projectId],
+      queryKey: projectKeys.projectAssets(projectId),
     });
 
   const edit = useMutation<number, Error, EditVars, EditContext>({
@@ -131,7 +108,7 @@ export function useAssetMutation(projectId: number): UseAssetMutationResult {
       await Promise.all([
         invalidate(),
         queryClient.invalidateQueries({
-          queryKey: ["projects", "asset-detail"],
+          queryKey: projectKeys.assetDetails(),
         }),
       ]);
     },

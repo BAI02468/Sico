@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { Trans } from "@lingui/react/macro";
 import { useFocusFirstHeading } from "@sico/shared";
 import type { QueryClient } from "@tanstack/react-query";
 import {
@@ -30,13 +9,17 @@ import {
 // eslint-disable-next-line import-x/no-extraneous-dependencies -- dev-only, guarded by import.meta.env.DEV
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import type { AxiosInstance } from "axios";
+import type { createStore } from "jotai";
 import { type JSX, useRef } from "react";
 
 // `queryClient` + `apiClient` are supplied by `<RouterProvider context={...}>`
 // so route loaders (e.g. `/_authed/project`) can prefetch via react-query.
+// `store` is the jotai store, so loaders lifted into shared can read atoms
+// (e.g. the current user) without importing the app-local store singleton.
 export type RouterContext = {
   queryClient: QueryClient;
   apiClient: AxiosInstance;
+  store: ReturnType<typeof createStore>;
 };
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -64,10 +47,16 @@ function NotFound(): JSX.Element {
   return (
     <main ref={mainRef} className="bg-background text-foreground p-6">
       <h1 tabIndex={-1} className="text-2xl font-medium">
-        Page not found
+        <Trans id="app.notFound.title">Page not found</Trans>
       </h1>
-      <p>The page you are looking for does not exist or has been moved.</p>
-      <Link to="/digital-worker">Back to home</Link>
+      <p>
+        <Trans id="app.notFound.body">
+          The page you are looking for does not exist or has been moved.
+        </Trans>
+      </p>
+      <Link to="/digital-worker">
+        <Trans id="app.notFound.backToHome">Back to home</Trans>
+      </Link>
     </main>
   );
 }

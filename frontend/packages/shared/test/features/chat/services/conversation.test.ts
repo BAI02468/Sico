@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import type { AxiosInstance } from "axios";
 import { describe, expect, it, vi } from "vitest";
 
@@ -115,6 +93,39 @@ describe("getConversation", () => {
     });
   });
 
+  it("retains valid scheduled task provenance", async () => {
+    const client = makeClient({
+      code: 0,
+      msg: "ok",
+      data: {
+        conversation: {
+          id: 501,
+          extraInfo: { scheduledTaskId: 7, scheduledTaskRunId: 11 },
+        },
+      },
+    });
+    const result = await getConversation(client, 501);
+    expect(result.scheduledTaskProvenance).toEqual({
+      scheduledTaskId: 7,
+      scheduledTaskRunId: 11,
+    });
+  });
+
+  it("accepts invalid optional scheduled task metadata", async () => {
+    const client = makeClient({
+      code: 0,
+      msg: "ok",
+      data: {
+        conversation: {
+          id: 501,
+          extraInfo: { scheduledTaskId: 7 },
+        },
+      },
+    });
+    const result = await getConversation(client, 501);
+    expect(result).not.toHaveProperty("scheduledTaskProvenance");
+  });
+
   it("throws on a non-OK envelope code", async () => {
     const client = makeClient({ code: 100006, msg: "boom" });
     await expect(getConversation(client, 501)).rejects.toThrow();
@@ -122,7 +133,7 @@ describe("getConversation", () => {
 });
 
 describe("listConversations", () => {
-  it("GETs /conversation/list with agentInstanceId + default paging", async () => {
+  it("GETs /conversation/list with agentInstanceId + default paging + activity sort", async () => {
     const client = makeClient({
       code: 0,
       msg: "ok",
@@ -130,7 +141,37 @@ describe("listConversations", () => {
     });
     await listConversations(client, 7);
     expect(client.get).toHaveBeenCalledWith("/conversation/list", {
-      params: { agentInstanceId: 7, page: 1, pageSize: 20 },
+      params: {
+        agentInstanceId: 7,
+        page: 1,
+        pageSize: 20,
+        orderBy: 2,
+        fetchConversationStatus: true,
+      },
+    });
+  });
+
+  it("retains caller paging and sort while forcing conversation status", async () => {
+    const client = makeClient({
+      code: 0,
+      msg: "ok",
+      data: { conversations: [], hasMore: false },
+    });
+
+    await listConversations(client, 7, {
+      page: 4,
+      pageSize: 7,
+      orderBy: 1,
+    });
+
+    expect(client.get).toHaveBeenCalledWith("/conversation/list", {
+      params: {
+        agentInstanceId: 7,
+        page: 4,
+        pageSize: 7,
+        orderBy: 1,
+        fetchConversationStatus: true,
+      },
     });
   });
 
@@ -150,6 +191,58 @@ describe("listConversations", () => {
     expect(page.items).toEqual([
       { id: 1, title: "A", createdAt: undefined, agentInstanceId: 7 },
     ]);
+  });
+
+  it("preserves parsed conversationStatus in result items", async () => {
+    const client = makeClient({
+      code: 0,
+      msg: "ok",
+      data: {
+        conversations: [{ id: 1, conversationStatus: 1 }],
+        hasMore: false,
+      },
+    });
+    const page = await listConversations(client, 7);
+    expect(page.items[0]?.conversationStatus).toBe(1);
+  });
+
+  it("retains valid scheduled task provenance in result items", async () => {
+    const client = makeClient({
+      code: 0,
+      msg: "ok",
+      data: {
+        conversations: [
+          {
+            id: 1,
+            extraInfo: { scheduledTaskId: 7, scheduledTaskRunId: 11 },
+          },
+        ],
+        hasMore: false,
+      },
+    });
+    const page = await listConversations(client, 7);
+    expect(page.items[0]?.scheduledTaskProvenance).toEqual({
+      scheduledTaskId: 7,
+      scheduledTaskRunId: 11,
+    });
+  });
+
+  it("accepts invalid optional scheduled task metadata in result items", async () => {
+    const client = makeClient({
+      code: 0,
+      msg: "ok",
+      data: {
+        conversations: [
+          {
+            id: 1,
+            extraInfo: { scheduledTaskRunId: 11 },
+          },
+        ],
+        hasMore: false,
+      },
+    });
+    const page = await listConversations(client, 7);
+    expect(page.items[0]).not.toHaveProperty("scheduledTaskProvenance");
   });
 
   it("throws on a non-OK envelope code", async () => {

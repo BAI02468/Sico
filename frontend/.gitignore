@@ -27,9 +27,13 @@ storybook-static/
 
 # Worktrees
 .worktrees/
+.claude/worktrees/
 
 # Turbo
 .turbo
+
+# Scratch (i18n pipeline intermediate JSON, ad-hoc temp files)
+.tmp/
 
 # pnpm
 .pnpm-debug.log

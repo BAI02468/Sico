@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import axios from "axios";
@@ -52,25 +30,21 @@ const mockedLoginApi = vi.mocked(loginApi);
 
 const successPayload = {
   tokenInfo: { accessToken: "tok", expiresAt: 1_900_000_000 },
-  user: {
-    id: 1,
-    email: "a@b.co",
-    roles: [
-      { id: 1, roleCode: "project_admin", scopeType: "project", scopeId: 1 },
-    ],
-  },
+  user: { id: 1, email: "a@b.co", roles: [] },
 };
 
 const apiClient = axios.create({ baseURL: "/api/sico" });
 const values = { email: "a@b.co", password: "123456" };
 
-function makeWrapper(store: ReturnType<typeof createStore>) {
-  const queryClient = new QueryClient({
+function makeWrapper(
+  store: ReturnType<typeof createStore>,
+  queryClient = new QueryClient({
     defaultOptions: {
       mutations: { retry: false },
       queries: { retry: false },
     },
-  });
+  }),
+) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
       <QueryClientProvider client={queryClient}>
@@ -110,6 +84,27 @@ describe("useLogin", () => {
     });
     expect(store.get(userAtom)).toMatchObject({ id: 1, email: "a@b.co" });
     expect(mockedLoginApi).toHaveBeenCalledWith(apiClient, values);
+  });
+
+  it("clears the previous session cache before storing a successful login", async () => {
+    mockedLoginApi.mockResolvedValue(successPayload);
+    const store = createStore();
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(["private", "user-a"], { secret: true });
+    const { result } = renderHook(
+      () =>
+        useLogin({
+          onSuccess: vi.fn(),
+          onCredentialsError: vi.fn(),
+          onNetworkError: vi.fn(),
+        }),
+      { wrapper: makeWrapper(store, queryClient) },
+    );
+
+    result.current.mutate(values);
+
+    await waitFor(() => expect(store.get(userAtom)?.id).toBe(1));
+    expect(queryClient.getQueryData(["private", "user-a"])).toBeUndefined();
   });
 
   it("on credentials error: invokes onCredentialsError with msg and does NOT write to userAtom", async () => {

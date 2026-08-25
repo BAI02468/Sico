@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 // Per-row extraction visuals for a Knowledge overview row (§3 / §6 dec 3) are
 // owned by `asset-row` directly: the shimmer rides the NAME (shiny-text clips to
 // glyphs, so it must live on real text), the FAILED state swaps the leading icon
@@ -28,11 +6,6 @@
 // `<ShimmerName>` that owns the extracting-name shimmer.
 import { cn } from "@sico/ui/lib/utils.ts";
 import { type JSX, useLayoutEffect, useRef, useState } from "react";
-
-// §5 copy — verbatim.
-export const FAILED_TEXT = "Extraction failed";
-export const FAILED_TIP =
-  "Make sure the file's permission is open to public, then re-upload.";
 
 /**
  * Class applied to the asset NAME text while a Knowledge row is still extracting

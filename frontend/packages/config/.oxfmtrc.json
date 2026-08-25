@@ -23,6 +23,8 @@
     "**/node_modules/**",
     "**/dist/**",
     "test/fixtures/**",
+    "**/src/locales/**/messages.js",
+    "**/src/locales/**/messages.mjs",
     "**/public/**",
     "*.md",
     "*.mdx",

@@ -1,67 +1,68 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import type { ReactElement } from "react";
+import { useForm } from "react-hook-form";
+import { describe, expect, it } from "vitest";
 
 import { SetupBasicInfo } from "@/features/skill/components/setup/setup-basic-info";
+import type { SetupBasicInfoValues } from "@/features/skill/components/setup/setup-basic-info-values";
 
 const roles = [
   { name: "Tester", value: "tester" },
   { name: "Developer", value: "developer" },
 ];
 
-// `role` is a domain prop (the skill-author role), not an ARIA role; binding it
-// through a variable keeps jsx-a11y/aria-role from misreading the literal.
-const emptyRole = "";
+function BasicInfoFixture({
+  creatorUsername,
+}: {
+  creatorUsername?: string;
+}): ReactElement {
+  const form = useForm<SetupBasicInfoValues>({
+    defaultValues: { name: "Visual Bot", role: "tester" },
+  });
+  return (
+    <SetupBasicInfo
+      control={form.control}
+      roleOptions={roles}
+      creatorUsername={creatorUsername}
+      disabled={false}
+    />
+  );
+}
 
 describe("SetupBasicInfo", () => {
-  it("saves the draft via the Save button once both fields are filled", async () => {
-    const user = userEvent.setup();
-    const onSave = vi.fn().mockResolvedValue(undefined);
-    render(
-      <SetupBasicInfo
-        name=""
-        role={emptyRole}
-        roleOptions={roles}
-        onSave={onSave}
-      />,
+  it("renders fields without a nested save action", () => {
+    render(<BasicInfoFixture />);
+
+    expect(screen.getByRole("textbox", { name: /role name/i })).toHaveValue(
+      "Visual Bot",
     );
+    expect(
+      screen.getByRole("combobox", { name: "Industry Type" }),
+    ).toHaveTextContent("Tester");
+    expect(
+      screen.queryByText("Adding new role is not supported."),
+    ).not.toBeInTheDocument();
+    expect(
+      screen
+        .getByRole("textbox", { name: /role name/i })
+        .closest(".rounded-xl"),
+    ).toBeNull();
+    expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
+  });
 
-    // Empty form: Save is disabled and reads "Saved" (legacy parity).
-    expect(screen.getByRole("button", { name: "Saved" })).toBeDisabled();
+  it("marks the basic information fields as required", () => {
+    render(<BasicInfoFixture />);
 
-    await user.type(screen.getByLabelText(/original name/i), "Visual Bot");
-    await user.click(screen.getByLabelText("Role"));
-    await user.click(await screen.findByRole("option", { name: "Tester" }));
+    expect(screen.getByRole("textbox", { name: /role name/i })).toBeRequired();
+    expect(
+      screen.getByRole("combobox", { name: "Industry Type" }),
+    ).toHaveAttribute("aria-required", "true");
+  });
 
-    const save = await screen.findByRole("button", { name: "Save" });
-    expect(save).toBeEnabled();
-    await user.click(save);
+  it("renders creator wording without an avatar", () => {
+    render(<BasicInfoFixture creatorUsername="owner@example.com" />);
 
-    expect(onSave).toHaveBeenCalledWith({ name: "Visual Bot", role: "tester" });
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Saved" })).toBeDisabled(),
-    );
+    expect(screen.getByText("Created by owner@example.com")).toBeVisible();
+    expect(screen.queryByTestId("avatar-root")).not.toBeInTheDocument();
   });
 });

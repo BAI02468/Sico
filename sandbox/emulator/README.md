@@ -68,7 +68,8 @@ macOS/Linux:
 ```bash
 pyinstaller --noconfirm --clean --onedir -n mumu-api app/main.py \
     --paths . --collect-submodules app \
-    --add-data "app/scrcpy/scrcpy-server:app/scrcpy"
+    --add-data "app/scrcpy/scrcpy-server:app/scrcpy" \
+    --add-data "../../LICENSE:."
 ```
 
 Windows:
@@ -76,10 +77,11 @@ Windows:
 ```powershell
 pyinstaller --noconfirm --clean --onedir -n mumu-api app\main.py `
     --paths . --collect-submodules app `
-    --add-data "app\scrcpy\scrcpy-server;app\scrcpy"
+    --add-data "app\scrcpy\scrcpy-server;app\scrcpy" `
+    --add-data "..\..\LICENSE;."
 ```
 
-> The `--add-data` flag bundles `scrcpy-server` for H264 streaming. Path separator is `:` on macOS/Linux, `;` on Windows.
+> The `--add-data` flags bundle `scrcpy-server` for H264 streaming and the repository MIT License. Path separator is `:` on macOS/Linux, `;` on Windows.
 
 ## Key Endpoints
 
@@ -87,6 +89,7 @@ Notes:
 
 - `POST /api/v1/emulators/{id}/stop` is idempotent and succeeds even if the emulator is already stopped.
 - `POST /api/v1/emulators/{id}/reset`, `POST /api/v1/emulators/{id}/soft-reset`, and `POST /api/v1/emulators/{id}/restart` require the emulator to already be running.
+- App install URLs may resolve to public, private, or loopback addresses. Only HTTP(S) URLs without embedded credentials are accepted, and redirects are rejected.
 
 | Endpoint                                 | Method | Description                                                                       |
 | ---------------------------------------- | ------ | --------------------------------------------------------------------------------- |
@@ -96,6 +99,12 @@ Notes:
 | `POST /api/v1/emulators/start-batch`     | POST   | Start multiple emulators with host-load throttling                                |
 | `POST /api/v1/emulators/{id}/reset`      | POST   | Soft-reset emulator: close third-party apps and return to Home without restarting |
 | `POST /api/v1/emulators/{id}/soft-reset` | POST   | Soft-reset emulator: close third-party apps and return to Home without restarting |
+| `GET /api/v1/emulators/{id}/apps`         | GET    | List apps installed on one device                                                  |
+| `POST /api/v1/emulators/{id}/apps/install-url` | POST | Download and install an APK on one device                                      |
+| `POST /api/v1/emulators/{id}/apps/uninstall` | POST | Uninstall a package from one device                                               |
+| `POST /api/v1/emulators/apps/list-batch` | POST   | List apps across up to 20 devices                                                  |
+| `POST /api/v1/emulators/apps/install-url-batch` | POST | Download once and install across up to 20 devices                            |
+| `POST /api/v1/emulators/apps/uninstall-batch` | POST | Uninstall a package across up to 20 devices                                     |
 | `GET /api/v1/emulators/devices`          | GET    | List devices                                                                      |
 | `GET /api/v1/devices/{index}/snapshot`   | GET    | Screenshot (PNG)                                                                  |
 | `WS /api/v1/devices/{index}/ws/h264`     | WS     | H264 live stream                                                                  |

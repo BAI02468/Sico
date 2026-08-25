@@ -1,38 +1,45 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { InputGroup, InputGroupAddon } from "@sico/ui";
+import { cn } from "@sico/ui/lib/utils.ts";
 import { useAtomValue } from "jotai";
 import { type ClipboardEvent, type JSX, useState } from "react";
 
-import { AttachmentBar } from "./attachment-bar";
-import { ComposerAttachButton } from "./composer-attach-button";
 import { ComposerInput } from "./composer-input";
 import { ComposerSendButton } from "./composer-send-button";
+import { DisabledComposerTooltip } from "./disabled-composer-tooltip";
+import {
+  AttachmentBar,
+  AttachmentPickerButton,
+  type AttachmentUploadItem,
+} from "../../../components/attachment-input";
+import { type CommonAttachment } from "../../../schemas/common-attachment";
 import { noop } from "../../../utils/noop";
 import { isRequestPendingAtom, isStreamingAtom } from "../atoms/chat-atom";
 import { useChat } from "../hooks/use-chat";
 import { useComposerAttachments } from "../hooks/use-composer-attachments";
-import { type ChatAttachmentRef } from "../schemas/chat-request";
+
+function composerShellClassName(disabled: boolean): string {
+  return cn(
+    "min-h-30 rounded-2xl border pt-4 transition",
+    disabled
+      ? "has-disabled:bg-input-fill-disabled has-disabled:text-foreground-disabled has-disabled:border-input-stroke-disabled hover:border-input-stroke-disabled focus-within:border-input-stroke-disabled cursor-not-allowed shadow-none focus-within:shadow-none"
+      : "bg-surface-basic border-divider hover:border-input-stroke-rest focus-within:border-input-stroke-rest shadow-m focus-within:shadow-l has-[[data-slot=input-group-control]:focus-visible]:border-input-stroke-rest has-[[data-slot=input-group-control]:focus-visible]:shadow-l",
+  );
+}
+
+function readyAttachmentRefs(
+  attachments: AttachmentUploadItem[],
+): CommonAttachment[] {
+  return attachments.flatMap((attachment) =>
+    attachment.status === "ready" ? [attachment.assetRef] : [],
+  );
+}
+
+function stopComposer(
+  stop: ReturnType<typeof useChat>["stop"],
+  reconnectStop?: () => void,
+): void {
+  stop(reconnectStop ?? noop).catch(noop);
+}
 
 type BaseProps = {
   agentInstanceId: number;
@@ -48,11 +55,12 @@ type BaseProps = {
   // attachment refs so the starter can park-then-navigate instead of sending
   // in place (its index route has no mounted Collaboration to render the turn).
   // Omitted → the default in-place send.
-  onSubmit?: (text: string, attachments: ChatAttachmentRef[]) => void;
+  onSubmit?: (text: string, attachments: CommonAttachment[]) => void;
   // A caller-owned async pre-step (the DW home's create-conversation, ~1.5s) is
   // in flight. Shows a spinner on the send button + disables input/resubmit so
   // the wait reads as "processing", not "frozen". Default false (chat page).
   submitting?: boolean;
+  disabled?: boolean;
 };
 
 // Controlled-draft escape hatch for the empty-state DigitalWorkerHome: the
@@ -80,6 +88,7 @@ export function Composer({
   onChange,
   onSubmit,
   submitting = false,
+  disabled = false,
 }: Props): JSX.Element {
   const { send, stop, upload } = useChat(agentInstanceId, conversationId);
   const {
@@ -94,20 +103,24 @@ export function Composer({
   // The discriminated `Props` union ties the two together, so checking `value`
   // alone narrows `onChange` to the setter too.
   const [internalDraft, setInternalDraft] = useState("");
-  const isControlled = value !== undefined;
-  const draft = isControlled ? value : internalDraft;
-  const setDraft = isControlled ? onChange : setInternalDraft;
+  const draft = value ?? internalDraft;
+  const setDraft = onChange ?? setInternalDraft;
   const isStreaming = useAtomValue(isStreamingAtom);
   const isRequestPending = useAtomValue(isRequestPendingAtom);
+  const isInputDisabled =
+    disabled || isStreaming || isRequestPending || submitting;
 
-  // Visibility = text present; enabled = nothing still uploading. Streaming/
-  // pending precedence lives in the button.
+  // Send appears with text; upload and stream state control availability.
   const hasText = draft.trim().length > 0;
 
   // A paste with files routes them through the same validate + upload path as
   // the picker; with NO files it falls through to the textarea's default text
   // handler — only preventDefault when we actually consume files.
   const handlePaste = (event: ClipboardEvent<HTMLDivElement>): void => {
+    if (disabled) {
+      event.preventDefault();
+      return;
+    }
     const files = Array.from(event.clipboardData.files);
     if (files.length === 0) {
       return;
@@ -119,14 +132,12 @@ export function Composer({
   };
 
   const handleSubmit = (): void => {
-    if (!hasText || anyUploading || submitting) {
+    if (disabled || !hasText || anyUploading || submitting) {
       return;
     }
     // Only chips that finished uploading contribute their ref; still-uploading
     // ones are dropped.
-    const refs = attachments.flatMap((a) =>
-      a.status === "ready" && a.assetRef ? [a.assetRef] : [],
-    );
+    const refs = readyAttachmentRefs(attachments);
     const text = draft;
     if (onSubmit) {
       // Caller-supplied submit (the home's create-then-park-then-navigate) owns
@@ -145,11 +156,8 @@ export function Composer({
     void send(text, refs, conversationId);
   };
 
-  const handleStop = (): void => {
-    // Plan-aware Stop: cancel a running plan first, then route teardown through
-    // the reconnect manager's stop() (G4 — a bare abort re-opens the stream).
-    void stop(reconnectStop ?? noop);
-  };
+  // Route Stop through reconnect hard-idle teardown; a bare abort reopens it.
+  const handleStop = (): void => stopComposer(stop, reconnectStop);
 
   return (
     <div className="mx-auto flex w-full max-w-190 flex-col gap-2 px-4 pb-5">
@@ -158,33 +166,40 @@ export function Composer({
           {fileError}
         </p>
       )}
-      <InputGroup
-        onPaste={handlePaste}
-        className="border-divider bg-surface-basic shadow-m focus-within:border-input-stroke-rest focus-within:shadow-l hover:border-input-stroke-rest has-disabled:border-divider has-disabled:bg-surface-basic has-[[data-slot=input-group-control]:focus-visible]:border-input-stroke-rest has-[[data-slot=input-group-control]:focus-visible]:shadow-l min-h-30 rounded-2xl border pt-4 transition"
-      >
-        <AttachmentBar attachments={attachments} onRemove={removeAttachment} />
-        <ComposerInput
-          value={draft}
-          onChange={setDraft}
-          onSubmit={handleSubmit}
-          disabled={isStreaming || isRequestPending || submitting}
-        />
-        <InputGroupAddon
-          align="block-end"
-          className="mt-1 justify-between px-2 pt-0 pb-2"
+      <DisabledComposerTooltip disabled={disabled}>
+        <InputGroup
+          onPaste={handlePaste}
+          aria-disabled={disabled || undefined}
+          className={composerShellClassName(disabled)}
         >
-          <ComposerAttachButton onAddFile={addFile} />
-          <ComposerSendButton
-            isStreaming={isStreaming}
-            isRequestPending={isRequestPending}
-            submitting={submitting}
-            showSend={hasText}
-            disabled={anyUploading}
-            onSend={handleSubmit}
-            onStop={handleStop}
+          <AttachmentBar
+            attachments={attachments}
+            disabled={disabled}
+            onRemove={removeAttachment}
           />
-        </InputGroupAddon>
-      </InputGroup>
+          <ComposerInput
+            value={draft}
+            onChange={setDraft}
+            onSubmit={handleSubmit}
+            disabled={isInputDisabled}
+          />
+          <InputGroupAddon
+            align="block-end"
+            className="mt-1 justify-between px-2 pt-0 pb-2"
+          >
+            <AttachmentPickerButton onAddFile={addFile} disabled={disabled} />
+            <ComposerSendButton
+              isStreaming={isStreaming}
+              isRequestPending={isRequestPending}
+              submitting={submitting}
+              showSend={hasText}
+              disabled={disabled || anyUploading}
+              onSend={handleSubmit}
+              onStop={handleStop}
+            />
+          </InputGroupAddon>
+        </InputGroup>
+      </DisabledComposerTooltip>
     </div>
   );
 }

@@ -15,7 +15,7 @@ packages/shared/
 │   ├── components/
 │   │   ├── auth/                 auth-gate
 │   │   ├── error-boundary/       error-fallback (+chrome, inner, outer)
-│   │   └── shell/                app-shell, login-layout, offline-banner
+│   │   └── shell/                app-shell, login-layout
 │   ├── atoms/                    Jotai atoms (auth, …)
 │   ├── hooks/                    React hooks
 │   ├── services/                 axios, query-client, synthesize-error
@@ -35,7 +35,7 @@ packages/shared/
 ## Conventions
 
 - **Not pure UI.** UI primitives live in `@sico/ui`; this package is for composers and business logic that touch app state/services.
-- **Storybook is optional.** Composers that ship visible UI (e.g. `<ErrorFallback>`, `<OfflineBanner>`) **must** ship a `.stories.tsx` so reviewers can audit states without booting the app. Pure logic modules (atoms, hooks, services, utils, schemas) do not need stories.
+- **Storybook is optional.** Composers that ship visible UI (e.g. `<ErrorFallback>`, `<MessageState>`) **must** ship a `.stories.tsx` so reviewers can audit states without booting the app. Pure logic modules (atoms, hooks, services, utils, schemas) do not need stories.
 - **Promotion rule.** A feature-local module inside `features/{name}/` that picks up a 2nd consumer moves to the matching top-level by-kind dir (cross-feature primitive) + gets re-exported from `src/index.ts`.
 
 ## Dependencies

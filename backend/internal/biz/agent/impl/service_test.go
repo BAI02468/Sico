@@ -1,23 +1,3 @@
-// Copyright (c) 2026 Sico Authors
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package impl
 
 import (
@@ -43,6 +23,8 @@ import (
 type mockAgentRepo struct {
 	repository.SingleAgentRepository // embed to satisfy interface for untested methods
 	agents                           map[string]*entity.SingleAgent
+	updatedAgentID                   string
+	updatedPublishStatus             single_agent.SingleAgentPublishStatus
 }
 
 func (m *mockAgentRepo) Get(_ context.Context, agentID string) (*entity.SingleAgent, error) {
@@ -52,6 +34,25 @@ func (m *mockAgentRepo) Get(_ context.Context, agentID string) (*entity.SingleAg
 	}
 	// Return a clone so callers mutating the result don't affect stored data.
 	return &entity.SingleAgent{SingleAgent: proto.Clone(a.SingleAgent).(*single_agent.SingleAgent)}, nil
+}
+
+func (m *mockAgentRepo) GetForUpdate(ctx context.Context, agentID string) (*entity.SingleAgent, error) {
+	return m.Get(ctx, agentID)
+}
+
+func (m *mockAgentRepo) UpdatePublishStatus(
+	_ context.Context,
+	agentID string,
+	status single_agent.SingleAgentPublishStatus,
+) error {
+	agent, ok := m.agents[agentID]
+	if !ok {
+		return gorm.ErrRecordNotFound
+	}
+	agent.PublishStatus = status
+	m.updatedAgentID = agentID
+	m.updatedPublishStatus = status
+	return nil
 }
 
 func (m *mockAgentRepo) List(_ context.Context, _ string, offset, limit int) ([]*entity.SingleAgent, int64, error) {
@@ -68,6 +69,16 @@ func (m *mockAgentRepo) List(_ context.Context, _ string, offset, limit int) ([]
 		return nil, total, nil
 	}
 	return all[offset:end], total, nil
+}
+
+func (m *mockAgentRepo) ListByFilter(
+	_ context.Context, _ *entity.ListSingleAgentFilter,
+) ([]*entity.SingleAgent, int64, error) {
+	all := make([]*entity.SingleAgent, 0, len(m.agents))
+	for _, a := range m.agents {
+		all = append(all, a)
+	}
+	return all, int64(len(all)), nil
 }
 
 type mockInstanceRepo struct {
@@ -93,12 +104,6 @@ func (m *mockInstanceRepo) Create(_ context.Context, inst *entity.SingleAgentIns
 
 type mockProjectRepo struct {
 	projectrepo.ProjectRepository
-	added []*projectrepo.ProjectUserModel
-}
-
-func (m *mockProjectRepo) AddProjectUser(_ context.Context, model *projectrepo.ProjectUserModel) error {
-	m.added = append(m.added, model)
-	return nil
 }
 
 // ---------------------------------------------------------------------------
@@ -135,6 +140,84 @@ func makeInstance(id int64, agentID, name string) *entity.SingleAgentInstance {
 // Tests
 // ===========================================================================
 
+func TestPublishSingleAgentUpdatesTargetStatus(t *testing.T) {
+	tests := []struct {
+		name          string
+		requestStatus *single_agent.SingleAgentPublishStatus
+		wantStatus    single_agent.SingleAgentPublishStatus
+	}{
+		{
+			name:       "omitted defaults to published",
+			wantStatus: single_agent.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_PUBLISHED,
+		},
+		{
+			name:          "draft",
+			requestStatus: single_agent.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_DRAFT.Enum(),
+			wantStatus:    single_agent.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_DRAFT,
+		},
+		{
+			name:          "published",
+			requestStatus: single_agent.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_PUBLISHED.Enum(),
+			wantStatus:    single_agent.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_PUBLISHED,
+		},
+		{
+			name:          "archived",
+			requestStatus: single_agent.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_ARCHIVED.Enum(),
+			wantStatus:    single_agent.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_ARCHIVED,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			archived := single_agent.SingleAgentPublishStatus_SINGLE_AGENT_PUBLISH_STATUS_ARCHIVED
+			repo := &mockAgentRepo{agents: map[string]*entity.SingleAgent{
+				"agent-1": {
+					SingleAgent: &single_agent.SingleAgent{
+						AgentId:       "agent-1",
+						PublishStatus: archived,
+					},
+				},
+			}}
+			svc := newTestService(repo, &mockInstanceRepo{}, nil)
+
+			_, err := svc.PublishSingleAgent(context.Background(), &single_agent.PublishSingleAgentRequest{
+				AgentId: "agent-1", PublishStatus: test.requestStatus,
+			})
+
+			require.NoError(t, err)
+			require.Equal(t, "agent-1", repo.updatedAgentID)
+			require.Equal(t, test.wantStatus, repo.updatedPublishStatus)
+			require.Equal(t, test.wantStatus, repo.agents["agent-1"].PublishStatus)
+		})
+	}
+}
+
+func TestPublishSingleAgentRejectsInvalidStatus(t *testing.T) {
+	repo := &mockAgentRepo{agents: map[string]*entity.SingleAgent{
+		"agent-1": makeAgent("agent-1", "Agent"),
+	}}
+	svc := newTestService(repo, &mockInstanceRepo{}, nil)
+	invalidStatus := single_agent.SingleAgentPublishStatus(99)
+
+	_, err := svc.PublishSingleAgent(context.Background(), &single_agent.PublishSingleAgentRequest{
+		AgentId: "agent-1", PublishStatus: &invalidStatus,
+	})
+
+	require.Error(t, err)
+	require.Empty(t, repo.updatedAgentID)
+}
+
+func TestPublishSingleAgentReturnsNotFound(t *testing.T) {
+	repo := &mockAgentRepo{agents: map[string]*entity.SingleAgent{}}
+	svc := newTestService(repo, &mockInstanceRepo{}, nil)
+
+	_, err := svc.PublishSingleAgent(context.Background(), &single_agent.PublishSingleAgentRequest{
+		AgentId: "missing",
+	})
+
+	require.Error(t, err)
+	require.Empty(t, repo.updatedAgentID)
+}
+
 func TestGetSingleAgent(t *testing.T) {
 	repo := &mockAgentRepo{agents: map[string]*entity.SingleAgent{
 		"a1": makeAgent("a1", "Agent One"),
@@ -163,25 +246,11 @@ func TestListSingleAgents(t *testing.T) {
 	}}
 	svc := newTestService(repo, nil, nil)
 
-	t.Run("first page", func(t *testing.T) {
-		agents, total, hasNext, err := svc.listSingleAgents(context.Background(), &single_agent.ListSingleAgentsRequest{
-			Page: 1, PageSize: 2,
-		})
-		require.NoError(t, err)
-		assert.Equal(t, int64(3), total)
-		assert.Len(t, agents, 2)
-		assert.True(t, hasNext)
-	})
-
-	t.Run("last page", func(t *testing.T) {
-		agents, total, hasNext, err := svc.listSingleAgents(context.Background(), &single_agent.ListSingleAgentsRequest{
-			Page: 2, PageSize: 2,
-		})
-		require.NoError(t, err)
-		assert.Equal(t, int64(3), total)
-		assert.Len(t, agents, 1)
-		assert.False(t, hasNext)
-	})
+	// RBAC is not initialized in unit tests, so listVisibleAgents runs unrestricted
+	// and returns the full set via ListByFilter.
+	agents, err := svc.listVisibleAgents(context.Background(), nil, nil, 0)
+	require.NoError(t, err)
+	assert.Len(t, agents, 3)
 }
 
 func TestCreateSingleAgentInstance(t *testing.T) {

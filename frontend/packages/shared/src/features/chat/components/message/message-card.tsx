@@ -1,31 +1,10 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { type JSX, memo, useMemo } from "react";
 
 import { AttachmentList } from "./attachment-list";
 import { ExperiencePill } from "./experience-pill";
 import { PlanSummary } from "./plan-summary";
 import { ReceivingIndicator } from "./receiving-indicator";
+import { ScheduledTaskMetadata } from "./scheduled-task-metadata";
 import { Timestamp } from "./timestamp";
 import { type Message } from "../../atoms/chat-atom";
 import { usePlanById } from "../../hooks/use-plan-by-id";
@@ -36,6 +15,7 @@ import { UserCard } from "../cards/user-card";
 
 export type MessageCardProps = {
   message: Message;
+  showScheduledTaskMetadata?: boolean;
 };
 
 // One turn = two phases. Phase (a) routes each `content[]` part by author ×
@@ -44,7 +24,10 @@ export type MessageCardProps = {
 // Memoized on message identity: immer's structural sharing keeps a settled
 // turn's reference stable across a streaming frame, so completed rows bail out
 // of re-render while only the tail re-parses.
-function MessageCardImpl({ message }: MessageCardProps): JSX.Element {
+function MessageCardImpl({
+  message,
+  showScheduledTaskMetadata = false,
+}: MessageCardProps): JSX.Element {
   const { author, content, attachments, streamingState, createdAt } = message;
   const isAgent = author === "ai";
   const streaming = streamingState === "streaming";
@@ -91,7 +74,7 @@ function MessageCardImpl({ message }: MessageCardProps): JSX.Element {
 
       {/* Phase (a) — routed parts. Plan on top, text below. A human turn never
           has a plan, so UserCard renders directly — wrapping it would drop its
-          `ml-auto` right-alignment. The receiving indicator leads the turn so
+          `ms-auto` end-alignment. The receiving indicator leads the turn so
           `Thinking…`/spinner shows at the top, not under an empty plan spacer. */}
       <ReceivingIndicator
         parts={content}
@@ -116,11 +99,15 @@ function MessageCardImpl({ message }: MessageCardProps): JSX.Element {
         planCompleted={planCompleted}
         playbookId={message.experiencePlaybookId}
       />
-      <Timestamp
-        createdAt={createdAt}
-        streaming={streaming}
-        planRunning={planRunning}
-      />
+      {showScheduledTaskMetadata && createdAt !== undefined ? (
+        <ScheduledTaskMetadata createdAt={createdAt} />
+      ) : (
+        <Timestamp
+          createdAt={createdAt}
+          streaming={streaming}
+          planRunning={planRunning}
+        />
+      )}
     </div>
   );
 }

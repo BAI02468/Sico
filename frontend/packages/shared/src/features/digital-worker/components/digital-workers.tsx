@@ -1,32 +1,22 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { Trans, useLingui } from "@lingui/react/macro";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@sico/ui";
+import { cn } from "@sico/ui/lib/utils.ts";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
-import { type ReactElement, Suspense } from "react";
+import { CalendarClock, Ellipsis, Plus } from "lucide-react";
+import { type ReactElement, Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
+import { AddDwDialog } from "./add-dw-dialog";
 import { DigitalWorkersGrid } from "./digital-workers-grid";
 import { DigitalWorkersGridSkeleton } from "./digital-workers-grid-skeleton";
 import { ErrorView } from "../../../components/error-view";
+import { ScheduledTasksDialog } from "../../scheduled-task";
 
 /**
  * Feature root for `/digital-worker`. `useQueryErrorResetBoundary` is
@@ -40,21 +30,64 @@ import { ErrorView } from "../../../components/error-view";
  * the height (`flex-1 min-h-0`) — it does NOT scroll.
  */
 export function DigitalWorkers(): ReactElement {
+  const { t } = useLingui();
   const { reset } = useQueryErrorResetBoundary();
+  const [addOpen, setAddOpen] = useState(false);
+  const [scheduledTasksOpen, setScheduledTasksOpen] = useState(false);
+  const modalOpen = addOpen || scheduledTasksOpen;
 
   return (
     <div className="flex h-full w-full flex-col gap-6 pt-10 pb-2">
-      <header className="flex items-start justify-between gap-4 px-16">
-        <div className="flex flex-col gap-1">
+      <header className="flex items-end justify-between gap-4 px-16">
+        <div
+          className={cn(
+            "flex flex-col gap-1 transition-[filter] duration-100",
+            modalOpen && "blur-xs",
+          )}
+        >
           <h1
             tabIndex={-1}
             className="text-foreground-primary text-3xl leading-tight font-medium outline-none"
           >
-            Digital Workers
+            <Trans id="digitalWorker.page.title">Digital Workers</Trans>
           </h1>
           <p className="text-foreground-secondary text-sm leading-normal">
-            Browse your digital workforce
+            <Trans id="digitalWorker.page.subtitle">
+              Browse your digital workforce
+            </Trans>
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="subtle" onClick={() => setScheduledTasksOpen(true)}>
+            <CalendarClock aria-hidden="true" />
+            <Trans id="digitalWorker.page.scheduledTaskButton">
+              Scheduled task
+            </Trans>
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="subtle"
+                  size="icon"
+                  aria-label={t({
+                    id: "digitalWorker.page.actions",
+                    message: "Digital Worker actions",
+                  })}
+                />
+              }
+            >
+              <Ellipsis aria-hidden="true" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-36!">
+              <DropdownMenuItem onClick={() => setAddOpen(true)}>
+                <Plus aria-hidden="true" />
+                <Trans id="digitalWorker.page.addMenuItem">
+                  Digital Worker
+                </Trans>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
       <div className="min-h-0 flex-1">
@@ -66,10 +99,15 @@ export function DigitalWorkers(): ReactElement {
               </div>
             }
           >
-            <DigitalWorkersGrid />
+            <DigitalWorkersGrid onAddDw={() => setAddOpen(true)} />
           </Suspense>
         </ErrorBoundary>
       </div>
+      {addOpen && <AddDwDialog open={addOpen} onOpenChange={setAddOpen} />}
+      <ScheduledTasksDialog
+        open={scheduledTasksOpen}
+        onOpenChange={setScheduledTasksOpen}
+      />
     </div>
   );
 }

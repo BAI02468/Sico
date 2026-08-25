@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import type * as React from "react";
 
 export type MessageStateProps = {
@@ -31,8 +9,8 @@ export type MessageStateProps = {
   illustrationHeight: number;
   /** Heading text — rendered as `<h2>`. */
   heading: string;
-  /** Body text — short sentence describing the state + optional next step. */
-  body: string;
+  /** Optional body text — short sentence describing the state + next step. */
+  body?: string;
   /** Optional action slot rendered below the body (e.g. retry button). */
   action?: React.ReactNode;
   /**
@@ -58,7 +36,7 @@ export type MessageStateProps = {
 
 /**
  * Shared message-state primitive — centered illustration + heading +
- * body. Used by empty / error / no-results states across features.
+ * optional body. Used by empty / error / no-results states across features.
  * Feature wrappers supply illustration + copy; layout & typography
  * pinned here so message surfaces feel consistent.
  */
@@ -88,12 +66,14 @@ export function MessageState({
         height={illustrationHeight}
         data-testid="message-state-illustration"
       />
-      <h2 className="leading-body text-foreground-primary mt-8 text-lg font-medium">
+      <h2 className="text-foreground-primary leading-body mt-8 text-lg font-medium">
         {heading}
       </h2>
-      <p className="leading-body-2 text-foreground-secondary mt-1 max-w-md text-sm">
-        {body}
-      </p>
+      {body ? (
+        <p className="text-foreground-secondary leading-body-2 mt-1 max-w-md text-sm">
+          {body}
+        </p>
+      ) : null}
       {action ? <div className="mt-3">{action}</div> : null}
     </div>
   );

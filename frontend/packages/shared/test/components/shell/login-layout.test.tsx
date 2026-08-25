@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import {
   type AnyRouter,
   createMemoryHistory,
@@ -29,11 +7,15 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { type JSX, useState } from "react";
+import { describe, expect, it } from "vitest";
 
 import { LoginLayout } from "@/components/shell/login-layout";
-
-import { restoreOnline, setOnline } from "../../helpers/network";
+import {
+  type LoginMode,
+  useLoginMode,
+} from "@/components/shell/login-mode-context";
 
 // `<LoginLayout>` runs `useFocusFirstHeading` which calls `useRouterState`
 // and therefore needs a Router context.
@@ -54,11 +36,78 @@ function makeRouter(): { router: AnyRouter } {
   return { router };
 }
 
-describe("<LoginLayout>", () => {
-  afterEach(() => {
-    restoreOnline();
-  });
+function ModeProbe(): JSX.Element {
+  const [mode, setMode] = useLoginMode();
+  return (
+    <>
+      <output>{mode}</output>
+      <button
+        type="button"
+        onClick={() =>
+          setMode((current) =>
+            current === "operator" ? "developer" : "operator",
+          )
+        }
+      >
+        switch mode
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setMode((current) =>
+            current === "operator" ? "developer" : "operator",
+          );
+          setMode((current) =>
+            current === "operator" ? "developer" : "operator",
+          );
+        }}
+      >
+        switch mode twice
+      </button>
+    </>
+  );
+}
 
+function ControlledHarness(): JSX.Element {
+  const [mode, setMode] = useState<LoginMode>("developer");
+  return (
+    <LoginLayout mode={mode} onModeChange={setMode}>
+      <ModeProbe />
+    </LoginLayout>
+  );
+}
+
+function makeControlledRouter(): { router: AnyRouter } {
+  const rootRoute = createRootRoute({
+    component: function Root() {
+      return <ControlledHarness />;
+    },
+  });
+  const router = createRouter({
+    routeTree: rootRoute,
+    history: createMemoryHistory({ initialEntries: ["/"] }),
+  });
+  return { router };
+}
+
+function makeUncontrolledModeRouter(): { router: AnyRouter } {
+  const rootRoute = createRootRoute({
+    component: function Root() {
+      return (
+        <LoginLayout>
+          <ModeProbe />
+        </LoginLayout>
+      );
+    },
+  });
+  const router = createRouter({
+    routeTree: rootRoute,
+    history: createMemoryHistory({ initialEntries: ["/"] }),
+  });
+  return { router };
+}
+
+describe("<LoginLayout>", () => {
   it("renders <main> landmark", async () => {
     const { router } = makeRouter();
     render(<RouterProvider router={router} />);
@@ -72,22 +121,12 @@ describe("<LoginLayout>", () => {
     expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
   });
 
-  it("mounts <OfflineBanner>", async () => {
-    setOnline(false);
+  it("does not render a connectivity status", async () => {
     const { router } = makeRouter();
     render(<RouterProvider router={router} />);
-    expect(await screen.findByRole("status")).toHaveTextContent(/offline/i);
-  });
 
-  // Banner must sit outside <main> so it doesn't contaminate axe's
-  // landmark hierarchy.
-  it("renders <OfflineBanner> as a sibling of <main>, not inside it", async () => {
-    setOnline(false);
-    const { router } = makeRouter();
-    render(<RouterProvider router={router} />);
-    const status = await screen.findByRole("status");
-    const main = screen.getByRole("main");
-    expect(main.contains(status)).toBe(false);
+    await screen.findByRole("main");
+    expect(screen.queryByRole("status")).toBeNull();
   });
 
   // Topbar renders the SICO brand logo so the layout itself owns the
@@ -96,6 +135,42 @@ describe("<LoginLayout>", () => {
     const { router } = makeRouter();
     render(<RouterProvider router={router} />);
     expect(await screen.findByRole("img", { name: /sico/i })).toBeVisible();
+  });
+
+  it("keeps controlled mode and context in sync", async () => {
+    const user = userEvent.setup();
+    const { router } = makeControlledRouter();
+    render(<RouterProvider router={router} />);
+
+    expect(await screen.findByRole("img", { name: "SICO.Dev" })).toBeVisible();
+    expect(screen.getByText("developer")).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "switch mode" }));
+
+    expect(screen.getByRole("img", { name: "SICO" })).toBeVisible();
+    expect(screen.getByText("operator")).toBeVisible();
+  });
+
+  it("composes queued functional updates in uncontrolled mode", async () => {
+    const user = userEvent.setup();
+    const { router } = makeUncontrolledModeRouter();
+    render(<RouterProvider router={router} />);
+
+    expect(await screen.findByText("operator")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "switch mode twice" }));
+
+    expect(screen.getByText("operator")).toBeVisible();
+  });
+
+  it("composes queued functional updates in controlled mode", async () => {
+    const user = userEvent.setup();
+    const { router } = makeControlledRouter();
+    render(<RouterProvider router={router} />);
+
+    expect(await screen.findByText("developer")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "switch mode twice" }));
+
+    expect(screen.getByText("developer")).toBeVisible();
   });
 
   // Marketing gradient must reference `--gradient-auth-page` token, not

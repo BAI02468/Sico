@@ -1,39 +1,16 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as React from "react";
 import { describe, expect, it, vi } from "vitest";
 
+import {
+  SkillSaveRegistryProvider,
+  useSkillSaveRegistry,
+} from "@/features/skill/components/setup/skill-save-registry";
 import { SkillCard } from "@/features/skill/components/skill-list/skill-card";
 import type { SkillFile } from "@/features/skill/schemas/skill";
 import { SkillStatusSchema } from "@/features/skill/schemas/skill";
 
-// CodeMirror can't render in jsdom (it needs layout APIs like getClientRects).
-// Mock CodeViewer down to a controlled element so these tests exercise the
-// card's own edit/save wiring rather than CodeMirror's DOM. The mock mirrors
-// CodeViewer's real accessible name (`edit|view {path}`) so label-based queries
-// match the production contract.
 vi.mock("@/features/skill/components/file-explorer/code-viewer", () => ({
   CodeViewer: ({
     file,
@@ -86,6 +63,33 @@ const version = {
   actions: [{ name: "search", description: "d", advancedSettings: "" }],
 };
 
+function RegistryControls(): React.ReactElement {
+  const { dirtyTargets } = useSkillSaveRegistry();
+  const [failed, setFailed] = React.useState(false);
+  const target = dirtyTargets[0];
+
+  const saveTarget = async (): Promise<void> => {
+    if (!target) {
+      return;
+    }
+    try {
+      await target.save("a");
+    } catch {
+      setFailed(true);
+    }
+  };
+
+  return (
+    <>
+      <output aria-label="Dirty skill saves">{dirtyTargets.length}</output>
+      <button type="button" onClick={saveTarget}>
+        Run staged save
+      </button>
+      {failed && <p>Save failed</p>}
+    </>
+  );
+}
+
 function renderCard(
   overrides: Partial<React.ComponentProps<typeof SkillCard>> = {},
 ): React.ComponentProps<typeof SkillCard> {
@@ -104,9 +108,15 @@ function renderCard(
     onSave: vi.fn().mockResolvedValue(undefined),
     expanded: false,
     onToggle: vi.fn(),
+    editable: true,
     ...overrides,
   };
-  render(React.createElement(StatefulCard, props));
+  render(
+    <SkillSaveRegistryProvider>
+      {React.createElement(StatefulCard, props)}
+      <RegistryControls />
+    </SkillSaveRegistryProvider>,
+  );
   return props;
 }
 
@@ -144,17 +154,58 @@ describe("SkillCard", () => {
     expect(screen.getByLabelText(/edit skill\.md/i)).toHaveValue("# hi");
   });
 
-  it("enables Save after an edit and saves the dirty files", async () => {
+  it("registers a dirty card and commits its baseline after save", async () => {
     const user = userEvent.setup();
     const props = renderCard();
     await user.click(screen.getByRole("button", { name: /visual bot/i }));
     await user.type(screen.getByLabelText(/edit skill\.md/i), "!");
-    const save = screen.getByRole("button", { name: /^save$/i });
-    expect(save).toBeEnabled();
-    await user.click(save);
-    expect(props.onSave).toHaveBeenCalledWith({
-      files: [{ path: "skill.md", content: "# hi!" }],
-      actions: undefined,
+
+    expect(screen.getByLabelText("Dirty skill saves")).toHaveTextContent("1");
+    expect(
+      screen.queryByRole("button", { name: "Actions" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^save$/i }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Run staged save" }));
+
+    expect(props.onSave).toHaveBeenCalledWith(
+      {
+        files: [{ path: "skill.md", content: "# hi!" }],
+        actions: undefined,
+      },
+      { showToast: false, currentVersion: "v1" },
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Dirty skill saves")).toHaveTextContent("0"),
+    );
+  });
+
+  it("keeps a rejected card save dirty for retry", async () => {
+    const user = userEvent.setup();
+    const props = renderCard({
+      onSave: vi.fn().mockRejectedValue(new Error("save failed")),
     });
+    await user.click(screen.getByRole("button", { name: /visual bot/i }));
+    await user.type(screen.getByLabelText(/edit skill\.md/i), "!");
+    await user.click(screen.getByRole("button", { name: "Run staged save" }));
+
+    expect(props.onSave).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("Save failed")).toBeVisible();
+    expect(screen.getByLabelText("Dirty skill saves")).toHaveTextContent("1");
+  });
+
+  it("gates skill mutation actions when read-only", async () => {
+    const user = userEvent.setup();
+    const props = renderCard({ editable: false });
+
+    await user.click(screen.getByRole("button", { name: /visual bot/i }));
+    expect(screen.queryByLabelText(/edit skill\.md/i)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Actions" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Replace" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Delete" }));
+
+    expect(props.onReplace).not.toHaveBeenCalled();
+    expect(props.onDelete).not.toHaveBeenCalled();
   });
 });

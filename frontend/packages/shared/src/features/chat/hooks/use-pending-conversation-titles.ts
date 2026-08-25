@@ -1,35 +1,13 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import {
   type InfiniteData,
   type QueryClient,
   useQueries,
   useQueryClient,
 } from "@tanstack/react-query";
-import type { AxiosInstance } from "axios";
 import { useAtom } from "jotai";
 import { useEffect, useRef } from "react";
 
+import { conversationDetailQueryOptions } from "./use-conversation-detail";
 import { useApiClient } from "../../../services/api-client-context";
 import { pendingTitleConversationIdsAtom } from "../atoms/chat-atom";
 import {
@@ -37,11 +15,9 @@ import {
   CONVERSATION_TITLE_POLL_INTERVAL_MS,
   CONVERSATION_TITLE_POLL_MAX_ATTEMPTS,
 } from "../constants";
+import { chatKeys } from "../query-keys";
 import { type ConversationSummary } from "../schemas/conversation";
-import {
-  type ConversationListPage,
-  getConversation,
-} from "../services/conversation";
+import { type ConversationListPage } from "../services/conversation";
 
 // Immutably swap one row's title in the sidebar's infinite-list cache. Walks
 // every loaded page; the matched row is rebuilt along a fresh reference path
@@ -116,36 +92,32 @@ export function titlePollInterval(state: TitlePollState): number | false {
   return CONVERSATION_TITLE_POLL_INTERVAL_MS;
 }
 
-// The by-id detail query key. One definition shared by the poll config, the
-// classify read, and the tests, so the key can't drift between call sites.
-export function conversationDetailQueryKey(
-  id: number,
-): readonly ["conversations", "detail", number] {
-  return ["conversations", "detail", id] as const;
-}
+type ConversationDetailOptions = ReturnType<
+  typeof conversationDetailQueryOptions
+>;
 
-// Per-id poll config for one pending conversation. Extracted so the hook body
-// stays small and the verbose refetchInterval state type lives in one place.
-// `retry: false` so each errored poll is exactly one `errorUpdateCount` bump —
-// otherwise the app-default `retry: 3` would run 4 attempts + backoff per cycle,
-// stretching the 1-min error budget to several minutes of extra requests.
-function titleQueryConfig(
-  apiClient: AxiosInstance,
-  id: number,
-): {
-  queryKey: readonly ["conversations", "detail", number];
-  queryFn: () => Promise<ConversationSummary>;
+type PendingTitleQueryOptions = Omit<
+  ConversationDetailOptions,
+  "staleTime" | "gcTime" | "retry" | "refetchOnWindowFocus" | "refetchInterval"
+> & {
   staleTime: number;
   gcTime: number;
   retry: false;
+  refetchOnWindowFocus: true;
   refetchInterval: (query: { state: TitlePollState }) => number | false;
-} {
+};
+
+// Preserve the canonical detail key and query function while tightening only
+// the cache and retry policy required by the bounded title poll.
+export function pendingTitleQueryOptions(
+  detailOptions: ConversationDetailOptions,
+): PendingTitleQueryOptions {
   return {
-    queryKey: conversationDetailQueryKey(id),
-    queryFn: (): Promise<ConversationSummary> => getConversation(apiClient, id),
+    ...detailOptions,
     staleTime: 0,
     gcTime: 0,
     retry: false,
+    refetchOnWindowFocus: true,
     refetchInterval: (query): number | false => titlePollInterval(query.state),
   };
 }
@@ -164,7 +136,7 @@ export function classifyPolledTitles(
   const settled: number[] = [];
   for (const id of ids) {
     const state = queryClient.getQueryState<ConversationSummary>(
-      conversationDetailQueryKey(id),
+      chatKeys.conversationDetail(id),
     );
     if (state === undefined) {
       continue;
@@ -190,7 +162,7 @@ function patchResolvedTitles(
   resolved: readonly ConversationSummary[],
 ): void {
   queryClient.setQueriesData<InfiniteData<ConversationListPage>>(
-    { queryKey: ["conversations", "list"] },
+    { queryKey: chatKeys.conversationLists() },
     (old) => {
       let next = old;
       for (const c of resolved) {
@@ -216,7 +188,9 @@ export function usePendingConversationTitles(): void {
   const ids = [...pendingIds];
 
   const results = useQueries({
-    queries: ids.map((id) => titleQueryConfig(apiClient, id)),
+    queries: ids.map((id) =>
+      pendingTitleQueryOptions(conversationDetailQueryOptions(id, apiClient)),
+    ),
   });
 
   // Fingerprint of every poll's progress, so the effect fires only when a poll

@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { AxiosInstance } from "axios";
@@ -37,11 +15,15 @@ import {
 } from "@/features/chat/atoms/chat-atom";
 import {
   historyQueryOptions,
+  invalidateHistory,
   seedEmptyHistory,
   useHistory,
 } from "@/features/chat/hooks/use-history";
 import { type Plan, PlanStatusSchema } from "@/features/chat/schemas/plan";
-import { fetchHistory } from "@/features/chat/services/history";
+import {
+  fetchHistory,
+  type HistoryPage,
+} from "@/features/chat/services/history";
 import { ApiClientProvider } from "@/services/api-client-context";
 import { logger } from "@/utils/logger";
 
@@ -64,11 +46,10 @@ const apiClient = {} as AxiosInstance;
 // `useHistory` is non-suspense (`useInfiniteQuery`), so it never suspends.
 function wrapper(
   store: ReturnType<typeof createStore>,
-): (props: PropsWithChildren) => ReactElement {
-  const queryClient = new QueryClient({
+  queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
-  });
-
+  }),
+): (props: PropsWithChildren) => ReactElement {
   function Wrapper({ children }: PropsWithChildren): ReactElement {
     return (
       <QueryClientProvider client={queryClient}>
@@ -105,6 +86,17 @@ function humanMessage(id: string, text: string): Message {
   };
 }
 
+function deferred<T>(): {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+} {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
 beforeEach(() => {
   vi.mocked(fetchHistory).mockReset();
 });
@@ -133,6 +125,359 @@ describe("useHistory", () => {
     expect(conv?.history.map((m) => m.id)).toEqual(["99", "100"]);
     expect(conv?.history.at(-1)?.id).toBe("100");
     expect(result.current.hasMore).toBe(false);
+  });
+
+  it("passes the TanStack Query AbortSignal to fetchHistory", async () => {
+    const store = createStore();
+    vi.mocked(fetchHistory).mockResolvedValue({ items: [], hasNext: false });
+
+    renderHook(() => useHistory(1), { wrapper: wrapper(store) });
+
+    await waitFor(() => expect(fetchHistory).toHaveBeenCalledOnce());
+    expect(fetchHistory).toHaveBeenCalledWith(
+      apiClient,
+      { agentInstanceId: 1, conversationId: undefined, page: 1 },
+      expect.any(AbortSignal),
+    );
+  });
+
+  it("keeps an inactive canceled history stale until remount and leaves another conversation untouched", async () => {
+    const store = createStore();
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const conversationA = 41;
+    const conversationB = 42;
+    const keyA = historyQueryOptions(1, apiClient, conversationA).queryKey;
+    const keyB = historyQueryOptions(1, apiClient, conversationB).queryKey;
+    const staleRequest = deferred<HistoryPage>();
+    const cachedB = {
+      pages: [
+        { items: [humanMessage("900", "conversation B")], hasNext: false },
+      ],
+      pageParams: [1],
+    };
+    queryClient.setQueryData(keyB, cachedB);
+    vi.mocked(fetchHistory)
+      .mockReturnValueOnce(staleRequest.promise)
+      .mockResolvedValueOnce({
+        items: [
+          aiMessage("102", "latest answer"),
+          humanMessage("101", "latest question"),
+        ],
+        hasNext: false,
+      });
+
+    const first = renderHook(() => useHistory(1, conversationA), {
+      wrapper: wrapper(store, queryClient),
+    });
+    await waitFor(() => expect(fetchHistory).toHaveBeenCalledOnce());
+    first.unmount();
+
+    invalidateHistory(queryClient, 1, conversationA);
+
+    await waitFor(() =>
+      expect(queryClient.getQueryState(keyA)?.isInvalidated).toBe(true),
+    );
+    expect(fetchHistory).toHaveBeenCalledOnce();
+    expect(queryClient.getQueryState(keyB)?.isInvalidated).toBe(false);
+    expect(queryClient.getQueryData(keyB)).toBe(cachedB);
+
+    await act(async () => {
+      staleRequest.resolve({ items: [], hasNext: false });
+      await staleRequest.promise;
+    });
+    expect(queryClient.getQueryState(keyA)?.isInvalidated).toBe(true);
+    expect(fetchHistory).toHaveBeenCalledOnce();
+    store.set(conversationsAtom, new Map());
+    store.set(activeConversationIdAtom, null);
+
+    renderHook(() => useHistory(1, conversationA), {
+      wrapper: wrapper(store, queryClient),
+    });
+
+    await waitFor(() => expect(fetchHistory).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(
+        store.get(activeConversationAtom)?.history.map(({ id }) => id),
+      ).toEqual(["101", "102"]),
+    );
+    expect(queryClient.getQueryState(keyB)?.isInvalidated).toBe(false);
+    expect(queryClient.getQueryData(keyB)).toBe(cachedB);
+  });
+
+  it("keeps active cached history stale until remount after canceling a background fetch", async () => {
+    const store = createStore();
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const conversationA = 41;
+    const keyA = historyQueryOptions(1, apiClient, conversationA).queryKey;
+    const staleRequest = deferred<HistoryPage>();
+    const cachedA = {
+      pages: [
+        { items: [humanMessage("100", "cached history")], hasNext: false },
+      ],
+      pageParams: [1],
+    };
+    const latestPage = {
+      items: [humanMessage("101", "latest history")],
+      hasNext: false,
+    };
+    queryClient.setQueryData(keyA, cachedA, { updatedAt: 0 });
+    vi.mocked(fetchHistory)
+      .mockReturnValueOnce(staleRequest.promise)
+      .mockResolvedValueOnce(latestPage);
+
+    const first = renderHook(() => useHistory(1, conversationA), {
+      wrapper: wrapper(store, queryClient),
+    });
+    await waitFor(() => expect(fetchHistory).toHaveBeenCalledOnce());
+    await waitFor(() =>
+      expect(
+        store.get(activeConversationAtom)?.history.map(({ id }) => id),
+      ).toEqual(["100"]),
+    );
+
+    invalidateHistory(queryClient, 1, conversationA);
+
+    await waitFor(() =>
+      expect(queryClient.getQueryState(keyA)?.isInvalidated).toBe(true),
+    );
+    expect(queryClient.getQueryData(keyA)).toBe(cachedA);
+    expect(fetchHistory).toHaveBeenCalledOnce();
+
+    await act(async () => {
+      staleRequest.resolve({
+        items: [humanMessage("99", "stale history")],
+        hasNext: false,
+      });
+      await staleRequest.promise;
+    });
+    expect(queryClient.getQueryData(keyA)).toBe(cachedA);
+    expect(queryClient.getQueryState(keyA)?.isInvalidated).toBe(true);
+    expect(fetchHistory).toHaveBeenCalledOnce();
+
+    first.unmount();
+    store.set(conversationsAtom, new Map());
+    store.set(activeConversationIdAtom, null);
+    renderHook(() => useHistory(1, conversationA), {
+      wrapper: wrapper(store, queryClient),
+    });
+
+    await waitFor(() => expect(fetchHistory).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(queryClient.getQueryData(keyA)).toEqual({
+        pages: [latestPage],
+        pageParams: [1],
+      }),
+    );
+  });
+
+  it("keeps dirty state when cancellation reverts before later pagination", async () => {
+    const store = createStore();
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const conversationId = 41;
+    const key = historyQueryOptions(1, apiClient, conversationId).queryKey;
+    const pageOne: HistoryPage = { items: [], hasNext: true };
+    const pageTwo: HistoryPage = { items: [], hasNext: false };
+    const backgroundRequest = deferred<HistoryPage>();
+    const pageTwoRequest = deferred<HistoryPage>();
+    queryClient.setQueryData(
+      key,
+      { pages: [pageOne], pageParams: [1] },
+      { updatedAt: 0 },
+    );
+    vi.mocked(fetchHistory)
+      .mockReturnValueOnce(backgroundRequest.promise)
+      .mockReturnValueOnce(pageTwoRequest.promise);
+
+    const { result } = renderHook(() => useHistory(1, conversationId), {
+      wrapper: wrapper(store, queryClient),
+    });
+    await waitFor(() => expect(fetchHistory).toHaveBeenCalledOnce());
+
+    invalidateHistory(queryClient, 1, conversationId);
+    expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
+
+    act(() => {
+      result.current.fetchOlder();
+    });
+    await waitFor(() => expect(fetchHistory).toHaveBeenCalledTimes(2));
+    pageTwoRequest.resolve(pageTwo);
+    await waitFor(() => expect(result.current.isFetchingOlder).toBe(false));
+
+    expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
+    backgroundRequest.resolve(pageOne);
+  });
+
+  it("replaces an active canceled no-data fetch and ignores its late result", async () => {
+    const store = createStore();
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const conversationA = 41;
+    const conversationB = 42;
+    const keyB = historyQueryOptions(1, apiClient, conversationB).queryKey;
+    const staleRequest = deferred<HistoryPage>();
+    const cachedB = {
+      pages: [
+        { items: [humanMessage("900", "conversation B")], hasNext: false },
+      ],
+      pageParams: [1],
+    };
+    queryClient.setQueryData(keyB, cachedB);
+    vi.mocked(fetchHistory)
+      .mockReturnValueOnce(staleRequest.promise)
+      .mockResolvedValueOnce({
+        items: [humanMessage("101", "prior history")],
+        hasNext: false,
+      });
+    renderHook(() => useHistory(1, conversationA), {
+      wrapper: wrapper(store, queryClient),
+    });
+    await waitFor(() => expect(fetchHistory).toHaveBeenCalledOnce());
+
+    invalidateHistory(queryClient, 1, conversationA);
+
+    await waitFor(() => expect(fetchHistory).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(
+        store.get(activeConversationAtom)?.history.map(({ id }) => id),
+      ).toEqual(["101"]),
+    );
+    expect(queryClient.getQueryState(keyB)?.isInvalidated).toBe(false);
+    expect(queryClient.getQueryData(keyB)).toBe(cachedB);
+
+    await act(async () => {
+      staleRequest.resolve({ items: [], hasNext: false });
+      await staleRequest.promise;
+    });
+    expect(
+      store.get(activeConversationAtom)?.history.map(({ id }) => id),
+    ).toEqual(["101"]);
+    expect(fetchHistory).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps active forward pagination alive while invalidating history", async () => {
+    const store = createStore();
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const conversationId = 41;
+    const key = historyQueryOptions(1, apiClient, conversationId).queryKey;
+    const pageOne: HistoryPage = {
+      items: [humanMessage("100", "newest")],
+      hasNext: true,
+    };
+    const pageTwo: HistoryPage = {
+      items: [humanMessage("99", "older")],
+      hasNext: false,
+    };
+    const pageTwoRequest = deferred<HistoryPage>();
+    let pageTwoSignal: AbortSignal | undefined;
+    vi.mocked(fetchHistory).mockImplementation((_client, { page }, signal) => {
+      if (page === 1) {
+        return Promise.resolve(pageOne);
+      }
+      pageTwoSignal = signal;
+      return pageTwoRequest.promise;
+    });
+
+    const { result } = renderHook(() => useHistory(1, conversationId), {
+      wrapper: wrapper(store, queryClient),
+    });
+    await waitFor(() => expect(result.current.hasMore).toBe(true));
+
+    act(() => {
+      result.current.fetchOlder();
+    });
+    await waitFor(() => expect(result.current.isFetchingOlder).toBe(true));
+    await waitFor(() => expect(fetchHistory).toHaveBeenCalledTimes(2));
+    const cancel = vi.spyOn(queryClient, "cancelQueries");
+
+    invalidateHistory(queryClient, 1, conversationId);
+
+    expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
+    expect(cancel).not.toHaveBeenCalled();
+    expect(pageTwoSignal?.aborted).toBe(false);
+    expect(result.current.isFetchingOlder).toBe(true);
+    expect(fetchHistory).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      pageTwoRequest.resolve(pageTwo);
+      await pageTwoRequest.promise;
+    });
+
+    await waitFor(() => expect(result.current.isFetchingOlder).toBe(false));
+    await waitFor(() =>
+      expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true),
+    );
+    expect(queryClient.getQueryData(key)).toEqual({
+      pages: [pageOne, pageTwo],
+      pageParams: [1, 2],
+    });
+    expect(fetchHistory).toHaveBeenCalledTimes(2);
+  });
+
+  it("preserves invalidation when older pagination starts after history became stale", async () => {
+    const store = createStore();
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const conversationId = 41;
+    const key = historyQueryOptions(1, apiClient, conversationId).queryKey;
+    const pageOne: HistoryPage = { items: [], hasNext: true };
+    const pageTwo: HistoryPage = { items: [], hasNext: false };
+    const pageTwoRequest = deferred<HistoryPage>();
+    vi.mocked(fetchHistory)
+      .mockResolvedValueOnce(pageOne)
+      .mockReturnValueOnce(pageTwoRequest.promise);
+
+    const { result } = renderHook(() => useHistory(1, conversationId), {
+      wrapper: wrapper(store, queryClient),
+    });
+    await waitFor(() => expect(result.current.hasMore).toBe(true));
+
+    invalidateHistory(queryClient, 1, conversationId);
+    expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
+
+    act(() => {
+      result.current.fetchOlder();
+    });
+    await waitFor(() => expect(result.current.isFetchingOlder).toBe(true));
+    pageTwoRequest.resolve(pageTwo);
+    await waitFor(() => expect(result.current.isFetchingOlder).toBe(false));
+
+    expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
+  });
+
+  it("contains history invalidation failures for fire-and-forget callers", async () => {
+    const queryClient = new QueryClient();
+    const failure = new Error("SECRET_HISTORY_INVALIDATION_FAILURE");
+    const error = vi.spyOn(logger, "error").mockImplementation(() => {});
+    vi.spyOn(queryClient, "cancelQueries").mockRejectedValue(failure);
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+
+    invalidateHistory(queryClient, 1, 41);
+
+    await waitFor(() =>
+      expect(error).toHaveBeenCalledWith("chat: history invalidation failed"),
+    );
+    expect(invalidate).toHaveBeenCalledTimes(2);
+    expect(invalidate).toHaveBeenNthCalledWith(1, {
+      queryKey: historyQueryOptions(1, apiClient, 41).queryKey,
+      exact: true,
+      refetchType: "none",
+    });
+    expect(invalidate).toHaveBeenNthCalledWith(2, {
+      queryKey: historyQueryOptions(1, apiClient, 41).queryKey,
+      exact: true,
+      refetchType: "none",
+    });
+    expect(JSON.stringify(error.mock.calls)).not.toContain(failure.message);
   });
 
   it("fetchNextPage prepends older messages, deduping by id", async () => {
@@ -702,12 +1047,8 @@ describe("seedEmptyHistory", () => {
     agentInstanceId: number,
     conversationId: number,
   ): readonly unknown[] =>
-    historyQueryOptions(
-      agentInstanceId,
-      {} as AxiosInstance,
-      "/x",
-      conversationId,
-    ).queryKey;
+    historyQueryOptions(agentInstanceId, {} as AxiosInstance, conversationId)
+      .queryKey;
 
   it("seeds an empty first page under the history queryKey the fetch reads", () => {
     const qc = new QueryClient();

@@ -1,40 +1,44 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useAtomValue } from "jotai";
 import { type ReactElement } from "react";
 
 import { StudioCard } from "./studio-card";
 import { StudioEmpty } from "./studio-empty";
+import { userAtom } from "../../../atoms/auth-atom";
 import { CardGrid } from "../../../components/card-grid";
-import { useAgentInfosSuspenseQuery } from "../hooks/use-agent-infos-query";
+import { useBoundOrganizationSuspenseQuery } from "../../../hooks/use-bound-organization";
+import { usePermissionSnapshotSuspenseQuery } from "../../rbac/hooks/use-permission-snapshot";
+import { useStudioAgentsSuspenseQuery } from "../hooks/use-studio-agents-query";
+import { type StudioAgentsScope } from "../services/single-agents";
+import {
+  selectStudioAgents,
+  type StudioTab,
+} from "../utils/studio-agent-selectors";
 
-/**
- * Grid of `/studio`. The legacy `single_agent_infos` endpoint returns the full
- * list in one shot (no pagination), so this renders every card at once. Errors
- * are not handled here — the suspense hook throws to the `<ErrorBoundary>`
- * mounted in `<Studio>`.
- */
-export function StudioGrid(): ReactElement {
-  const { data: agents } = useAgentInfosSuspenseQuery();
+export type StudioGridProps = {
+  activeTab: StudioTab;
+};
+
+export function StudioGrid({ activeTab }: StudioGridProps): ReactElement {
+  const { data: organization } = useBoundOrganizationSuspenseQuery();
+  const { data: permissions } = usePermissionSnapshotSuspenseQuery();
+  let scope: StudioAgentsScope;
+  if (permissions.platformRoles.has("platform_admin")) {
+    scope = { type: "platform" };
+  } else {
+    if (!organization) {
+      throw new Error("A bound organization is required");
+    }
+    scope = { type: "organization", organizationId: organization.id };
+  }
+  const { data } = useStudioAgentsSuspenseQuery(scope);
+  const user = useAtomValue(userAtom);
+  const agents = selectStudioAgents({
+    activeTab,
+    agents: data.agents,
+    currentUsername: user?.username ?? null,
+    currentEmail: user?.email ?? null,
+    permissions,
+  });
 
   if (agents.length === 0) {
     return <StudioEmpty />;

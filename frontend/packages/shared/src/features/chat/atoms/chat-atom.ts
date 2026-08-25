@@ -1,30 +1,9 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { enableMapSet } from "immer";
-import { atom, type Atom } from "jotai";
+import { atom, type Atom, type createStore } from "jotai";
 import { selectAtom } from "jotai/utils";
 
-import { type ChatAttachmentRef } from "../schemas/chat-request";
+import { type AttachmentUploadItem } from "../../../components/attachment-input";
+import { type CommonAttachment } from "../../../schemas/common-attachment";
 import { type MessageAttachment } from "../schemas/message-item";
 import { type Plan } from "../schemas/plan";
 
@@ -57,11 +36,11 @@ export type StreamingState = "pending" | "streaming" | "done" | "error";
 // Shared by the reconnect `settle` command, `settleTurn`, and the hook's settle.
 export type TerminalStreamingState = Extract<StreamingState, "done" | "error">;
 
-// A message attachment is a ready upload ref (chatAttachmentRefSchema shape)
+// A message attachment is a ready upload ref (commonAttachmentSchema shape)
 // plus an optional `id` — the upload id legacy keeps on the message item but
 // drops from the send payload (chat-request.ts). §8: reuse the ref type rather
 // than redefine a schema here. The shape is owned by `messageAttachmentSchema`
-// (message-item.ts), which does exactly that (`chatAttachmentRefSchema.extend({
+// (message-item.ts), which does exactly that (`commonAttachmentSchema.extend({
 // id })`) — schema-owns-the-shape, the same direction as `Plan` above. Unlike
 // `Plan` (whose canonical import site is its schema), this type is *also*
 // re-exported here to preserve the store's pre-existing public export of
@@ -106,15 +85,8 @@ export type Conversation = {
   sendHandle?: AbortController;
 };
 
-export type AttachmentStatus = "uploading" | "ready";
-
-export type Attachment = {
-  localId: string;
-  file: File;
-  status: AttachmentStatus;
-  assetRef?: ChatAttachmentRef; // present once `ready`
-  abortHandle?: AbortController; // present while `uploading`
-};
+export type AttachmentStatus = AttachmentUploadItem["status"];
+export type Attachment = AttachmentUploadItem;
 
 // --- primitive atoms ---------------------------------------------------------
 
@@ -178,9 +150,44 @@ export type PendingMessage = {
   agentInstanceId: number;
   conversationId: number;
   text: string;
-  attachments: ChatAttachmentRef[];
+  attachments: CommonAttachment[];
 };
 export const pendingMessageAtom = atom<PendingMessage | null>(null);
+
+// True when a parked pending payload belongs to THIS (agent, conversation) view.
+// A type-guard so the consumer that drains it narrows `pending` to non-null. The
+// SINGLE definition of the (agent, conversation) match — shared by the reconnect
+// probe gate (`isFreshHomeSend`, below) and `useConsumePendingMessage`, so the
+// two can never drift on what "this mount is a fresh home send" means. sico (v1)
+// never parks (its `conversationId` is `undefined`, a required-`number` field
+// can't equal it), so this is always false there — the intended dwp-only scope.
+export function isPendingForView(
+  pending: PendingMessage | null,
+  agentInstanceId: number,
+  conversationId?: number,
+): pending is PendingMessage {
+  return (
+    pending !== null &&
+    pending.agentInstanceId === agentInstanceId &&
+    pending.conversationId === conversationId
+  );
+}
+
+// The reconnect probe gate's read: is THIS mount the empty-state home's parked
+// first send? Lives here beside `pendingMessageAtom` (like `isStreamingAiMessage`
+// beside `Message`) and delegates the match to `isPendingForView` so the gate and
+// the consumer share one definition.
+export function isFreshHomeSend(
+  store: ReturnType<typeof createStore>,
+  agentInstanceId: number,
+  conversationId?: number,
+): boolean {
+  return isPendingForView(
+    store.get(pendingMessageAtom),
+    agentInstanceId,
+    conversationId,
+  );
+}
 
 // Plan trees keyed by `planId` (= `String(turnId)`, see `Part`). The
 // authoritative writer is `use-plan`, which reconciles each poll's parsed `Plan`

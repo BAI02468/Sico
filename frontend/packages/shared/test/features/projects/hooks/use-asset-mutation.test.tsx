@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { AxiosInstance } from "axios";
@@ -28,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AssetDetail } from "@/features/projects/hooks/use-asset-detail-query";
 import { useAssetMutation } from "@/features/projects/hooks/use-asset-mutation";
+import { projectKeys } from "@/features/projects/query-keys";
 import * as service from "@/features/projects/services/asset-mutations";
 import { ApiClientProvider } from "@/services/api-client-context";
 
@@ -96,7 +75,7 @@ describe("useAssetMutation", () => {
     );
     await waitFor(() =>
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["projects", "assets", 7],
+        queryKey: projectKeys.projectAssets(7),
       }),
     );
   });
@@ -114,7 +93,7 @@ describe("useAssetMutation", () => {
 
     await waitFor(() =>
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["projects", "asset-detail"],
+        queryKey: projectKeys.assetDetails(),
       }),
     );
   });
@@ -127,7 +106,7 @@ describe("useAssetMutation", () => {
       }),
     );
     const { Wrapper, queryClient } = makeWrapper();
-    queryClient.setQueryData(["projects", "knowledge-tags", 7], {
+    queryClient.setQueryData(projectKeys.knowledgeTags(7), {
       items: [
         { id: 1, name: "Refunds" },
         { id: 2, name: "Billing" },
@@ -136,7 +115,7 @@ describe("useAssetMutation", () => {
       hasNext: false,
     });
     queryClient.setQueryData(
-      ["projects", "asset-detail", "knowledge", 10],
+      projectKeys.assetDetail("knowledge", 10),
       knowledgeDetail([{ id: 1, name: "Refunds" }]),
     );
 
@@ -151,12 +130,9 @@ describe("useAssetMutation", () => {
     // The new chip resolves to its name via the knowledge-tags cache, instantly —
     // before the server (still pending) responds.
     await waitFor(() => {
-      const cached = queryClient.getQueryData<AssetDetail>([
-        "projects",
-        "asset-detail",
-        "knowledge",
-        10,
-      ]);
+      const cached = queryClient.getQueryData<AssetDetail>(
+        projectKeys.assetDetail("knowledge", 10),
+      );
       expect(cached?.type === "knowledge" ? cached.tags : null).toEqual([
         { id: 1, name: "Refunds" },
         { id: 2, name: "Billing" },
@@ -174,7 +150,7 @@ describe("useAssetMutation", () => {
       }),
     );
     const { Wrapper, queryClient } = makeWrapper();
-    queryClient.setQueryData(["projects", "knowledge-tags", 7], {
+    queryClient.setQueryData(projectKeys.knowledgeTags(7), {
       items: [
         { id: 1, name: "Refunds" },
         { id: 2, name: "Billing" },
@@ -183,7 +159,7 @@ describe("useAssetMutation", () => {
       hasNext: false,
     });
     queryClient.setQueryData(
-      ["projects", "asset-detail", "knowledge", 10],
+      projectKeys.assetDetail("knowledge", 10),
       knowledgeDetail([{ id: 1, name: "Refunds" }]),
     );
 
@@ -195,12 +171,9 @@ describe("useAssetMutation", () => {
       result.current.edit.mutate({ id: 10, tagIds: [1, 2] });
     });
     await waitFor(() => {
-      const cached = queryClient.getQueryData<AssetDetail>([
-        "projects",
-        "asset-detail",
-        "knowledge",
-        10,
-      ]);
+      const cached = queryClient.getQueryData<AssetDetail>(
+        projectKeys.assetDetail("knowledge", 10),
+      );
       expect(cached?.type === "knowledge" ? cached.tags : null).toEqual([
         { id: 1, name: "Refunds" },
         { id: 2, name: "Billing" },
@@ -210,12 +183,9 @@ describe("useAssetMutation", () => {
     act(() => rejectEdit(new Error("boom")));
 
     await waitFor(() => {
-      const cached = queryClient.getQueryData<AssetDetail>([
-        "projects",
-        "asset-detail",
-        "knowledge",
-        10,
-      ]);
+      const cached = queryClient.getQueryData<AssetDetail>(
+        projectKeys.assetDetail("knowledge", 10),
+      );
       expect(cached?.type === "knowledge" ? cached.tags : null).toEqual([
         { id: 1, name: "Refunds" },
       ]);
@@ -236,7 +206,7 @@ describe("useAssetMutation", () => {
     expect(service.deleteDocument).toHaveBeenCalledWith(expect.anything(), 10);
     await waitFor(() =>
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["projects", "assets", 7],
+        queryKey: projectKeys.projectAssets(7),
       }),
     );
   });

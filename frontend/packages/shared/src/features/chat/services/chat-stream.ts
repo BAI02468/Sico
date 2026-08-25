@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import {
   type EventSourceMessage,
   fetchEventSource,
@@ -44,10 +22,10 @@ export class ChatStreamHttpError extends Error {
 }
 
 export type OpenChatStreamOptions = {
-  // Stream URL resolved from `SicoConfig.chatEndpoints` by the calling hook.
-  // Injected rather than hardcoded so dwp can point at its own backend without
-  // this service knowing the path convention; the bearer token is attached
-  // only when this URL resolves same-origin (see below).
+  // Stream URL (`CHAT_STREAM_ENDPOINTS.chat`), passed by the calling hook.
+  // Injected rather than hardcoded so this service stays agnostic about the
+  // path convention; the bearer token is attached only when this URL resolves
+  // same-origin (see below).
   url: string;
   onEvent: (event: ChatEvent) => void;
   // Fires once the response headers arrive (stream open) — drives the `↻→■`

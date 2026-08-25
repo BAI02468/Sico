@@ -1,29 +1,8 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { i18n } from "@lingui/core";
 import { TooltipProvider } from "@sico/ui";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   type AssetActionKind,
@@ -42,6 +21,13 @@ const status = ExtractionStatusSchema.enum;
 // A local-time value (no `Z`) → formatDateTime renders "2026-01-18 16:31"
 // independent of the test runner's timezone.
 const CREATED_AT = new Date("2026-01-18T16:31:00").getTime();
+const ZH_ACTION_MESSAGES = {
+  "projects.assetRow.actions": "资产操作",
+};
+
+afterEach(() => {
+  i18n.loadAndActivate({ locale: "en", messages: {} });
+});
 
 function makeKnowledge(
   partial: Partial<Extract<AssetRowData, { type: "knowledge" }>> = {},
@@ -96,6 +82,7 @@ function renderRow(
   handlers: {
     onOpen?: (assetId: number) => void;
     onAction?: (kind: AssetActionKind) => void;
+    canDelete?: boolean;
   } = {},
 ): ReturnType<typeof render> {
   return render(
@@ -106,6 +93,7 @@ function renderRow(
             row={row}
             onOpen={handlers.onOpen}
             onAction={handlers.onAction}
+            canDelete={handlers.canDelete ?? true}
           />
         </tbody>
       </table>
@@ -114,6 +102,22 @@ function renderRow(
 }
 
 describe("<AssetRow>", () => {
+  it("updates action copy when the active locale changes", () => {
+    renderRow(makeKnowledge());
+
+    expect(
+      screen.getByRole("button", { name: "Asset actions" }),
+    ).toBeInTheDocument();
+
+    act(() => {
+      i18n.loadAndActivate({ locale: "zh-CN", messages: ZH_ACTION_MESSAGES });
+    });
+
+    expect(
+      screen.getByRole("button", { name: "资产操作" }),
+    ).toBeInTheDocument();
+  });
+
   it("renders the ··· actions trigger for an Experience row (Delete)", () => {
     renderRow(makeExperience());
 
@@ -503,5 +507,24 @@ describe("<AssetRow>", () => {
 
     expect(onAction).toHaveBeenCalledTimes(1);
     expect(onAction).toHaveBeenCalledWith("edit");
+  });
+
+  it("gates (not omits) Delete in a Knowledge menu when canDelete is false", async () => {
+    const user = userEvent.setup();
+    renderRow(makeKnowledge(), { canDelete: false });
+    await user.click(screen.getByRole("button", { name: "Asset actions" }));
+    // Delete stays visible but disabled (greyed + reason tooltip), not removed.
+    const del = await screen.findByRole("menuitem", { name: "Delete" });
+    expect(del).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("keeps an Experience menu (with a gated Delete) when canDelete is false", async () => {
+    const user = userEvent.setup();
+    renderRow(makeExperience(), { canDelete: false });
+    // The `···` menu opens for everyone; its only item, Delete, is gated.
+    await user.click(screen.getByRole("button", { name: "Asset actions" }));
+    expect(
+      await screen.findByRole("menuitem", { name: "Delete" }),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 });

@@ -28,7 +28,6 @@ func NewConversationDAO(db *gorm.DB, generator idgen.IDGenerator) *ConversationD
 
 func (dao *ConversationDAO) Create(ctx context.Context, msg *entity.Conversation) (*entity.Conversation, error) {
 	poData := dao.conversationDO2PO(msg)
-
 	err := dao.query.TConversation.WithContext(ctx).Create(poData)
 	if err != nil {
 		return nil, err
@@ -82,8 +81,10 @@ func (dao *ConversationDAO) Get(
 	username string, agentID string, agentInstanceID int64,
 ) (*entity.Conversation, error) {
 	queryBuilder := dao.query.TConversation.WithContext(ctx).Debug().
-		Where(dao.query.TConversation.CreatorUsername.Eq(username)).
 		Where(dao.query.TConversation.AgentInstanceID.Eq(agentInstanceID))
+	if username != "" {
+		queryBuilder = queryBuilder.Where(dao.query.TConversation.CreatorUsername.Eq(username))
+	}
 
 	if agentID != "" {
 		queryBuilder = queryBuilder.Where(dao.query.TConversation.AgentID.Eq(agentID))
@@ -123,7 +124,9 @@ func (dao *ConversationDAO) List(
 		do = do.Limit(int(limit) + 1)
 	}
 
-	do = do.Where(dao.query.TConversation.CreatorUsername.Eq(username))
+	if username != "" {
+		do = do.Where(dao.query.TConversation.CreatorUsername.Eq(username))
+	}
 	do = do.Order(dao.query.TConversation.CreatedAt.Desc())
 	do = do.Offset((page - 1) * limit)
 
@@ -155,6 +158,7 @@ func (dao *ConversationDAO) conversationDO2PO(conversation *entity.Conversation)
 		CreatorUsername: conversation.CreatorUsername,
 		Title:           conversation.Title,
 		Ext:             conversation.Ext,
+		ExtraInfo:       conversation.ExtraInfo,
 		CreatedAt:       time.Now().UnixMilli(),
 		UpdatedAt:       time.Now().UnixMilli(),
 	}
@@ -168,6 +172,7 @@ func (dao *ConversationDAO) conversationPO2DO(c *model.TConversation) *entity.Co
 		Title:           c.Title,
 		CreatorUsername: c.CreatorUsername,
 		Ext:             c.Ext,
+		ExtraInfo:       c.ExtraInfo,
 		CreatedAt:       c.CreatedAt,
 		UpdatedAt:       c.UpdatedAt,
 	}
@@ -182,6 +187,7 @@ func (dao *ConversationDAO) conversationBatchPO2DO(conversations []*model.TConve
 			AgentInstanceID: c.AgentInstanceID,
 			CreatorUsername: c.CreatorUsername,
 			Ext:             c.Ext,
+			ExtraInfo:       c.ExtraInfo,
 			CreatedAt:       c.CreatedAt,
 			UpdatedAt:       c.UpdatedAt,
 		}

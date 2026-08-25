@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -27,7 +5,7 @@ import MockAdapter from "axios-mock-adapter";
 import { createStore } from "jotai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { loginAtom, userAtom } from "@/atoms/auth-atom";
+import { loginAtom, logoutAtom, userAtom } from "@/atoms/auth-atom";
 import { CLIENT_NETWORK_ERROR_CODE, HTTP_UNAUTHORIZED } from "@/constants/http";
 import { makeOkEnvelope } from "@/schemas/api";
 import { createApiClient } from "@/services/axios";
@@ -55,6 +33,17 @@ function seedValidSession(token: string): void {
 
 const OK_EMPTY = makeOkEnvelope({});
 
+function deferred<T>(): {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+} {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((res) => {
+    resolve = res;
+  });
+  return { promise, resolve };
+}
+
 const mocks: MockAdapter[] = [];
 
 beforeEach(() => clearAuthStorage());
@@ -80,6 +69,21 @@ describe("axios interceptors", () => {
       return [200, OK_EMPTY];
     });
     await api.get("/api/sico/x/y");
+  });
+
+  it("preserves an explicit same-origin Authorization header", async () => {
+    seedValidSession("token-b");
+    const api = createApiClient();
+    const mock = new MockAdapter(api);
+    mocks.push(mock);
+    mock.onGet("/explicit-owner").reply((config) => {
+      expect(config.headers?.Authorization).toBe("Bearer token-a");
+      return [200, OK_EMPTY];
+    });
+
+    await api.get("/explicit-owner", {
+      headers: { Authorization: "Bearer token-a" },
+    });
   });
 
   it("omits Authorization when no token", async () => {
@@ -143,6 +147,112 @@ describe("axios interceptors", () => {
     expect(store.get(userAtom)).toBeNull();
   });
 
+  it("ignores a late protected 401 after auth was already cleared", async () => {
+    const onUnauthorized = vi.fn();
+    const store = createStore();
+    store.set(loginAtom, {
+      tokenInfo: {
+        accessToken: "tok",
+        expiresAt: Math.floor(Date.now() / 1000) + 3_600,
+      },
+      user: { id: 1, email: "a@b.test", roles: [] },
+    });
+    const api = createApiClient({ onUnauthorized, store });
+    const mock = new MockAdapter(api);
+    mocks.push(mock);
+    const requestStarted = deferred<void>();
+    const lateResponse = deferred<[number]>();
+    mock.onGet("/protected").reply(async () => {
+      requestStarted.resolve();
+      return lateResponse.promise;
+    });
+
+    const pending = api.get("/protected");
+    await requestStarted.promise;
+    store.set(logoutAtom);
+    lateResponse.resolve([HTTP_UNAUTHORIZED]);
+    const response = await pending;
+
+    expect(onUnauthorized).not.toHaveBeenCalled();
+    expect(store.get(userAtom)).toBeNull();
+    expect(response.status).toBe(HTTP_UNAUTHORIZED);
+    expect(response.data).toEqual({
+      code: HTTP_UNAUTHORIZED,
+      msg: "unauthorized",
+      data: {},
+    });
+  });
+
+  it("does not apply session A's late 401 to a new session B", async () => {
+    const onUnauthorized = vi.fn();
+    const store = createStore();
+    store.set(loginAtom, {
+      tokenInfo: {
+        accessToken: "token-a",
+        expiresAt: Math.floor(Date.now() / 1000) + 3_600,
+      },
+      user: { id: 1, email: "a@b.test", roles: [] },
+    });
+    const api = createApiClient({ onUnauthorized, store });
+    const mock = new MockAdapter(api);
+    mocks.push(mock);
+    const requestStarted = deferred<void>();
+    const lateResponse = deferred<[number]>();
+    mock.onGet("/protected").reply(async (config) => {
+      expect(config.headers?.Authorization).toBe("Bearer token-a");
+      requestStarted.resolve();
+      return lateResponse.promise;
+    });
+
+    const pending = api.get("/protected");
+    await requestStarted.promise;
+    store.set(logoutAtom);
+    store.set(loginAtom, {
+      tokenInfo: {
+        accessToken: "token-b",
+        expiresAt: Math.floor(Date.now() / 1000) + 3_600,
+      },
+      user: { id: 2, email: "b@b.test", roles: [] },
+    });
+    lateResponse.resolve([HTTP_UNAUTHORIZED]);
+    const response = await pending;
+
+    expect(onUnauthorized).not.toHaveBeenCalled();
+    expect(getItemFromLocalStorage(AUTH_TOKEN_LS)).toBe("token-b");
+    expect(store.get(userAtom)).toEqual({
+      id: 2,
+      email: "b@b.test",
+      roles: [],
+    });
+    expect(response.status).toBe(HTTP_UNAUTHORIZED);
+    expect(response.data).toEqual({
+      code: HTTP_UNAUTHORIZED,
+      msg: "unauthorized",
+      data: {},
+    });
+  });
+
+  it("preserves unauthorized handling for clients without a store", async () => {
+    const onUnauthorized = vi.fn();
+    const api = createApiClient({ onUnauthorized });
+    const mock = new MockAdapter(api);
+    mocks.push(mock);
+    mock.onGet("/protected").reply(HTTP_UNAUTHORIZED);
+
+    const response = await api.get("/protected");
+
+    expect(onUnauthorized).toHaveBeenCalledWith({
+      code: HTTP_UNAUTHORIZED,
+      url: "/protected",
+    });
+    expect(response.status).toBe(HTTP_UNAUTHORIZED);
+    expect(response.data).toEqual({
+      code: HTTP_UNAUTHORIZED,
+      msg: "unauthorized",
+      data: {},
+    });
+  });
+
   it("never reads tokenInfo.expiresAt (no timer scheduled, no LS read for expiresAt)", () => {
     // process.cwd() because jsdom rewrites import.meta.url to http://localhost.
     const src = readFileSync(
@@ -165,6 +275,43 @@ describe("axios interceptors", () => {
     });
     await api.get("/probe");
     expect(observedUrl).toBe("/api/sico/probe");
+  });
+
+  it("does not treat a cross-origin 401 as SICO unauthorized", async () => {
+    const onUnauthorized = vi.fn();
+    const api = createApiClient({ onUnauthorized });
+    const mock = new MockAdapter(api);
+    mocks.push(mock);
+    mock.onGet("https://other.example/protected").reply(HTTP_UNAUTHORIZED);
+
+    const response = await api.get("https://other.example/protected");
+
+    expect(onUnauthorized).not.toHaveBeenCalled();
+    expect(response.status).toBe(HTTP_UNAUTHORIZED);
+    expect(response.data).toEqual({
+      code: HTTP_UNAUTHORIZED,
+      msg: "unauthorized",
+      data: {},
+    });
+  });
+
+  it("normalizes an empty same-origin token when handling 401", async () => {
+    setItemToLocalStorage(AUTH_TOKEN_LS, "");
+    const onUnauthorized = vi.fn();
+    const api = createApiClient({ onUnauthorized });
+    const mock = new MockAdapter(api);
+    mocks.push(mock);
+    mock.onGet("/protected").reply((config) => {
+      expect(config.headers?.Authorization).toBeUndefined();
+      return [HTTP_UNAUTHORIZED];
+    });
+
+    await api.get("/protected");
+
+    expect(onUnauthorized).toHaveBeenCalledWith({
+      code: HTTP_UNAUTHORIZED,
+      url: "/protected",
+    });
   });
 
   it("does NOT attach Authorization to absolute cross-origin URLs", async () => {

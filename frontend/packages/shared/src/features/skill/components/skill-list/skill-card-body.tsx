@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { cn } from "@sico/ui/lib/utils.ts";
 import type { ReactElement } from "react";
 
@@ -36,6 +14,7 @@ type SkillCardBodyProps = {
   filesLoading: boolean;
   filesProgress: number;
   filesError: string;
+  editable: boolean;
   files: SkillFile[];
   actions: SkillAction[];
   originalActions: SkillAction[];
@@ -43,9 +22,6 @@ type SkillCardBodyProps = {
   onActionChange: (index: number, action: SkillAction) => void;
 };
 
-// Collapsible body (legacy StyledExpandSection): an expanded region with the
-// full description, "Modified by", and the Files/Tools tabs, plus a collapsed
-// region showing a masked description preview that expands on click.
 export function SkillCardBody({
   expanded,
   onExpand,
@@ -55,6 +31,7 @@ export function SkillCardBody({
   filesLoading,
   filesProgress,
   filesError,
+  editable,
   files,
   actions,
   originalActions,
@@ -77,6 +54,7 @@ export function SkillCardBody({
             filesLoading={filesLoading}
             filesProgress={filesProgress}
             filesError={filesError}
+            editable={editable}
             files={files}
             actions={actions}
             originalActions={originalActions}

@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Button } from "@sico/ui";
 import { ArrowLeft, Maximize, Minimize, X } from "lucide-react";
 import { type JSX } from "react";
@@ -36,9 +15,12 @@ export function ManageAppsHeader({
 }: {
   onBack: () => void;
 }): JSX.Element {
+  const { t } = useLingui();
   const { maximized, close, toggleMaximize } = useSidepane();
   const MaximizeGlyph = maximized ? Minimize : Maximize;
-  const maximizeLabel = maximized ? "Restore" : "Maximize";
+  const maximizeLabel = maximized
+    ? t({ id: "chat.manageAppsHeader.restore", message: "Restore" })
+    : t({ id: "chat.manageAppsHeader.maximize", message: "Maximize" });
 
   return (
     <div className="bg-surface-acrylic-board sticky top-0 z-10 flex items-center justify-between gap-2 px-4 pt-4 pb-2 backdrop-blur-sm">
@@ -46,13 +28,16 @@ export function ManageAppsHeader({
         <Button
           variant="subtle"
           size="icon-xs"
-          aria-label="Back to device"
+          aria-label={t({
+            id: "chat.manageAppsHeader.backToDevice",
+            message: "Back to device",
+          })}
           onClick={onBack}
         >
           <ArrowLeft aria-hidden="true" />
         </Button>
         <span className="text-foreground-primary text-sm font-medium">
-          Devices
+          {t({ id: "chat.manageAppsHeader.devices", message: "Devices" })}
         </span>
       </div>
       <div className="flex shrink-0 items-center gap-2">
@@ -73,7 +58,10 @@ export function ManageAppsHeader({
           type="button"
           variant="subtle"
           size="icon-xs"
-          aria-label="Close"
+          aria-label={t({
+            id: "chat.manageAppsHeader.close",
+            message: "Close",
+          })}
           onClick={close}
         >
           <X />

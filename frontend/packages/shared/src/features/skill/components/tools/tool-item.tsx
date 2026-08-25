@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Input, Label, Textarea } from "@sico/ui";
 import { cn } from "@sico/ui/lib/utils.ts";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -29,6 +8,7 @@ import type { SkillAction, SkillFile } from "../../schemas/skill";
 import { CodeViewer } from "../file-explorer/code-viewer";
 
 type ToolItemProps = {
+  editable?: boolean;
   action: SkillAction;
   displayName?: string;
   defaultExpanded?: boolean;
@@ -38,11 +18,13 @@ type ToolItemProps = {
 // Editable parsed-tool expander (legacy SkillToolItem): collapsible header plus
 // Name / Description / Advanced settings fields that patch the action upward.
 export function ToolItem({
+  editable = true,
   action,
   displayName,
   defaultExpanded = false,
   onChange,
 }: ToolItemProps): ReactElement {
+  const { t } = useLingui();
   const [expanded, setExpanded] = useState(defaultExpanded);
   const patch = (next: Partial<SkillAction>): void =>
     onChange({ ...action, ...next });
@@ -72,29 +54,46 @@ export function ToolItem({
       </button>
       <div className={cn("flex-col gap-3 pb-4", expanded ? "flex" : "hidden")}>
         <div className="flex flex-col gap-2">
-          <Label className="text-foreground-tertiary">Name</Label>
+          <Label className="text-foreground-tertiary">
+            {t({ id: "skill.toolItem.name", message: "Name" })}
+          </Label>
           <Input
-            placeholder="Enter tool name"
+            placeholder={t({
+              id: "skill.toolItem.enterToolName",
+              message: "Enter tool name",
+            })}
             className="bg-surface-basic"
             value={action.name}
+            disabled={!editable}
             onChange={(event) => patch({ name: event.target.value })}
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label className="text-foreground-tertiary">Description</Label>
+          <Label className="text-foreground-tertiary">
+            {t({ id: "skill.toolItem.description", message: "Description" })}
+          </Label>
           <Textarea
-            placeholder="Describe what this tool does"
+            placeholder={t({
+              id: "skill.toolItem.describeTool",
+              message: "Describe what this tool does",
+            })}
             className="bg-surface-basic min-h-28"
             value={action.description}
+            disabled={!editable}
             onChange={(event) => patch({ description: event.target.value })}
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label className="text-foreground-tertiary">Advanced settings</Label>
+          <Label className="text-foreground-tertiary">
+            {t({
+              id: "skill.toolItem.advancedSettings",
+              message: "Advanced settings",
+            })}
+          </Label>
           <div className="border-input-stroke-rest bg-surface-basic h-72 overflow-hidden rounded-lg border py-2">
             <CodeViewer
               file={advancedFile}
-              editable
+              editable={editable}
               onChange={(content) => patch({ advancedSettings: content })}
             />
           </div>

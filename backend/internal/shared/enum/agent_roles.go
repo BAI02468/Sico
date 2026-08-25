@@ -1,46 +1,26 @@
-// Copyright (c) 2026 Sico Authors
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package enum
 
 type AgentRole int
 
 const (
 	AgentRoleUnknown AgentRole = iota
-	AgentRoleAssistant
-	AgentRoleAndroidTester
-	AgentRole3DArtist
-	AgentRoleProductManager
+	AgentRoleGeneral
+	AgentRoleSoftwareTesting
+	AgentRoleDesign
+	AgentRoleProductDevelopment
 	AgentRoleMarketing
 )
 
 func (s AgentRole) String() string {
 	switch s {
-	case AgentRoleAssistant:
-		return "Assistant"
-	case AgentRoleAndroidTester:
-		return "Android Tester"
-	case AgentRole3DArtist:
-		return "3D Artist"
-	case AgentRoleProductManager:
-		return "Product Manager"
+	case AgentRoleGeneral:
+		return "General"
+	case AgentRoleSoftwareTesting:
+		return "Software Testing"
+	case AgentRoleDesign:
+		return "Design"
+	case AgentRoleProductDevelopment:
+		return "Product Development"
 	case AgentRoleMarketing:
 		return "Marketing"
 	default:
@@ -50,10 +30,10 @@ func (s AgentRole) String() string {
 
 func AllAgentRoles() []string {
 	return []string{
-		AgentRoleAssistant.String(),
-		AgentRoleAndroidTester.String(),
-		AgentRole3DArtist.String(),
-		AgentRoleProductManager.String(),
+		AgentRoleGeneral.String(),
+		AgentRoleSoftwareTesting.String(),
+		AgentRoleDesign.String(),
+		AgentRoleProductDevelopment.String(),
 		AgentRoleMarketing.String(),
 	}
 }

@@ -1,30 +1,8 @@
-# Copyright (c) 2026 Sico Authors
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 from __future__ import annotations
 
 import ctypes
-import ipaddress
 import logging
 import os
-import socket
 import subprocess
 import sys
 import tempfile
@@ -35,9 +13,17 @@ import urllib.request
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Annotated, List
+from typing import Annotated, Callable, List, Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Response,
+    UploadFile,
+    status,
+)
 
 from app.deps import get_device_index_map, get_mumu, _make_mumu
 from app.routers.devices import _serial_from_index, _ensure_adb_connected
@@ -46,9 +32,12 @@ from app.schemas import (
     CloneEmulatorsRequest,
     CreateEmulatorsRequest,
     DownloadAppRequest,
+    InstallAppFromUrlBatchRequest,
+    ListAppsBatchRequest,
     PackageRequest,
     StartEmulatorRequest,
     StartEmulatorsBatchRequest,
+    UninstallAppBatchRequest,
 )
 from app.settings import Settings, get_settings
 
@@ -294,48 +283,14 @@ def _validate_install_url(url: str) -> urllib.parse.ParseResult:
             detail="Download URL must not include embedded credentials",
         )
 
-    port = parsed.port or (443 if parsed.scheme == "https" else 80)
-    try:
-        addr_info = socket.getaddrinfo(parsed.hostname, port, type=socket.SOCK_STREAM)
-    except socket.gaierror as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to resolve download host: {parsed.hostname}",
-        ) from exc
-
-    resolved_any = False
-    for family, _, _, _, sockaddr in addr_info:
-        if family not in (socket.AF_INET, socket.AF_INET6):
-            continue
-        resolved_any = True
-        raw_ip = sockaddr[0].split("%", 1)[0]
-        ip = ipaddress.ip_address(raw_ip)
-        if (
-            ip.is_private
-            or ip.is_loopback
-            or ip.is_link_local
-            or ip.is_multicast
-            or ip.is_reserved
-            or ip.is_unspecified
-            or getattr(ip, "is_site_local", False)
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Download host resolves to a non-public address: {parsed.hostname}",
-            )
-
-    if not resolved_any:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unable to resolve a public IP for host: {parsed.hostname}",
-        )
-
     return parsed
 
 
 def _download_install_url(url: str, tmp_file) -> None:
     opener = urllib.request.build_opener(_RejectRedirectHandler)
-    request = urllib.request.Request(url, headers={"User-Agent": "EmulatorRemoteAPI/0.2.0"})
+    request = urllib.request.Request(
+        url, headers={"User-Agent": "EmulatorRemoteAPI/0.2.0"}
+    )
 
     try:
         with opener.open(request, timeout=_DOWNLOAD_TIMEOUT_SECONDS) as response:
@@ -404,7 +359,9 @@ def _sample_cpu_usage_percent(sample_seconds: float = 0.2) -> float | None:
             idle = _FileTime()
             kernel = _FileTime()
             user = _FileTime()
-            if not kernel32.GetSystemTimes(ctypes.byref(idle), ctypes.byref(kernel), ctypes.byref(user)):
+            if not kernel32.GetSystemTimes(
+                ctypes.byref(idle), ctypes.byref(kernel), ctypes.byref(user)
+            ):
                 return None
             idle_value = (idle.dwHighDateTime << 32) | idle.dwLowDateTime
             kernel_value = (kernel.dwHighDateTime << 32) | kernel.dwLowDateTime
@@ -459,14 +416,18 @@ def _available_memory_mb() -> int | None:
 
 
 def _wait_for_start_capacity(settings: Settings, index: int) -> None:
-    deadline = time.monotonic() + max(1.0, settings.emulator_start_capacity_wait_seconds)
+    deadline = time.monotonic() + max(
+        1.0, settings.emulator_start_capacity_wait_seconds
+    )
     poll_interval = max(0.5, settings.emulator_start_capacity_poll_interval_seconds)
 
     while True:
         cpu_usage = _sample_cpu_usage_percent()
         available_memory_mb = _available_memory_mb()
 
-        cpu_ok = cpu_usage is None or cpu_usage <= settings.emulator_start_cpu_limit_percent
+        cpu_ok = (
+            cpu_usage is None or cpu_usage <= settings.emulator_start_cpu_limit_percent
+        )
         memory_ok = (
             available_memory_mb is None
             or available_memory_mb >= settings.emulator_start_min_free_memory_mb
@@ -496,7 +457,9 @@ def _wait_for_start_capacity(settings: Settings, index: int) -> None:
         time.sleep(poll_interval)
 
 
-def _start_emulator_with_capacity_guard(index: int, package: str | None, settings: Settings) -> dict[str, object]:
+def _start_emulator_with_capacity_guard(
+    index: int, package: str | None, settings: Settings
+) -> dict[str, object]:
     worker_mumu = _make_mumu(settings)
     _ensure_index(worker_mumu, index)
     if _is_emulator_running(worker_mumu, index):
@@ -509,7 +472,9 @@ def _start_emulator_with_capacity_guard(index: int, package: str | None, setting
         }
 
     slots = _get_start_slots(settings)
-    acquired = slots.acquire(timeout=max(1.0, settings.emulator_start_capacity_wait_seconds))
+    acquired = slots.acquire(
+        timeout=max(1.0, settings.emulator_start_capacity_wait_seconds)
+    )
     if not acquired:
         return {
             "index": index,
@@ -549,7 +514,10 @@ def _dedupe_indices(indices: list[int]) -> list[int]:
 
 
 def _wait_for_device_online(
-    mumu, device_map, index: int, timeout: int = 90,
+    mumu,
+    device_map,
+    index: int,
+    timeout: int = 90,
 ) -> str | None:
     """Poll until the device at *index* is fully responsive.
 
@@ -580,7 +548,9 @@ def _wait_for_device_online(
             code, out, _err = mumu._run_adb(["-s", serial, "get-state"])
             state = out.strip() if out else ""
             if code != 0 or state != "device":
-                _LOGGER.debug("Device %d waiting (serial=%s, state=%s)", index, serial, state)
+                _LOGGER.debug(
+                    "Device %d waiting (serial=%s, state=%s)", index, serial, state
+                )
                 continue
 
             # Verify shell is actually responsive (boot may still be in
@@ -597,7 +567,9 @@ def _wait_for_device_online(
 
 
 def _update_port_forward_after_restart(
-    mumu, old_port: int | None, new_port: int | None,
+    mumu,
+    old_port: int | None,
+    new_port: int | None,
 ) -> None:
     """Incrementally update port-forward rules after a single device restart.
 
@@ -731,12 +703,16 @@ def start_emulators_batch(
 
     configured_parallel = max(1, settings.emulator_start_max_parallel)
     requested_parallel = payload.max_parallel or configured_parallel
-    effective_parallel = max(1, min(len(indices), configured_parallel, requested_parallel))
+    effective_parallel = max(
+        1, min(len(indices), configured_parallel, requested_parallel)
+    )
 
     results_by_index: dict[int, dict[str, object]] = {}
     with ThreadPoolExecutor(max_workers=effective_parallel) as executor:
         futures = {
-            executor.submit(_start_emulator_with_capacity_guard, index, payload.package, settings): index
+            executor.submit(
+                _start_emulator_with_capacity_guard, index, payload.package, settings
+            ): index
             for index in indices
         }
         for future in as_completed(futures):
@@ -753,9 +729,13 @@ def start_emulators_batch(
                 }
 
     ordered_results = [results_by_index[index] for index in indices]
-    started = [result for result in ordered_results if result.get("status") == "started"]
+    started = [
+        result for result in ordered_results if result.get("status") == "started"
+    ]
     already_running = [
-        result for result in ordered_results if result.get("status") == "already_running"
+        result
+        for result in ordered_results
+        if result.get("status") == "already_running"
     ]
     failed = [result for result in ordered_results if result.get("status") == "failed"]
 
@@ -779,7 +759,9 @@ def start_emulators_batch(
 
 
 @router.post("/{index}/stop")
-def stop_emulator(index: int, mumu=Depends(get_mumu), device_map=Depends(get_device_index_map)):
+def stop_emulator(
+    index: int, mumu=Depends(get_mumu), device_map=Depends(get_device_index_map)
+):
     _ensure_index(mumu, index)
     was_running = _is_emulator_running(mumu, index)
     if was_running:
@@ -848,7 +830,9 @@ def _soft_reset_and_collect(mumu, device_map, index: int) -> dict:
 
 
 @router.post("/{index}/restart")
-def restart_emulator(index: int, mumu=Depends(get_mumu), device_map=Depends(get_device_index_map)):
+def restart_emulator(
+    index: int, mumu=Depends(get_mumu), device_map=Depends(get_device_index_map)
+):
     _ensure_index(mumu, index)
     _require_running_emulator(mumu, index, "restarting")
     result = _restart_and_reconcile(mumu, device_map, index)
@@ -856,7 +840,9 @@ def restart_emulator(index: int, mumu=Depends(get_mumu), device_map=Depends(get_
 
 
 @router.post("/{index}/reset")
-def reset_emulator(index: int, mumu=Depends(get_mumu), device_map=Depends(get_device_index_map)):
+def reset_emulator(
+    index: int, mumu=Depends(get_mumu), device_map=Depends(get_device_index_map)
+):
     """Soft-reset an emulator while preserving the running device and ADB port."""
     _ensure_index(mumu, index)
     _require_running_emulator(mumu, index, "resetting")
@@ -896,7 +882,9 @@ def get_emulator_settings(
 def list_apps(index: int, include_system: bool = False, mumu=Depends(get_mumu)):
     _ensure_index(mumu, index)
     try:
-        apps = _select(mumu, index).app.get_installed(third_party_only=not include_system)
+        apps = _select(mumu, index).app.get_installed(
+            third_party_only=not include_system
+        )
     except RuntimeError as exc:
         msg = str(exc)
         if "device" in msg.lower() and "not found" in msg.lower():
@@ -920,13 +908,19 @@ def install_app(
 ):
     _ensure_index(mumu, index)
     if not file.filename:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="missing apk file")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="missing apk file"
+        )
 
     suffix = Path(file.filename).suffix.lower()
     if suffix not in {".apk", ".xapk", ".apks"}:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="unsupported file type")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="unsupported file type"
+        )
 
-    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix)
+    tmp_file = tempfile.NamedTemporaryFile(
+        delete=False, suffix=Path(file.filename).suffix
+    )
     tmp_path = Path(tmp_file.name)
     try:
         tmp_file.write(file.file.read())
@@ -989,6 +983,275 @@ def close_app(index: int, payload: PackageRequest, mumu=Depends(get_mumu)):
     return {"closed": index, "package": payload.package}
 
 
+# =============================================================================
+# Multi-device (deviceIDList) app management
+# =============================================================================
+
+
+def _effective_batch_parallelism(
+    requested: Optional[int], device_count: int, configured: int
+) -> int:
+    upper = max(1, configured)
+    desired = requested if requested else upper
+    return max(1, min(device_count, upper, desired))
+
+
+def _request_batch_indices(indices: list[int]) -> list[int]:
+    deduped = _dedupe_indices(indices)
+    if not deduped:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="indices is required",
+        )
+    return deduped
+
+
+def _run_index_batch(
+    indices: list[int],
+    max_workers: int,
+    worker: Callable[[int], dict[str, object]],
+    crash_result: Callable[[int, Exception], dict[str, object]],
+    operation: str,
+) -> list[dict[str, object]]:
+    results_by_index: dict[int, dict[str, object]] = {}
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(worker, index): index for index in indices}
+        for future in as_completed(futures):
+            index = futures[future]
+            try:
+                results_by_index[index] = future.result()
+            except Exception as exc:
+                _LOGGER.exception("batch %s future crashed index=%s", operation, index)
+                results_by_index[index] = crash_result(index, exc)
+    return [results_by_index[index] for index in indices]
+
+
+def _summarize_batch_results(
+    results: list[dict[str, object]], success_status: str
+) -> tuple[str, int, int]:
+    succeeded = sum(1 for result in results if result.get("status") == success_status)
+    failed = len(results) - succeeded
+    status_text = "success"
+    if failed and succeeded:
+        status_text = "partial"
+    elif failed:
+        status_text = "error"
+    return status_text, succeeded, failed
+
+
+def _list_apps_for_index(
+    index: int, app_filter: str, settings: Settings, device_map
+) -> dict[str, object]:
+    worker_mumu = _make_mumu(settings)
+    try:
+        serial = _serial_from_index(worker_mumu, device_map, index)
+        apps = _select(worker_mumu, index).app.get_installed(
+            app_filter=app_filter,
+            adb_serial=serial,
+        )
+        return {"index": index, "serial": serial, "status": "success", "apps": apps}
+    except HTTPException as exc:
+        return {
+            "index": index,
+            "status": "failed",
+            "error_message": str(exc.detail),
+            "error_code": exc.status_code,
+        }
+    except Exception as exc:
+        _LOGGER.exception("batch list-apps failed index=%s", index)
+        return {
+            "index": index,
+            "status": "failed",
+            "error_message": str(exc),
+        }
+
+
+@router.post("/apps/list-batch")
+def list_apps_batch(
+    payload: ListAppsBatchRequest,
+    mumu=Depends(get_mumu),
+    device_map=Depends(get_device_index_map),
+    settings: Settings = Depends(get_settings),
+):
+    indices = _request_batch_indices(payload.indices)
+    device_map.refresh(mumu)
+    effective_parallel = _effective_batch_parallelism(
+        payload.max_parallel, len(indices), settings.emulator_start_max_parallel
+    )
+    ordered_results = _run_index_batch(
+        indices,
+        effective_parallel,
+        lambda index: _list_apps_for_index(
+            index, payload.app_filter, settings, device_map
+        ),
+        lambda index, exc: {
+            "index": index,
+            "status": "failed",
+            "error_message": str(exc),
+        },
+        "list-apps",
+    )
+    status_text, succeeded, failed = _summarize_batch_results(
+        ordered_results, "success"
+    )
+    return {
+        "status": status_text,
+        "filter": payload.app_filter,
+        "requested_count": len(indices),
+        "succeeded_count": succeeded,
+        "failed_count": failed,
+        "max_parallel": effective_parallel,
+        "results": ordered_results,
+    }
+
+
+def _install_apk_path_for_index(
+    index: int, apk_path: Path, settings: Settings, device_map
+) -> dict[str, object]:
+    worker_mumu = _make_mumu(settings)
+    try:
+        serial = _serial_from_index(worker_mumu, device_map, index)
+        _select(worker_mumu, index).app.install(str(apk_path), adb_serial=serial)
+        return {"index": index, "serial": serial, "status": "installed"}
+    except HTTPException as exc:
+        return {
+            "index": index,
+            "status": "failed",
+            "error_message": str(exc.detail),
+            "error_code": exc.status_code,
+        }
+    except Exception as exc:
+        _LOGGER.exception("batch install-url failed index=%s", index)
+        return {
+            "index": index,
+            "status": "failed",
+            "error_message": str(exc),
+        }
+
+
+@router.post("/apps/install-url-batch")
+def install_app_from_url_batch(
+    payload: InstallAppFromUrlBatchRequest,
+    mumu=Depends(get_mumu),
+    device_map=Depends(get_device_index_map),
+    settings: Settings = Depends(get_settings),
+):
+    indices = _request_batch_indices(payload.indices)
+    device_map.refresh(mumu)
+    _validate_install_url(payload.url)
+
+    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".apk")
+    tmp_path = Path(tmp_file.name)
+    effective_parallel = _effective_batch_parallelism(
+        payload.max_parallel, len(indices), settings.emulator_start_max_parallel
+    )
+    try:
+        _download_install_url(payload.url, tmp_file)
+        tmp_file.flush()
+        tmp_file.close()
+        ordered_results = _run_index_batch(
+            indices,
+            effective_parallel,
+            lambda index: _install_apk_path_for_index(
+                index, tmp_path, settings, device_map
+            ),
+            lambda index, exc: {
+                "index": index,
+                "status": "failed",
+                "error_message": str(exc),
+            },
+            "install-url",
+        )
+    finally:
+        if not tmp_file.closed:
+            tmp_file.close()
+        _cleanup_temp_file(tmp_path)
+
+    status_text, succeeded, failed = _summarize_batch_results(
+        ordered_results, "installed"
+    )
+    return {
+        "status": status_text,
+        "url": payload.url,
+        "requested_count": len(indices),
+        "installed_count": succeeded,
+        "failed_count": failed,
+        "max_parallel": effective_parallel,
+        "results": ordered_results,
+    }
+
+
+def _uninstall_package_for_index(
+    index: int, package: str, settings: Settings, device_map
+) -> dict[str, object]:
+    worker_mumu = _make_mumu(settings)
+    try:
+        serial = _serial_from_index(worker_mumu, device_map, index)
+        _select(worker_mumu, index).app.uninstall(package, adb_serial=serial)
+        return {
+            "index": index,
+            "serial": serial,
+            "status": "uninstalled",
+            "package": package,
+        }
+    except HTTPException as exc:
+        return {
+            "index": index,
+            "status": "failed",
+            "package": package,
+            "error_message": str(exc.detail),
+            "error_code": exc.status_code,
+        }
+    except Exception as exc:
+        _LOGGER.exception("batch uninstall failed index=%s", index)
+        return {
+            "index": index,
+            "status": "failed",
+            "package": package,
+            "error_message": str(exc),
+        }
+
+
+@router.post("/apps/uninstall-batch")
+def uninstall_app_batch(
+    payload: UninstallAppBatchRequest,
+    mumu=Depends(get_mumu),
+    device_map=Depends(get_device_index_map),
+    settings: Settings = Depends(get_settings),
+):
+    indices = _request_batch_indices(payload.indices)
+    device_map.refresh(mumu)
+    effective_parallel = _effective_batch_parallelism(
+        payload.max_parallel, len(indices), settings.emulator_start_max_parallel
+    )
+    ordered_results = _run_index_batch(
+        indices,
+        effective_parallel,
+        lambda index: _uninstall_package_for_index(
+            index, payload.package, settings, device_map
+        ),
+        lambda index, exc: {
+            "index": index,
+            "status": "failed",
+            "package": payload.package,
+            "error_message": str(exc),
+        },
+        "uninstall",
+    )
+    status_text, succeeded, failed = _summarize_batch_results(
+        ordered_results, "uninstalled"
+    )
+    return {
+        "status": status_text,
+        "package": payload.package,
+        "requested_count": len(indices),
+        "uninstalled_count": succeeded,
+        "failed_count": failed,
+        "max_parallel": effective_parallel,
+        "results": ordered_results,
+    }
+
+
 @router.post("/{index}/adb/shell")
 def adb_shell(
     index: int,
@@ -1018,9 +1281,13 @@ def adb_shell(
     if code != 0:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=err or out or "ADB shell command failed"
+            detail=err or out or "ADB shell command failed",
         )
-    return {"index": index, "command": payload.command, "output": out.strip() if out else ""}
+    return {
+        "index": index,
+        "command": payload.command,
+        "output": out.strip() if out else "",
+    }
 
 
 # ==================== Port Forwarding (Windows netsh) ====================
@@ -1045,15 +1312,20 @@ def _ensure_iphelper_running() -> bool:
     """
     # Always set startup type to Automatic so it survives reboots.
     subprocess.run(
-        ["powershell", "-Command",
-         "Set-Service iphlpsvc -StartupType Automatic -ErrorAction SilentlyContinue"],
-        capture_output=True, text=True,
+        [
+            "powershell",
+            "-Command",
+            "Set-Service iphlpsvc -StartupType Automatic -ErrorAction SilentlyContinue",
+        ],
+        capture_output=True,
+        text=True,
     )
 
     # Check current status
     check = subprocess.run(
         ["powershell", "-Command", "(Get-Service iphlpsvc).Status"],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     current_status = check.stdout.strip()
 
@@ -1065,7 +1337,8 @@ def _ensure_iphelper_running() -> bool:
     _PF_LOGGER.info("IP Helper is %s, starting...", current_status or "unknown")
     result = subprocess.run(
         ["powershell", "-Command", "Start-Service iphlpsvc"],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if result.returncode == 0:
         time.sleep(3)
@@ -1073,7 +1346,8 @@ def _ensure_iphelper_running() -> bool:
 
     _PF_LOGGER.warning(
         "IP Helper start failed (rc=%d): %s",
-        result.returncode, (result.stderr or result.stdout).strip(),
+        result.returncode,
+        (result.stderr or result.stdout).strip(),
     )
     return False
 
@@ -1123,7 +1397,11 @@ def _run_netsh(args: List[str]) -> tuple[int, str, str]:
 def _check_firewall_rule_exists() -> bool:
     """Check if the ADB firewall rule already exists."""
     result = subprocess.run(
-        ["powershell", "-Command", f'Get-NetFirewallRule -DisplayName "{ADB_FIREWALL_RULE_NAME}" -ErrorAction SilentlyContinue'],
+        [
+            "powershell",
+            "-Command",
+            f'Get-NetFirewallRule -DisplayName "{ADB_FIREWALL_RULE_NAME}" -ErrorAction SilentlyContinue',
+        ],
         capture_output=True,
         text=True,
     )
@@ -1137,9 +1415,10 @@ def _ensure_firewall_rule() -> dict:
 
     result = subprocess.run(
         [
-            "powershell", "-Command",
+            "powershell",
+            "-Command",
             f'New-NetFirewallRule -DisplayName "{ADB_FIREWALL_RULE_NAME}" -Direction Inbound -Protocol TCP '
-            f'-LocalPort {ADB_PORT_RANGE} -Action Allow',
+            f"-LocalPort {ADB_PORT_RANGE} -Action Allow",
         ],
         capture_output=True,
         text=True,
@@ -1179,7 +1458,11 @@ def add_port_forward(serial: str):
     Port forwarding is Windows-only; on macOS this is a no-op.
     """
     if _IS_MACOS:
-        return {"serial": serial, "skipped": True, "reason": "port forwarding not required on macOS"}
+        return {
+            "serial": serial,
+            "skipped": True,
+            "reason": "port forwarding not required on macOS",
+        }
 
     try:
         _, port = _parse_serial(serial)
@@ -1194,7 +1477,7 @@ def add_port_forward(serial: str):
     if code != 0 and "already" not in (out + err).lower():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to add port forward: {err or out}"
+            detail=f"Failed to add port forward: {err or out}",
         )
 
     return {
@@ -1227,7 +1510,7 @@ def delete_port_forward(serial: str):
     if code != 0 and "not found" not in (out + err).lower():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete port forward: {err or out}"
+            detail=f"Failed to delete port forward: {err or out}",
         )
 
     return {"serial": serial, "port": port, "deleted": True}
@@ -1308,22 +1591,32 @@ def _reconcile_port_forward_rules(mumu, device_map) -> list[dict] | None:
 
 def _add_port_proxy_rule(port: int) -> tuple[int, str, str]:
     """Add a v4tov4 portproxy rule: 0.0.0.0:<port> → 127.0.0.1:<port>."""
-    return _run_netsh([
-        "interface", "portproxy", "add", "v4tov4",
-        "listenaddress=0.0.0.0",
-        f"listenport={port}",
-        "connectaddress=127.0.0.1",
-        f"connectport={port}",
-    ])
+    return _run_netsh(
+        [
+            "interface",
+            "portproxy",
+            "add",
+            "v4tov4",
+            "listenaddress=0.0.0.0",
+            f"listenport={port}",
+            "connectaddress=127.0.0.1",
+            f"connectport={port}",
+        ]
+    )
 
 
 def _delete_port_proxy_rule(port: int) -> tuple[int, str, str]:
     """Delete a v4tov4 portproxy rule for the given port."""
-    return _run_netsh([
-        "interface", "portproxy", "delete", "v4tov4",
-        "listenaddress=0.0.0.0",
-        f"listenport={port}",
-    ])
+    return _run_netsh(
+        [
+            "interface",
+            "portproxy",
+            "delete",
+            "v4tov4",
+            "listenaddress=0.0.0.0",
+            f"listenport={port}",
+        ]
+    )
 
 
 def _get_port_from_serial(serial: str | None) -> int | None:
@@ -1346,7 +1639,11 @@ def add_port_forward_all(
     Port forwarding is Windows-only; on macOS this is a no-op.
     """
     if _IS_MACOS:
-        return {"count": 0, "skipped": True, "reason": "port forwarding not required on macOS"}
+        return {
+            "count": 0,
+            "skipped": True,
+            "reason": "port forwarding not required on macOS",
+        }
 
     firewall_status = _ensure_firewall_rule()
 
@@ -1432,7 +1729,9 @@ def get_port_forward_status(
 
 
 @router.delete("/{index}")
-def delete_emulator(index: int, mumu=Depends(get_mumu), device_map=Depends(get_device_index_map)):
+def delete_emulator(
+    index: int, mumu=Depends(get_mumu), device_map=Depends(get_device_index_map)
+):
     _ensure_index(mumu, index)
     _select(mumu, index).core.delete()
     device_map.refresh(mumu)

@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import {
   Button,
   DropdownMenu,
@@ -35,10 +14,12 @@ import { type JSX } from "react";
 import { AssetContentCard } from "./asset-content-card";
 import { AssetDetailLayout } from "./asset-detail-layout";
 import { AssetDetailMetaPanel } from "./asset-detail-meta-panel";
+import { DELETE_DENIED_TOOLTIP, GatedMenuItem } from "./gated-menu-item";
 import { MessageState } from "../../../components/message-state";
+import { EMPTY_ILLUSTRATIONS } from "../../../constants/empty-illustration";
 import { downloadFile } from "../../../utils/download-file";
-import { UNPREVIEWABLE_ILLUSTRATION } from "../../file-preview";
 import { FilePreview } from "../../file-preview/components/file-preview";
+import { useAssetDeleteGate } from "../hooks/use-asset-delete-gate";
 import type { AssetDetail as AssetDetailData } from "../hooks/use-asset-detail-query";
 import { useAssetMutation } from "../hooks/use-asset-mutation";
 
@@ -50,24 +31,30 @@ export type AssetDetailDeliverableProps = {
   projectId: number;
 };
 
-const COPY = {
-  download: "Download",
-  unavailableHeading: "This file isn't available.",
-  unavailableBody: "The deliverable has no file to preview or download.",
-} as const;
-
 // The deliverable `…` overflow menu — Download (when the file exists) + Delete,
-// in the shell's `actions` slot. A plain module-scope render helper (NOT a nested
-// component) so the component body stays under the line cap.
+// in the shell's `actions` slot. Delete stays visible but is gated (greyed +
+// reason tooltip) when the viewer isn't an admin and didn't create the asset. A
+// plain module-scope render helper (NOT a nested component) so the component
+// body stays under the line cap.
 function renderActions(
+  copy: {
+    download: string;
+    delete: string;
+    actionsAriaLabel: string;
+  },
   onRequestDelete: () => void,
+  canDelete: boolean,
   onDownload?: () => void,
 ): JSX.Element {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="subtle" size="icon-sm" aria-label="Asset actions" />
+          <Button
+            variant="subtle"
+            size="icon-sm"
+            aria-label={copy.actionsAriaLabel}
+          />
         }
       >
         <Ellipsis />
@@ -76,13 +63,18 @@ function renderActions(
         {onDownload ? (
           <DropdownMenuItem onClick={onDownload}>
             <Download />
-            {COPY.download}
+            {copy.download}
           </DropdownMenuItem>
         ) : null}
-        <DropdownMenuItem onClick={onRequestDelete}>
+        <GatedMenuItem
+          allowed={canDelete}
+          variant="destructive"
+          deniedTooltip={DELETE_DENIED_TOOLTIP}
+          onSelect={onRequestDelete}
+        >
           <Trash2 />
-          Delete
-        </DropdownMenuItem>
+          {copy.delete}
+        </GatedMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -92,23 +84,31 @@ function renderActions(
 // (keep the user on the page on failure so they can retry). Module-scope (no
 // hooks) so the component body stays under the line cap — mirrors
 // `runDelete` in use-asset-row-actions.
-function runDeliverableDelete(
-  remove: ReturnType<typeof useAssetMutation>["remove"],
-  args: { assetId: number; projectId: number; filename: string },
-  navigate: ReturnType<typeof useNavigate>,
-): void {
+function runDeliverableDelete({
+  formatDeletedSuccess,
+  deleteError,
+  remove,
+  args,
+  navigate,
+}: {
+  formatDeletedSuccess: (filename: string) => string;
+  deleteError: string;
+  remove: ReturnType<typeof useAssetMutation>["remove"];
+  args: { assetId: number; projectId: number; filename: string };
+  navigate: ReturnType<typeof useNavigate>;
+}): void {
   remove.mutate(
     { id: args.assetId, type: "deliverable" },
     {
       onSuccess: () => {
-        toast.success(`"${args.filename}" was deleted.`, { invert: true });
+        toast.success(formatDeletedSuccess(args.filename), { invert: true });
         void navigate({
           to: "/project/$projectId",
           params: { projectId: String(args.projectId) },
         });
       },
       onError: () => {
-        toast.error("We couldn't delete this. Try again.");
+        toast.error(deleteError);
       },
     },
   );
@@ -118,6 +118,10 @@ function runDeliverableDelete(
 // doesn't suit the markdown reading gutter), or an explicit unavailable state
 // when there's no SAS url. Module-scope (no hooks) so the body stays short.
 function renderDeliverableFile(
+  copy: {
+    unavailableHeading: string;
+    unavailableBody: string;
+  },
   filename: string,
   fileSasUrl: string | null | undefined,
 ): JSX.Element {
@@ -130,11 +134,11 @@ function renderDeliverableFile(
           <MessageState
             fill
             testId="deliverable-unavailable"
-            illustrationUrl={UNPREVIEWABLE_ILLUSTRATION.url}
-            illustrationWidth={UNPREVIEWABLE_ILLUSTRATION.width}
-            illustrationHeight={UNPREVIEWABLE_ILLUSTRATION.height}
-            heading={COPY.unavailableHeading}
-            body={COPY.unavailableBody}
+            illustrationUrl={EMPTY_ILLUSTRATIONS.noPreview.url}
+            illustrationWidth={EMPTY_ILLUSTRATIONS.noPreview.width}
+            illustrationHeight={EMPTY_ILLUSTRATIONS.noPreview.height}
+            heading={copy.unavailableHeading}
+            body={copy.unavailableBody}
           />
         )}
       </AssetContentCard>
@@ -153,10 +157,49 @@ export function AssetDetailDeliverable({
   asset,
   projectId,
 }: AssetDetailDeliverableProps): JSX.Element {
+  const { t } = useLingui();
   const navigate = useNavigate();
   const { remove } = useAssetMutation(projectId);
+  const canDelete = useAssetDeleteGate(asset, projectId);
   const fileSasUrl = asset.fileSasUrl;
   const filename = asset.fileName;
+
+  const copy = {
+    download: t({
+      id: "projects.assetDeliverable.download",
+      message: "Download",
+    }),
+    delete: t({ id: "projects.assetDeliverable.delete", message: "Delete" }),
+    unavailableHeading: t({
+      id: "projects.assetDeliverable.unavailableHeading",
+      message: "This file isn't available.",
+    }),
+    unavailableBody: t({
+      id: "projects.assetDeliverable.unavailableBody",
+      message: "The deliverable has no file to preview or download.",
+    }),
+    actionsAriaLabel: t({
+      id: "projects.assetDeliverable.actionsAriaLabel",
+      message: "Asset actions",
+    }),
+    deleteTitle: t({
+      id: "projects.assetDeliverable.deleteTitle",
+      message: "Delete Deliverable",
+    }),
+    deleteBody: t({
+      id: "projects.assetDeliverable.deleteBody",
+      message: "Permanently remove this deliverable across your project.",
+    }),
+    deleteError: t({
+      id: "projects.assetDeliverable.deleteError",
+      message: "We couldn't delete this. Try again.",
+    }),
+    formatDeletedSuccess: (name: string): string =>
+      t({
+        id: "projects.assetDeliverable.deletedSuccess",
+        message: `"${name}" was deleted.`,
+      }),
+  } as const;
 
   const handleDownload = fileSasUrl
     ? (): void => {
@@ -168,7 +211,7 @@ export function AssetDetailDeliverable({
     <AssetDetailLayout
       projectId={projectId}
       current={filename}
-      leftBody={renderDeliverableFile(filename, fileSasUrl)}
+      leftBody={renderDeliverableFile(copy, filename, fileSasUrl)}
       rightPanel={
         <AssetDetailMetaPanel
           fileName={asset.fileName}
@@ -178,17 +221,19 @@ export function AssetDetailDeliverable({
         />
       }
       actions={(onRequestDelete) =>
-        renderActions(onRequestDelete, handleDownload)
+        renderActions(copy, onRequestDelete, canDelete, handleDownload)
       }
       confirm={{
-        title: "Delete Deliverable",
-        body: "Permanently remove this deliverable across your organization.",
+        title: copy.deleteTitle,
+        body: copy.deleteBody,
         onConfirm: () =>
-          runDeliverableDelete(
+          runDeliverableDelete({
+            formatDeletedSuccess: copy.formatDeletedSuccess,
+            deleteError: copy.deleteError,
             remove,
-            { assetId: asset.id, projectId, filename },
+            args: { assetId: asset.id, projectId, filename },
             navigate,
-          ),
+          }),
         pending: remove.isPending,
       }}
     />

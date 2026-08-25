@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { renderHook } from "@testing-library/react";
 import { createRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -92,6 +70,84 @@ describe("useInfiniteScrollSentinel", () => {
 
     fireIntersect(true);
     expect(fetchNextPage).toHaveBeenCalledTimes(1);
+  });
+
+  it("coalesces synchronous repeated observer entries into one page request", () => {
+    const { ref } = makeSentinel();
+    const fetchNextPage = vi.fn();
+    renderHook(() =>
+      useInfiniteScrollSentinel(ref, {
+        hasNextPage: true,
+        isFetchingNextPage: false,
+        fetchNextPage,
+      }),
+    );
+
+    fireIntersect(true);
+    fireIntersect(true);
+
+    expect(fetchNextPage).toHaveBeenCalledOnce();
+  });
+
+  it("allows a new request after the previous one rejects", async () => {
+    const { ref } = makeSentinel();
+    let rejectFetch: (error: Error) => void = () => {};
+    const fetchNextPage = vi.fn().mockReturnValueOnce(
+      new Promise<never>((_resolve, reject) => {
+        rejectFetch = reject;
+      }),
+    );
+    renderHook(() =>
+      useInfiniteScrollSentinel(ref, {
+        hasNextPage: true,
+        isFetchingNextPage: false,
+        fetchNextPage,
+      }),
+    );
+
+    fireIntersect(true);
+    rejectFetch(new Error("failed"));
+    await Promise.resolve();
+    fireIntersect(true);
+
+    expect(fetchNextPage).toHaveBeenCalledTimes(2);
+  });
+
+  it("retains a newer request guard when an earlier request settles", async () => {
+    const { ref } = makeSentinel();
+    let resolveFirst: () => void = () => {};
+    let resolveSecond: () => void = () => {};
+    const fetchNextPage = vi
+      .fn()
+      .mockReturnValueOnce(
+        new Promise<void>((resolve) => {
+          resolveFirst = resolve;
+        }),
+      )
+      .mockReturnValueOnce(
+        new Promise<void>((resolve) => {
+          resolveSecond = resolve;
+        }),
+      );
+    const { rerender } = renderHook(
+      ({ isFetchingNextPage }: { isFetchingNextPage: boolean }) =>
+        useInfiniteScrollSentinel(
+          ref,
+          { hasNextPage: true, isFetchingNextPage, fetchNextPage },
+          { fillOnComplete: true },
+        ),
+      { initialProps: { isFetchingNextPage: false } },
+    );
+
+    fireIntersect(true);
+    rerender({ isFetchingNextPage: true });
+    rerender({ isFetchingNextPage: false });
+    resolveFirst();
+    await Promise.resolve();
+    fireIntersect(true);
+    resolveSecond();
+
+    expect(fetchNextPage).toHaveBeenCalledTimes(2);
   });
 
   it("pokes a fetch when hasNextPage flips false→true while already intersecting (cold load)", () => {

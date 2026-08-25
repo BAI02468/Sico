@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Button } from "@sico/ui";
 import { ArrowRight, Square } from "lucide-react";
 import { type JSX } from "react";
@@ -52,9 +31,15 @@ export function ComposerSendButton({
   onSend,
   onStop,
 }: Props): JSX.Element | null {
+  const { t } = useLingui();
   if (submitting) {
     // Create in flight — non-stoppable, so the click is a no-op.
-    return <SpinnerButton label="Sending…" onClick={noop} />;
+    return (
+      <SpinnerButton
+        label={t({ id: "chat.composer.sending", message: "Sending…" })}
+        onClick={noop}
+      />
+    );
   }
   if (isStreaming) {
     return (
@@ -63,7 +48,10 @@ export function ComposerSendButton({
         size="icon"
         variant="subtle"
         className="rounded-full bg-neutral-200"
-        aria-label="Stop response"
+        aria-label={t({
+          id: "chat.composer.stopResponse",
+          message: "Stop response",
+        })}
         onClick={onStop}
       >
         {/* A dark FILLED square on a light circle — fill-current paints it solid. */}
@@ -73,7 +61,12 @@ export function ComposerSendButton({
   }
   if (isRequestPending) {
     // The ↻ window — the same spinner, but clicking it stops the request.
-    return <SpinnerButton label="Stop request" onClick={onStop} />;
+    return (
+      <SpinnerButton
+        label={t({ id: "chat.composer.stopRequest", message: "Stop request" })}
+        onClick={onStop}
+      />
+    );
   }
   if (showSend) {
     return (
@@ -81,7 +74,10 @@ export function ComposerSendButton({
         type="button"
         size="icon"
         className="rounded-full"
-        aria-label="Send message"
+        aria-label={t({
+          id: "chat.composer.sendMessage",
+          message: "Send message",
+        })}
         disabled={disabled}
         onClick={onSend}
       >

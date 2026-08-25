@@ -1,27 +1,6 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen } from "@testing-library/react";
+import axios from "axios";
 import { createStore, Provider as JotaiProvider } from "jotai";
 import { type PropsWithChildren, type ReactElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -33,6 +12,7 @@ import {
 } from "@/features/chat/atoms/sidepane-atom";
 import { useHistory, type UseHistory } from "@/features/chat/hooks/use-history";
 import { useReconnect } from "@/features/chat/hooks/use-reconnect";
+import { ApiClientProvider } from "@/services/api-client-context";
 
 // Harness mirrors collaboration.test.tsx: Collaboration mounts the Composer
 // (reads useChat) — stub the transport so it mounts without a real store/SSE.
@@ -101,12 +81,13 @@ function withStore(
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
+  const apiClient = axios.create();
 
   function Wrapper({ children }: PropsWithChildren): ReactElement {
     return (
       <JotaiProvider store={store}>
         <QueryClientProvider client={queryClient}>
-          {children}
+          <ApiClientProvider client={apiClient}>{children}</ApiClientProvider>
         </QueryClientProvider>
       </JotaiProvider>
     );

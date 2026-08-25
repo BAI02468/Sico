@@ -3,13 +3,11 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"],
-      "passThroughEnv": ["VITE_BACKEND"]
+      "outputs": ["dist/**"]
     },
     "dev": {
       "persistent": true,
-      "cache": false,
-      "passThroughEnv": ["VITE_BACKEND"]
+      "cache": false
     },
     "lint": {},
     "test": {}

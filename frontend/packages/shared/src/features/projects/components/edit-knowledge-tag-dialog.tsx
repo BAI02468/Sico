@@ -1,26 +1,7 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { zodResolver } from "@hookform/resolvers/zod";
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react/macro";
 import {
   Button,
   Dialog,
@@ -48,18 +29,51 @@ import type { KnowledgeTag } from "../schemas/knowledge-tag";
 const NAME_MAX = 20;
 const WHEN_TO_USE_MAX = 100;
 
+const NAME_REQUIRED = msg({
+  id: "projects.knowledgeTagDialog.validation.nameRequired",
+  message: "Name is required",
+});
+const NAME_TOO_LONG = msg({
+  id: "projects.knowledgeTagDialog.validation.nameTooLong",
+  message: "Name is too long",
+});
+const WHEN_TO_USE_TOO_LONG = msg({
+  id: "projects.knowledgeTagDialog.validation.whenToUseTooLong",
+  message: "When to use is too long",
+});
+
 // `whenToUse` maps to the domain `description` at submit. Inputs hard-cap via
 // `maxLength`; zod `.max()` backstops pre-seeded over-limit Edit values.
 const editKnowledgeTagFormSchema = z.object({
-  name: z.string().min(1, "Name is required").max(NAME_MAX, "Name is too long"),
-  whenToUse: z.string().max(WHEN_TO_USE_MAX, "When to use is too long"),
+  name: z
+    .string()
+    .min(1, { error: () => i18n._(NAME_REQUIRED) })
+    .max(NAME_MAX, { error: () => i18n._(NAME_TOO_LONG) }),
+  whenToUse: z
+    .string()
+    .max(WHEN_TO_USE_MAX, { error: () => i18n._(WHEN_TO_USE_TOO_LONG) }),
 });
 type EditKnowledgeTagFormValues = z.infer<typeof editKnowledgeTagFormSchema>;
+
+type KnowledgeTagDialogCopy = {
+  name: string;
+  namePlaceholder: string;
+  whenToUse: string;
+  whenToUsePlaceholder: string;
+  addTitle: string;
+  editTitle: string;
+  saveSuccess: string;
+  saveError: string;
+  cancel: string;
+  saving: string;
+  save: string;
+};
 
 // Module-scope helpers + prop-by-prop wiring satisfy no-unstable-nested-
 // components / jsx-props-no-spreading.
 function renderNameField(
   control: Control<EditKnowledgeTagFormValues>,
+  copy: KnowledgeTagDialogCopy,
 ): React.JSX.Element {
   return (
     <Controller
@@ -68,11 +82,11 @@ function renderNameField(
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid ? true : undefined}>
           <FieldLabel htmlFor="edit-knowledge-tag-name" className="text-base">
-            Name
+            {copy.name}
           </FieldLabel>
           <CharCountInput
             id="edit-knowledge-tag-name"
-            placeholder="Name this knowledge tag"
+            placeholder={copy.namePlaceholder}
             autoComplete="off"
             max={NAME_MAX}
             ariaInvalid={fieldState.invalid ? true : undefined}
@@ -93,6 +107,7 @@ function renderNameField(
 
 function renderWhenToUseField(
   control: Control<EditKnowledgeTagFormValues>,
+  copy: KnowledgeTagDialogCopy,
 ): React.JSX.Element {
   return (
     <Controller
@@ -104,12 +119,12 @@ function renderWhenToUseField(
             htmlFor="edit-knowledge-tag-when-to-use"
             className="text-base"
           >
-            When to use
+            {copy.whenToUse}
           </FieldLabel>
           <CharCountTextarea
             id="edit-knowledge-tag-when-to-use"
             className="min-h-48"
-            placeholder="Describe when your digital workers should use this tag."
+            placeholder={copy.whenToUsePlaceholder}
             autoComplete="off"
             max={WHEN_TO_USE_MAX}
             ariaInvalid={fieldState.invalid ? true : undefined}
@@ -136,6 +151,44 @@ export type EditKnowledgeTagDialogProps = {
   knowledgeTag?: KnowledgeTag;
 };
 
+function useKnowledgeTagDialogCopy(): KnowledgeTagDialogCopy {
+  const { t } = useLingui();
+  return {
+    name: t({ id: "projects.knowledgeTagDialog.name", message: "Name" }),
+    namePlaceholder: t({
+      id: "projects.knowledgeTagDialog.namePlaceholder",
+      message: "Name this knowledge tag",
+    }),
+    whenToUse: t({
+      id: "projects.knowledgeTagDialog.whenToUse",
+      message: "When to use",
+    }),
+    whenToUsePlaceholder: t({
+      id: "projects.knowledgeTagDialog.whenToUsePlaceholder",
+      message: "Describe when your digital workers should use this tag.",
+    }),
+    addTitle: t({
+      id: "projects.knowledgeTagDialog.addTitle",
+      message: "Add knowledge tag",
+    }),
+    editTitle: t({
+      id: "projects.knowledgeTagDialog.editTitle",
+      message: "Edit knowledge tag",
+    }),
+    saveSuccess: t({
+      id: "projects.knowledgeTagDialog.saveSuccess",
+      message: "Knowledge tag saved.",
+    }),
+    saveError: t({
+      id: "projects.knowledgeTagDialog.saveError",
+      message: "We couldn't save your changes. Try again.",
+    }),
+    cancel: t({ id: "common.action.cancel", message: "Cancel" }),
+    saving: t({ id: "common.action.saving", message: "Saving…" }),
+    save: t({ id: "common.action.save", message: "Save" }),
+  };
+}
+
 /** Controlled Add/Edit dialog — `knowledgeTag` decides the mode. */
 export function EditKnowledgeTagDialog({
   open,
@@ -143,6 +196,7 @@ export function EditKnowledgeTagDialog({
   projectId,
   knowledgeTag,
 }: EditKnowledgeTagDialogProps): React.JSX.Element {
+  const copy = useKnowledgeTagDialogCopy();
   const form = useForm<EditKnowledgeTagFormValues>({
     resolver: zodResolver(editKnowledgeTagFormSchema),
     defaultValues: {
@@ -175,12 +229,12 @@ export function EditKnowledgeTagDialog({
 
   const onSubmit = (values: EditKnowledgeTagFormValues): void => {
     const onSuccess = (): void => {
-      toast.success("Knowledge tag saved.", { invert: true });
+      toast.success(copy.saveSuccess, { invert: true });
       onOpenChange(false);
     };
     // Keep the dialog open on failure so input survives for a retry.
     const onError = (): void => {
-      toast.error("We couldn't save your changes. Try again.");
+      toast.error(copy.saveError);
     };
     if (knowledgeTag) {
       edit.mutate(
@@ -204,21 +258,21 @@ export function EditKnowledgeTagDialog({
       <DialogContent variant="content" className="w-150">
         <DialogHeader>
           <DialogTitle>
-            {knowledgeTag ? "Edit knowledge tag" : "Add knowledge tag"}
+            {knowledgeTag ? copy.editTitle : copy.addTitle}
           </DialogTitle>
         </DialogHeader>
         <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
-            {renderNameField(form.control)}
-            {renderWhenToUseField(form.control)}
+            {renderNameField(form.control, copy)}
+            {renderWhenToUseField(form.control, copy)}
           </FieldGroup>
           <DialogFooter className="mt-6">
             <Button
               type="button"
-              variant="secondary"
+              variant="subtle"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {copy.cancel}
             </Button>
             <Button
               type="submit"
@@ -227,7 +281,7 @@ export function EditKnowledgeTagDialog({
               disabled={pending}
             >
               {pending ? <Loader2 className="animate-spin" /> : null}
-              {pending ? "Saving…" : "Save"}
+              {pending ? copy.saving : copy.save}
             </Button>
           </DialogFooter>
         </form>

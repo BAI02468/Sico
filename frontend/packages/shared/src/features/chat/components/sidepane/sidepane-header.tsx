@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@sico/ui";
 import { Maximize, Minimize, X } from "lucide-react";
 import type { JSX, ReactNode } from "react";
@@ -61,9 +40,13 @@ export function SidepaneHeader({
   actionsSlot,
   statusSlot,
 }: SidepaneHeaderProps): JSX.Element {
+  const { t } = useLingui();
   const { maximized, close, toggleMaximize } = useSidepane();
   const MaximizeGlyph = maximized ? Minimize : Maximize;
-  const maximizeLabel = maximized ? "Restore" : "Maximize";
+  const maximizeLabel = maximized
+    ? t({ id: "chat.sidepaneHeader.restore", message: "Restore" })
+    : t({ id: "chat.sidepaneHeader.maximize", message: "Maximize" });
+  const closeLabel = t({ id: "chat.sidepaneHeader.close", message: "Close" });
 
   return (
     <div className="bg-surface-acrylic-board sticky top-0 z-10 flex items-center justify-between gap-2 px-4 pt-4 pb-2 backdrop-blur-sm">
@@ -113,14 +96,14 @@ export function SidepaneHeader({
                 type="button"
                 variant="subtle"
                 size="icon-xs"
-                aria-label="Close"
+                aria-label={closeLabel}
                 onClick={close}
               >
                 <X className="size-4" />
               </Button>
             }
           />
-          <TooltipContent>Close</TooltipContent>
+          <TooltipContent>{closeLabel}</TooltipContent>
         </Tooltip>
       </div>
     </div>

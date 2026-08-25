@@ -1,28 +1,9 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { createStore, Provider as JotaiProvider } from "jotai";
+import { createElement, type ReactNode } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { userAtom } from "@/atoms/auth-atom";
 import { useAgentsQuery } from "@/features/digital-worker/hooks/use-agents-query";
 import { useDwPreview } from "@/features/sidebar/hooks/use-dw-preview";
 
@@ -35,6 +16,42 @@ const mockQuery = (overrides: Record<string, unknown>): void => {
 };
 
 describe("useDwPreview", () => {
+  beforeEach(() => {
+    vi.mocked(useAgentsQuery).mockReset();
+  });
+
+  function makeWrapper(store: ReturnType<typeof createStore>) {
+    return function Wrapper({ children }: { children: ReactNode }) {
+      return createElement(JotaiProvider, { store }, children);
+    };
+  }
+
+  it("disables the preview query when no authenticated username exists", () => {
+    mockQuery({ isPending: true, isError: false, data: undefined });
+    const store = createStore();
+    store.set(userAtom, null);
+
+    renderHook(() => useDwPreview(), { wrapper: makeWrapper(store) });
+
+    expect(useAgentsQuery).toHaveBeenLastCalledWith(
+      { operatorUsername: undefined },
+      { enabled: false },
+    );
+  });
+
+  it("enables the preview query for the authenticated username", () => {
+    mockQuery({ isPending: true, isError: false, data: undefined });
+    const store = createStore();
+    store.set(userAtom, { id: 1, email: "me@sico.ai", roles: [] });
+
+    renderHook(() => useDwPreview(), { wrapper: makeWrapper(store) });
+
+    expect(useAgentsQuery).toHaveBeenLastCalledWith(
+      { operatorUsername: "me@sico.ai" },
+      { enabled: true },
+    );
+  });
+
   it("returns pending when query is pending", () => {
     mockQuery({ isPending: true, isError: false, data: undefined });
     const { result } = renderHook(() => useDwPreview());

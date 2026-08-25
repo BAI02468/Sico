@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import {
   Button,
   toast,
@@ -42,11 +21,6 @@ export type AddToProjectButtonProps = {
   filename: string;
 };
 
-const COPY = {
-  add: "Add to project",
-  added: "Added to project",
-} as const;
-
 /**
  * Header action on a chat deliverable preview: publishes the file into the DW's
  * owning project (`POST /project/deliverable`). The projectId comes from the
@@ -61,6 +35,7 @@ export function AddToProjectButton({
   fileUri,
   filename,
 }: AddToProjectButtonProps): JSX.Element {
+  const { t } = useLingui();
   const agentInstanceId = useChatAgentId();
   const navigate = useNavigate();
   const { data: agent } = useAgentQuery(agentInstanceId);
@@ -80,26 +55,39 @@ export function AddToProjectButton({
       },
       {
         onSuccess: () => {
-          toast.success("File shared. Everyone in the project can access.", {
-            action: {
-              label: "View",
-              onClick: () => {
-                void navigate({
-                  to: "/project/$projectId/deliverable",
-                  params: { projectId: String(projectId) },
-                });
+          toast.success(
+            t({
+              id: "chat.addToProject.shareSuccess",
+              message: "File shared. Everyone in the project can access.",
+            }),
+            {
+              action: {
+                label: t({ id: "common.action.view", message: "View" }),
+                onClick: () => {
+                  void navigate({
+                    to: "/project/$projectId/deliverable",
+                    params: { projectId: String(projectId) },
+                  });
+                },
               },
             },
-          });
+          );
         },
         onError: () => {
-          toast.error("We couldn't add this to the project. Try again.");
+          toast.error(
+            t({
+              id: "chat.addToProject.shareError",
+              message: "We couldn't add this to the project. Try again.",
+            }),
+          );
         },
       },
     );
   };
 
-  const label = add.isSuccess ? COPY.added : COPY.add;
+  const label = add.isSuccess
+    ? t({ id: "chat.addToProject.added", message: "Added to project" })
+    : t({ id: "chat.addToProject.add", message: "Add to project" });
 
   return (
     <Tooltip>

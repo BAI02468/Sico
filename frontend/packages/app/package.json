@@ -10,7 +10,7 @@
     "lint": "npm run lint:tsc && npm run lint:oxlint && npm run lint:eslint:fix && npm run lint:fmt:fix",
     "lint:tsc": "tsgo --noEmit --incremental --tsBuildInfoFile node_modules/.cache/tsgo/.tsbuildinfo",
     "lint:oxlint": "oxlint -c ../../packages/config/.oxlintrc.json --disable-nested-config --type-aware --max-warnings 0",
-    "lint:eslint": "eslint . --cache --cache-location node_modules/.cache/eslint/ --max-warnings 0 --concurrency auto",
+    "lint:eslint": "eslint . --cache --cache-location node_modules/.cache/eslint/ --max-warnings 0 --concurrency 2",
     "lint:eslint:fix": "npm run lint:eslint -- --fix",
     "lint:fmt": "oxfmt --config ../../packages/config/.oxfmtrc.json --check .",
     "lint:fmt:fix": "oxfmt --config ../../packages/config/.oxfmtrc.json .",
@@ -18,9 +18,13 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:build": "vite build && vitest run --config vitest.config.build.ts",
-    "e2e": "vite build && playwright test"
+    "e2e": "vite build && playwright test",
+    "e2e:smoke": "vite build && playwright test --grep \"@reachable|@core\"",
+    "e2e:real": "SICO_E2E_URL=${SICO_E2E_URL:-https://test.sico.microsoft.com} playwright test"
   },
   "dependencies": {
+    "@lingui/core": "^5.9.5",
+    "@lingui/react": "^5.9.5",
     "@sico/shared": "workspace:*",
     "@sico/ui": "workspace:*",
     "@tanstack/react-query": "^5.100.9",
@@ -35,13 +39,13 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.3",
     "@playwright/test": "^1.60.0",
     "@sico/config": "workspace:*",
     "@tanstack/react-router-devtools": "^1.166.13",
     "@tanstack/router-plugin": "^1.167.35",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "eslint-plugin-react-refresh": "^0.4.19",
     "msw": "^2.14.6",
     "pdfjs-dist": "^6.0.227",

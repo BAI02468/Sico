@@ -1,23 +1,3 @@
-// Copyright (c) 2026 Sico Authors
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package impl
 
 import (
@@ -42,6 +22,7 @@ import (
 	"sico-backend/internal/shared/enum"
 	"sico-backend/internal/shared/errcode"
 	agentrepo "sico-backend/internal/store/agent/singleagent/repository"
+	projectrepo "sico-backend/internal/store/project/repository"
 	sandboxdto "sico-backend/internal/transport/http/dto/sandbox"
 	sandboxRgrpc "sico-backend/internal/transport/reverse_grpc/pb/sandbox"
 	"sico-backend/pkg/logger"
@@ -49,19 +30,42 @@ import (
 
 type Service struct {
 	sandboxRgrpc.UnimplementedReverseSandboxRPCServer
-	Pool         *Pool
-	InstanceRepo agentrepo.SingleAgentInstanceRepository
+	Pool          *Pool
+	InstanceRepo  agentrepo.SingleAgentInstanceRepository
+	ProjectAssets emulatorAppProjectAssetLookup
 }
 
 var errSandboxUnassignLeaseInUse = errors.New("sandbox lease is still in use")
 
-func NewService(pool *Pool, instanceRepo agentrepo.SingleAgentInstanceRepository, _ cronContract.Cron) *Service {
+func NewService(
+	pool *Pool,
+	instanceRepo agentrepo.SingleAgentInstanceRepository,
+	cron cronContract.Cron,
+) *Service {
+	return NewServiceWithProjectAssets(pool, instanceRepo, cron, nil)
+}
+
+func NewServiceWithProjectAssets(
+	pool *Pool,
+	instanceRepo agentrepo.SingleAgentInstanceRepository,
+	_ cronContract.Cron,
+	projectAssets projectrepo.ProjectRepository,
+) *Service {
+	var projectAssetLookup emulatorAppProjectAssetLookup
+	if projectAssets != nil {
+		projectAssetLookup = projectAssets
+	}
 	svc := &Service{
-		Pool:         pool,
-		InstanceRepo: instanceRepo,
+		Pool:          pool,
+		InstanceRepo:  instanceRepo,
+		ProjectAssets: projectAssetLookup,
 	}
 
 	return svc
+}
+
+func (s *Service) Start(ctx context.Context) error {
+	return s.Pool.Start(ctx)
 }
 
 // ==================== New Simplified APIs ====================
@@ -304,7 +308,7 @@ func (s *Service) mergeLeaseMetadata(ctx context.Context, lease *Lease, fresh ma
 		return
 	}
 
-	resKey := resourceKeyPrefix + lease.SandboxID
+	resKey := resourceLeaseKey(lease.SandboxID)
 	for range 3 {
 		err := tryPersistLeaseMetadata(ctx, rds, resKey, lease.Metadata)
 		if err == nil {
@@ -395,27 +399,17 @@ func (s *Service) getSandboxEndpoints(lease *Lease) (endpoint, docsURL, vncURL, 
 	// docs_url points to backend API docs endpoint for this sandbox type
 	docsURL = fmt.Sprintf("/api/sico/sandbox/docs/%s", lease.Type)
 
-	switch lease.Type {
-	case enum.SandboxTypeEmulator.String():
-		if lease.Metadata != nil {
-			baseURL := lease.Metadata["providerBaseUrl"]
-			if baseURL != "" {
-				// ADB endpoint - direct access for client
-				if lease.Metadata["adbPort"] != "" {
-					host := extractHostFromURL(baseURL)
-					endpoint = fmt.Sprintf("%s:%s", host, lease.Metadata["adbPort"])
-				}
-				// Show VNC (iframe) and Open VNC (new tab) both use backend-owned
-				// JMuxer page so every viewer shares a single upstream scrcpy stream
-				// via the H264 fan-out hub.
-				rid := hashResourceID(lease.ResourceID)
-				vncURL = fmt.Sprintf("/api/sico/sandbox/resources/emulator/%s/vnc", rid)
-				vncOpenURL = vncURL
-			}
-		}
+	provider, ok := s.Pool.GetProvider(lease.Type)
+	if !ok {
+		return "", docsURL, "", ""
 	}
+	renderer, ok := provider.(EndpointRenderer)
+	if !ok {
+		return "", docsURL, "", ""
+	}
+	endpoints := renderer.RenderEndpoints(lease.ResourceID, lease.Metadata)
 
-	return endpoint, docsURL, vncURL, vncOpenURL
+	return endpoints.Endpoint, docsURL, endpoints.VNCURL, endpoints.VNCOpenURL
 }
 
 // ResetSandbox soft-resets a sandbox environment without releasing the lease.
@@ -456,52 +450,7 @@ func (s *Service) ResetSandbox(ctx context.Context, instanceID, sandboxID string
 
 // ListAllResources lists all sandbox resources grouped by type
 func (s *Service) ListAllResources(ctx context.Context) (map[string]interface{}, error) {
-	result := map[string]interface{}{
-		enum.SandboxTypeEmulator.String(): []map[string]interface{}{},
-	}
-
-	// Get the shared resource snapshot and merge in current Redis lease metadata.
-	listResult, err := s.Pool.ListResources(ctx, "")
-	if err != nil {
-		return nil, err
-	}
-
-	now := time.Now()
-
-	grouped := map[string][]*sandboxdto.SandboxResource{
-		enum.SandboxTypeEmulator.String(): {},
-	}
-	for _, r := range listResult.Resources {
-		if r == nil {
-			continue
-		}
-		if _, ok := grouped[r.Type]; ok {
-			grouped[r.Type] = append(grouped[r.Type], r)
-		}
-	}
-
-	typesInOrder := []string{
-		enum.SandboxTypeEmulator.String(),
-	}
-
-	// Build display-name map from all resources (shared logic with instance sandbox responses)
-	displayNames := buildDisplayNameMap(listResult.Resources)
-
-	for _, sandboxType := range typesInOrder {
-		resources := grouped[sandboxType]
-		sort.Slice(resources, func(i, j int) bool {
-			return strings.ToLower(resources[i].ResourceId) < strings.ToLower(resources[j].ResourceId)
-		})
-
-		list := make([]map[string]interface{}, 0, len(resources))
-		for _, r := range resources {
-			list = append(list, s.buildResourceInfo(r, listResult, displayNames, now))
-		}
-
-		result[sandboxType] = list
-	}
-
-	return result, nil
+	return s.ListAllResourcesFiltered(ctx, nil)
 }
 
 // buildResourceInfo renders a single resource into the map shape returned by
@@ -550,23 +499,34 @@ func (s *Service) buildResourceInfo(
 	info["docs_url"] = docsURL
 	info["vnc_url"] = vncURL
 	info["vnc_open_url"] = vncOpenURL
+	if r.Metadata != nil {
+		if os := r.Metadata["os"]; os != "" {
+			info["os"] = os
+		}
+		if protocol := r.Metadata["protocol"]; protocol != "" {
+			info["protocol"] = protocol
+		}
+	}
 
 	return info
 }
 
-func sandboxDisplayNamePrefix(sandboxType string) string {
-	switch sandboxType {
-	case enum.SandboxTypeEmulator.String():
-		return "Android-Device"
-	default:
+func (s *Service) sandboxDisplayNamePrefix(sandboxType string) string {
+	provider, ok := s.Pool.GetProvider(sandboxType)
+	if !ok {
 		return "Unknown"
 	}
+	displayProvider, ok := provider.(DisplayNameProvider)
+	if !ok {
+		return "Unknown"
+	}
+	return displayProvider.DisplayNamePrefix()
 }
 
 // buildDisplayNameMap groups resources by type, sorts by resource_id, and assigns
 // a sequential display name (e.g. "Android-Device #1") to each sandbox.
 // Returns sandboxID → display name string.
-func buildDisplayNameMap(resources []*sandboxdto.SandboxResource) map[string]string {
+func (s *Service) buildDisplayNameMap(resources []*sandboxdto.SandboxResource) map[string]string {
 	names := map[string]string{}
 
 	grouped := map[string][]*sandboxdto.SandboxResource{}
@@ -581,7 +541,7 @@ func buildDisplayNameMap(resources []*sandboxdto.SandboxResource) map[string]str
 		sort.Slice(group, func(i, j int) bool {
 			return strings.ToLower(group[i].ResourceId) < strings.ToLower(group[j].ResourceId)
 		})
-		prefix := sandboxDisplayNamePrefix(sandboxType)
+		prefix := s.sandboxDisplayNamePrefix(sandboxType)
 		for idx, r := range group {
 			sid := r.SandboxId
 			if sid == "" {
@@ -600,13 +560,13 @@ func (s *Service) getLeaseDisplayName(ctx context.Context, lease *Lease) string 
 	}
 
 	if resources, _, ok, err := s.Pool.loadSnapshotResources(ctx, ""); err == nil && ok {
-		displayNames := buildDisplayNameMap(s.snapshotToDTO(resources))
+		displayNames := s.buildDisplayNameMap(s.snapshotToDTO(resources))
 		if dn, exists := displayNames[lease.SandboxID]; exists && dn != "" {
 			return dn
 		}
 	}
 
-	return sandboxDisplayNamePrefix(lease.Type)
+	return s.sandboxDisplayNamePrefix(lease.Type)
 }
 
 // getResourceEndpoints returns endpoint, docs URL, and VNC URL for a resource.
@@ -619,25 +579,17 @@ func (s *Service) getResourceEndpoints(r *sandboxdto.SandboxResource) (endpoint,
 	// docs_url points to backend API docs endpoint for this sandbox type
 	docsURL = fmt.Sprintf("/api/sico/sandbox/docs/%s", r.Type)
 
-	switch r.Type {
-	case enum.SandboxTypeEmulator.String():
-		if r.Metadata != nil {
-			baseURL := r.Metadata["providerBaseUrl"]
-			if baseURL != "" {
-				// ADB endpoint - direct access for client
-				if r.Metadata["adbPort"] != "" {
-					host := extractHostFromURL(baseURL)
-					endpoint = fmt.Sprintf("%s:%s", host, r.Metadata["adbPort"])
-				}
-				// Show VNC and Open VNC both use backend-owned JMuxer page
-				rid := hashResourceID(r.ResourceId)
-				vncURL = fmt.Sprintf("/api/sico/sandbox/resources/emulator/%s/vnc", rid)
-				vncOpenURL = vncURL
-			}
-		}
+	provider, ok := s.Pool.GetProvider(r.Type)
+	if !ok {
+		return "", docsURL, "", ""
 	}
+	renderer, ok := provider.(EndpointRenderer)
+	if !ok {
+		return "", docsURL, "", ""
+	}
+	endpoints := renderer.RenderEndpoints(r.ResourceId, r.Metadata)
 
-	return endpoint, docsURL, vncURL, vncOpenURL
+	return endpoints.Endpoint, docsURL, endpoints.VNCURL, endpoints.VNCOpenURL
 }
 
 // hashResourceID generates a unique hash for resource identification in proxy URLs
@@ -718,29 +670,29 @@ func (s *Service) GetSandboxOpenAPI(ctx context.Context, sandboxType string) ([]
 		return strings.ToLower(availableResources[i].ResourceID) < strings.ToLower(availableResources[j].ResourceID)
 	})
 
-	// Find the endpoint from resource metadata
-	var endpoint string
+	provider, ok := s.Pool.GetProvider(sandboxType)
+	if !ok || provider == nil {
+		return nil, apperr.New(errcode.SandboxProviderUnavailable, "provider unavailable for type: "+sandboxType)
+	}
+	resolver, ok := provider.(OpenAPIResolver)
+	if !ok {
+		return nil, apperr.New(errcode.CommonInternalError, "openapi resolver not configured for type: "+sandboxType)
+	}
+
+	var openAPIURL string
 	for _, r := range availableResources {
-		if r == nil || r.Metadata == nil {
+		if r == nil {
 			continue
 		}
-		endpoint = s.getResourceEndpoint(sandboxType, r.Metadata)
-		if endpoint != "" {
+		openAPIURL = resolver.OpenAPIURL(r.ResourceID, r.Metadata)
+		if openAPIURL != "" {
 			break
 		}
 	}
 
-	if endpoint == "" {
+	if openAPIURL == "" {
 		return nil, apperr.New(errcode.CommonNotFound, "no endpoint found for sandbox type: "+sandboxType)
 	}
-
-	// Build OpenAPI URL
-	openAPIPath := enum.GetOpenAPIPath(sandboxType)
-	if openAPIPath == "" {
-		return nil, apperr.New(errcode.CommonInternalError, "openapi path not configured for type: "+sandboxType)
-	}
-
-	openAPIURL := endpoint + openAPIPath
 	logger.CtxInfo(ctx, "Fetching OpenAPI from %s", openAPIURL)
 
 	// Fetch OpenAPI spec
@@ -754,16 +706,6 @@ func (s *Service) GetSandboxOpenAPI(ctx context.Context, sandboxType string) ([]
 	return data, nil
 }
 
-// getResourceEndpoint extracts the endpoint URL from resource metadata based on type
-func (s *Service) getResourceEndpoint(sandboxType string, metadata map[string]string) string {
-	switch sandboxType {
-	case enum.SandboxTypeEmulator.String():
-		return metadata["providerBaseUrl"]
-	default:
-		return ""
-	}
-}
-
 // extractHostFromURL extracts the host (without port) from a URL string
 func extractHostFromURL(rawURL string) string {
 	parsed, err := url.Parse(rawURL)
@@ -775,26 +717,12 @@ func extractHostFromURL(rawURL string) string {
 
 // ==================== Sandbox Assignment APIs ====================
 
-const assignKeyPrefix = "sandbox:assign:"
-
-// assignKey returns the Redis key for storing manual instance→sandbox assignments.
-// Value is a Redis Hash: field=sandboxID, value=sandboxType
-func assignKey(instanceID string) string {
-	return assignKeyPrefix + instanceID
-}
-
-const instanceAssignLockKeyPrefix = "sandbox:instance-lock:"
-
 var releaseInstanceAssignLockScript = redis.NewScript(`
 if redis.call('GET', KEYS[1]) == ARGV[1] then
   return redis.call('DEL', KEYS[1])
 end
 return 0
 `)
-
-func instanceAssignLockKey(instanceID string) string {
-	return instanceAssignLockKeyPrefix + instanceID
-}
 
 func (s *Service) WithInstanceAssignmentLock(ctx context.Context, instanceID string, fn func() error) error {
 	instanceID = strings.TrimSpace(instanceID)
@@ -951,7 +879,7 @@ func assignSandboxAtomically(ctx context.Context, rds *redis.Client, instanceID 
 		return apperr.New(errcode.CommonInvalidParam, "lease is required")
 	}
 
-	resKey := resourceKeyPrefix + lease.SandboxID
+	resKey := resourceLeaseKey(lease.SandboxID)
 	aKey := assignKey(instanceID)
 	lease.CreatedAt = time.Now()
 	payload, marshalErr := json.Marshal(lease)
@@ -1115,7 +1043,7 @@ func (s *Service) unassignSandbox(ctx context.Context, instanceID string, sandbo
 	}
 
 	aKey := assignKey(instanceID)
-	resKey := resourceKeyPrefix + sandboxID
+	resKey := resourceLeaseKey(sandboxID)
 	for range 3 {
 		retry, err := s.unassignSandboxOnce(ctx, rds, instanceID, sandboxID, aKey, resKey)
 		if !retry {
@@ -1382,7 +1310,7 @@ func (s *Service) loadResourceStatusAndNames(
 		}
 	}
 
-	displayNames := buildDisplayNameMap(s.snapshotToDTO(resources))
+	displayNames := s.buildDisplayNameMap(s.snapshotToDTO(resources))
 	return resourceStatusByID, displayNames, nil
 }
 
@@ -1424,7 +1352,7 @@ func (s *Service) buildInstanceSandboxInfo(
 	if dn, ok := displayNames[lease.SandboxID]; ok && dn != "" {
 		info["display_name"] = dn
 	} else {
-		info["display_name"] = sandboxDisplayNamePrefix(lease.Type)
+		info["display_name"] = s.sandboxDisplayNamePrefix(lease.Type)
 	}
 
 	endpoint, docsURL, vncURL, vncOpenURL := s.getSandboxEndpoints(lease)

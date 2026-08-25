@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { AxiosInstance } from "axios";
@@ -34,6 +12,10 @@ import {
 } from "@/features/chat/atoms/chat-atom";
 import { sidepaneContentAtom } from "@/features/chat/atoms/sidepane-atom";
 import { DigitalWorkerHome } from "@/features/chat/components/digital-worker-home/digital-worker-home";
+import {
+  type AgentStatus,
+  AgentStatusSchema,
+} from "@/features/digital-worker/schemas/agent";
 import { ApiClientProvider } from "@/services/api-client-context";
 
 // Stub the data hooks at their boundary so the container mounts without a
@@ -47,11 +29,12 @@ const agent = {
   role: "Tester",
   iconUri: "https://example.com/a.png",
 };
+let agentStatus: AgentStatus = AgentStatusSchema.enum.ACTIVE;
 vi.mock("@tanstack/react-query", async (importActual) => {
   const actual = await importActual<typeof import("@tanstack/react-query")>();
   return {
     ...actual,
-    useSuspenseQuery: () => ({ data: agent }),
+    useSuspenseQuery: () => ({ data: { ...agent, status: agentStatus } }),
     // `seedEmptyHistory` (called in handleSubmit) only needs get/set to exist.
     useQueryClient: () => ({
       getQueryData: () => undefined,
@@ -109,6 +92,7 @@ function withStore(
 beforeEach(() => {
   vi.clearAllMocks();
   createIsPending = false;
+  agentStatus = AgentStatusSchema.enum.ACTIVE;
 });
 
 describe("DigitalWorkerHome", () => {
@@ -128,6 +112,29 @@ describe("DigitalWorkerHome", () => {
     expect(
       screen.getByRole("button", { name: /Automate regression/ }),
     ).toBeInTheDocument();
+  });
+
+  it("reacts to an active worker becoming inactive", () => {
+    const store = createStore();
+    const view = render(
+      <DigitalWorkerHome agentInstanceId={685} onSubmitted={vi.fn()} />,
+      { wrapper: withStore(store) },
+    );
+
+    expect(screen.getByLabelText("Message input")).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: /Automate regression/ }),
+    ).toBeInTheDocument();
+
+    agentStatus = AgentStatusSchema.enum.INACTIVE;
+    view.rerender(
+      <DigitalWorkerHome agentInstanceId={685} onSubmitted={vi.fn()} />,
+    );
+
+    expect(screen.getByLabelText("Message input")).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: /Automate regression/ }),
+    ).not.toBeInTheDocument();
   });
 
   it("prefills the composer when a suggested task is clicked", async () => {

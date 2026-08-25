@@ -1,55 +1,15 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Button } from "@sico/ui";
 import { useEffect } from "react";
 import type * as React from "react";
 import type { FallbackProps } from "react-error-boundary";
 
 import errorIllustrationUrl from "../../assets/error.svg";
-import { classifyError } from "../../utils/classify-error";
+import { classifyError, type ErrorKind } from "../../utils/classify-error";
 import { logger } from "../../utils/logger";
 import { MessageState } from "../message-state";
 
-const COPY = {
-  network: {
-    heading: "Can't reach the server",
-    body: "Check your connection and try again.",
-  },
-  server: {
-    heading: "Something went wrong",
-    body: "Something went wrong on our end. Try again in a moment.",
-  },
-  schema: {
-    heading: "Unexpected response",
-    body: "We received unexpected data. Try refreshing the page.",
-  },
-  unknown: {
-    heading: "Something went wrong",
-    body: "Something went wrong on this page. Try again.",
-  },
-} as const;
-
-export type ErrorViewKind = keyof typeof COPY;
+export type ErrorViewKind = ErrorKind;
 
 /**
  * Shared `<ErrorBoundary FallbackComponent>` for suspense-backed list
@@ -68,8 +28,53 @@ export function ErrorView({
   error,
   resetErrorBoundary,
 }: FallbackProps): React.JSX.Element {
+  const { t } = useLingui();
   const kind = classifyError(error);
-  const copy = COPY[kind];
+  // Built from the useLingui() hook `t` so a locale switch re-renders the
+  // component and recomputes every entry against the active locale.
+  const copyByKind: Record<ErrorKind, { heading: string; body: string }> = {
+    network: {
+      heading: t({
+        id: "errorView.network.heading",
+        message: "Can't reach the server",
+      }),
+      body: t({
+        id: "errorView.network.body",
+        message: "Check your connection and try again.",
+      }),
+    },
+    server: {
+      heading: t({
+        id: "errorView.server.heading",
+        message: "Something went wrong",
+      }),
+      body: t({
+        id: "errorView.server.body",
+        message: "Something went wrong on our end. Try again in a moment.",
+      }),
+    },
+    schema: {
+      heading: t({
+        id: "errorView.schema.heading",
+        message: "Unexpected response",
+      }),
+      body: t({
+        id: "errorView.schema.body",
+        message: "We received unexpected data. Try refreshing the page.",
+      }),
+    },
+    unknown: {
+      heading: t({
+        id: "errorView.unknown.heading",
+        message: "Something went wrong",
+      }),
+      body: t({
+        id: "errorView.unknown.body",
+        message: "Something went wrong on this page. Try again.",
+      }),
+    },
+  };
+  const copy = copyByKind[kind];
   // Mirror the boundary chrome's one-shot logging side-effect: feature
   // pages were a logging blind spot. Keyed on `error` so it fires once
   // per caught error, not on every render.
@@ -87,7 +92,7 @@ export function ErrorView({
       body={copy.body}
       action={
         <Button variant="primary" onClick={resetErrorBoundary}>
-          Try again
+          <Trans id="common.action.tryAgain">Try again</Trans>
         </Button>
       }
     />

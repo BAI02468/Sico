@@ -1,27 +1,6 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { type AxiosInstance } from "axios";
 
+import { SANDBOX_ENDPOINTS } from "../../../constants/endpoints";
 import { apiResponseSchema, unwrapData } from "../../../schemas/api";
 import {
   APP_INSTALL_TASK_STATUS,
@@ -38,21 +17,19 @@ import {
 // as `/sandbox/instance`). Each fn parses the standard `{code,msg,data}`
 // envelope and rejects a non-OK code before reading `data` (via `unwrapData`).
 
-const LIST_PATH = "/sandbox/emulator/apps/list";
-const INSTALL_PATH = "/sandbox/emulator/apps/install";
-const UNINSTALL_PATH = "/sandbox/emulator/apps/uninstall";
-const TASK_PATH = "/sandbox/emulator/apps/tasks";
-
 // User-installed apps per device for an agent instance. `appFilter: "user"`
 // excludes system apps (legacy parity).
 export async function listEmulatorApps(
   apiClient: AxiosInstance,
   instanceId: string,
 ): Promise<EmulatorAppsDeviceResult[]> {
-  const response = await apiClient.post<unknown>(LIST_PATH, {
-    appFilter: "user",
-    instanceId,
-  });
+  const response = await apiClient.post<unknown>(
+    SANDBOX_ENDPOINTS.emulatorAppsList,
+    {
+      appFilter: "user",
+      instanceId,
+    },
+  );
   const parsed = apiResponseSchema(listEmulatorAppsDataSchema).parse(
     response.data,
   );
@@ -71,7 +48,10 @@ export async function installEmulatorApps(
   apiClient: AxiosInstance,
   params: { sandboxIds: string[]; url: string },
 ): Promise<InstallStarted> {
-  const response = await apiClient.post<unknown>(INSTALL_PATH, params);
+  const response = await apiClient.post<unknown>(
+    SANDBOX_ENDPOINTS.emulatorAppsInstall,
+    params,
+  );
   const parsed = apiResponseSchema(installEmulatorAppsDataSchema).parse(
     response.data,
   );
@@ -99,7 +79,7 @@ export async function getInstallTaskStatus(
   signal?: AbortSignal,
 ): Promise<InstallTaskStatus> {
   const response = await apiClient.get<unknown>(
-    `${TASK_PATH}/${encodeURIComponent(taskId)}`,
+    `${SANDBOX_ENDPOINTS.emulatorAppsTasks}/${encodeURIComponent(taskId)}`,
     { signal },
   );
   const parsed = apiResponseSchema(installTaskStatusDataSchema).parse(
@@ -126,7 +106,10 @@ export async function uninstallEmulatorApps(
   apiClient: AxiosInstance,
   params: { package: string; sandboxIds: string[] },
 ): Promise<UninstallResult> {
-  const response = await apiClient.post<unknown>(UNINSTALL_PATH, params);
+  const response = await apiClient.post<unknown>(
+    SANDBOX_ENDPOINTS.emulatorAppsUninstall,
+    params,
+  );
   const parsed = apiResponseSchema(uninstallEmulatorAppsDataSchema).parse(
     response.data,
   );

@@ -1,26 +1,5 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Projects } from "../../../../src/features/projects/components/projects";
@@ -29,6 +8,26 @@ import { ProjectsGrid } from "../../../../src/features/projects/components/proje
 vi.mock("../../../../src/features/projects/components/projects-grid", () => ({
   ProjectsGrid: vi.fn(() => <div data-testid="projects-grid" />),
 }));
+
+vi.mock(
+  "../../../../src/features/projects/components/create-project-dialog",
+  () => ({
+    CreateProjectDialog: ({
+      open,
+      onOpenChange,
+    }: {
+      open: boolean;
+      onOpenChange: (open: boolean) => void;
+    }) =>
+      open ? (
+        <div role="dialog" aria-label="Create Project">
+          <button type="button" onClick={() => onOpenChange(false)}>
+            Close create project
+          </button>
+        </div>
+      ) : null,
+  }),
+);
 
 afterEach(() => {
   vi.resetAllMocks();
@@ -46,6 +45,25 @@ describe("<Projects>", () => {
     });
     expect(heading.tagName).toBe("H1");
     screen.getByText("Track project performance and knowledge.");
+  });
+
+  it("blurs the page title while the create dialog is open", async () => {
+    const user = userEvent.setup();
+    render(<Projects />);
+    const heading = screen.getByRole("heading", { level: 1, name: "Projects" });
+    const titleGroup = heading.parentElement;
+
+    expect(titleGroup).not.toHaveClass("blur-xs");
+
+    await user.click(screen.getByRole("button", { name: "Create Project" }));
+    await screen.findByRole("dialog", { name: "Create Project" });
+    expect(titleGroup).toHaveClass("blur-xs");
+
+    await user.click(
+      screen.getByRole("button", { name: "Close create project" }),
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(titleGroup).not.toHaveClass("blur-xs");
   });
 
   it("renders the skeleton grid with role='status' and aria-label='Loading projects' on first paint", () => {

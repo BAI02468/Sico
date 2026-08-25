@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { type RefObject, useEffect, useRef } from "react";
 
 import { logger } from "../utils/logger";
@@ -28,6 +6,13 @@ type InfiniteScrollState = {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => unknown;
+};
+
+type EdgeCompensationParams = InfiniteScrollState & {
+  fillOnComplete: boolean;
+  isIntersectingRef: RefObject<boolean>;
+  fillPokeCountRef: RefObject<number>;
+  requestInFlightRef: RefObject<symbol | null>;
 };
 
 type InfiniteScrollOptions = {
@@ -79,6 +64,7 @@ export function useInfiniteScrollSentinel(
   });
 
   const isIntersectingRef = useRef(false);
+  const requestInFlightRef = useRef<symbol | null>(null);
   // Consecutive fill-on-complete pokes since the last real intersection event.
   // A genuine fill needs only a handful of pages (container height / row
   // height); an unbounded run means a pathological backend (`hasNext:true` with
@@ -94,10 +80,7 @@ export function useInfiniteScrollSentinel(
       return undefined;
     }
     const tryFetch = (): void => {
-      const s = stateRef.current;
-      if (s.hasNextPage && !s.isFetchingNextPage) {
-        void s.fetchNextPage();
-      }
+      requestNextPage(stateRef.current, requestInFlightRef);
     };
     const observer = new IntersectionObserver(
       (entries) => {
@@ -125,12 +108,15 @@ export function useInfiniteScrollSentinel(
   // sentinel is already intersecting: `hasNextPage` false→true (cold load), and
   // — for `fillOnComplete` lists — each fetch completing without the list having
   // grown past the container. Extracted to keep this hook within the line budget.
-  useEdgeCompensation(
-    { hasNextPage, isFetchingNextPage, fetchNextPage },
-    options?.fillOnComplete ?? false,
+  useEdgeCompensation({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    fillOnComplete: options?.fillOnComplete ?? false,
     isIntersectingRef,
     fillPokeCountRef,
-  );
+    requestInFlightRef,
+  });
 }
 
 // Max consecutive fill-on-complete pokes without a real intersection before the
@@ -138,14 +124,45 @@ export function useInfiniteScrollSentinel(
 // unbounded fetch loop). Far above any real container's page count.
 const FILL_POKE_CAP = 20;
 
+function requestNextPage(
+  { hasNextPage, isFetchingNextPage, fetchNextPage }: InfiniteScrollState,
+  requestInFlightRef: RefObject<symbol | null>,
+): boolean {
+  if (!hasNextPage || isFetchingNextPage || requestInFlightRef.current) {
+    return false;
+  }
+
+  const requestToken = Symbol("infinite-scroll-request");
+  requestInFlightRef.current = requestToken;
+  const completeRequest = (): void => {
+    if (requestInFlightRef.current === requestToken) {
+      requestInFlightRef.current = null;
+    }
+  };
+  try {
+    // React Query owns the rejected state; release the guard for its retry.
+    void Promise.resolve(fetchNextPage()).then(
+      completeRequest,
+      completeRequest,
+    );
+    return true;
+  } catch (error) {
+    completeRequest();
+    throw error;
+  }
+}
+
 // The two manual-poke effects (rising edge + fill-on-complete), split out of
 // `useInfiniteScrollSentinel` so each stays small and independently readable.
-function useEdgeCompensation(
-  { hasNextPage, isFetchingNextPage, fetchNextPage }: InfiniteScrollState,
-  fillOnComplete: boolean,
-  isIntersectingRef: RefObject<boolean>,
-  fillPokeCountRef: RefObject<number>,
-): void {
+function useEdgeCompensation({
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
+  fillOnComplete,
+  isIntersectingRef,
+  fillPokeCountRef,
+  requestInFlightRef,
+}: EdgeCompensationParams): void {
   // `hasNextPage` false→true while already intersecting: IO won't re-fire (no
   // transition), so poke once on the RISING EDGE. Edge-gated so the effect —
   // which also runs when `isFetchingNextPage` settles — doesn't burst-fetch.
@@ -153,34 +170,61 @@ function useEdgeCompensation(
   useEffect(() => {
     const roseToTrue = hasNextPage && !prevHasNextPageRef.current;
     prevHasNextPageRef.current = hasNextPage;
-    if (roseToTrue && !isFetchingNextPage && isIntersectingRef.current) {
-      void fetchNextPage();
+    if (roseToTrue && isIntersectingRef.current) {
+      requestNextPage(
+        { hasNextPage, isFetchingNextPage, fetchNextPage },
+        requestInFlightRef,
+      );
     }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, isIntersectingRef]);
+  }, [
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    isIntersectingRef,
+    requestInFlightRef,
+  ]);
 
-  // Fill-on-complete (opt-in): after a fetch COMPLETES (isFetchingNextPage
-  // true→false) while still intersecting, poke the next fetch so a forward-
-  // paginated list keeps loading until its content overflows the container. Once
-  // a fresh page makes the list taller than the container, the sentinel leaves
-  // the band, IO sets isIntersecting=false, and this stops — natural termination.
-  // The `FILL_POKE_CAP` guard is a backstop for a backend that reports more pages
-  // but returns empty ones (list never grows, sentinel never leaves): without it
-  // this would poke forever.
+  useFillOnComplete({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    fillOnComplete,
+    isIntersectingRef,
+    fillPokeCountRef,
+    requestInFlightRef,
+  });
+}
+
+function useFillOnComplete({
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
+  fillOnComplete,
+  isIntersectingRef,
+  fillPokeCountRef,
+  requestInFlightRef,
+}: EdgeCompensationParams): void {
   const prevIsFetchingRef = useRef(isFetchingNextPage);
   useEffect(() => {
     const settled = prevIsFetchingRef.current && !isFetchingNextPage;
     prevIsFetchingRef.current = isFetchingNextPage;
+    if (settled) {
+      requestInFlightRef.current = null;
+    }
     const wantsPoke =
       fillOnComplete && settled && hasNextPage && isIntersectingRef.current;
-    if (wantsPoke && fillPokeCountRef.current < FILL_POKE_CAP) {
+    if (
+      wantsPoke &&
+      fillPokeCountRef.current < FILL_POKE_CAP &&
+      requestNextPage(
+        { hasNextPage, isFetchingNextPage, fetchNextPage },
+        requestInFlightRef,
+      )
+    ) {
       fillPokeCountRef.current += 1;
-      void fetchNextPage();
-    } else if (wantsPoke && fillPokeCountRef.current === FILL_POKE_CAP) {
-      // The safety valve just tripped: the list wants more pages but they're not
-      // making it taller (a hasNext:true backend returning empty pages), so the
-      // sentinel never leaves the band. Bump past the cap so this warns ONCE, not
-      // on every subsequent settle, and log so the pathological backend is
-      // visible instead of a silent give-up.
+      return;
+    }
+    if (wantsPoke && fillPokeCountRef.current === FILL_POKE_CAP) {
       fillPokeCountRef.current += 1;
       logger.warn(
         "infinite-scroll: fill-on-complete cap reached; backend reports more pages but the list is not growing — pagination stopped",
@@ -194,5 +238,6 @@ function useEdgeCompensation(
     fetchNextPage,
     isIntersectingRef,
     fillPokeCountRef,
+    requestInFlightRef,
   ]);
 }

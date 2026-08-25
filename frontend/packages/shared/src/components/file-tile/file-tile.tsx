@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { cn } from "@sico/ui/lib/utils.ts";
 import { Loader2, X } from "lucide-react";
 import { createElement, type JSX, type KeyboardEvent } from "react";
@@ -37,6 +15,7 @@ export type FileTileProps = {
   // Omit for a read-only tile (a sent attachment / plan deliverable): the
   // remove control is then not rendered at all.
   onRemove?: () => void;
+  disabled?: boolean;
   // Omit for a read-only tile. When set, the tile surface becomes activatable
   // (click + Enter/Space) — a deliverable card that opens the sidepane. Kept
   // independent of `onRemove`: deliverables activate, composer attachments
@@ -60,6 +39,7 @@ export function FileTile({
   icon,
   removeLabel = "Remove file",
   onRemove,
+  disabled = false,
   onActivate,
 }: FileTileProps): JSX.Element {
   // Enter/Space mirror a native button's activation (role="button" gives no
@@ -104,13 +84,14 @@ export function FileTile({
           copy. Without it, a click/drag forms a text selection and the browser
           scrolls this `overflow:hidden` (truncate) span to the selection focus,
           exposing the characters the ellipsis hid. */}
-      <span className="leading-body text-foreground-primary min-w-0 flex-1 truncate pr-5 text-sm select-none">
+      <span className="leading-body text-foreground-primary min-w-0 flex-1 truncate pe-5 text-sm select-none">
         {filename.replace(/^#+\s*/, "")}
       </span>
       {onRemove && (
         <button
           type="button"
           aria-label={removeLabel}
+          disabled={disabled}
           className="text-foreground-secondary absolute top-1 right-1 flex size-5 shrink-0 items-center justify-center rounded-sm opacity-80 hover:opacity-100 focus-visible:opacity-100"
           onClick={(event) => {
             // Stop the click bubbling to the tile's `onActivate` — remove must
@@ -119,9 +100,7 @@ export function FileTile({
             onRemove();
           }}
         >
-          {/* Override the global LucideProvider stroke (1): the dismiss X reads
-              too faint at 1 against the tile's icon glyphs (tabler @ 1.5), so it
-              matches their weight. Scoped to the tile chrome — app lucide stays 1. */}
+          {/* Match the dismiss X to the tile's Tabler icon weight. */}
           <X className="size-4" strokeWidth={1.5} />
         </button>
       )}

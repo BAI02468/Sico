@@ -1,25 +1,5 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react/macro";
 import {
   Skeleton,
   Table,
@@ -39,12 +19,41 @@ const SKELETON_ROW_COUNT = 5;
 // Real header labels (not Skeleton bars) so the placeholder reads as the same
 // 5-column assets table — ASSET NAME / TYPE / CREATOR / CREATED TIME / ACTIONS.
 const COLUMN_HEADERS = [
-  "ASSET NAME",
-  "TYPE",
-  "CREATOR",
-  "CREATED TIME",
-  "ACTIONS",
-] as const;
+  {
+    message: msg({
+      id: "projects.assetsTableSkeleton.assetName",
+      message: "ASSET NAME",
+    }),
+    align: "left" as const,
+  },
+  {
+    message: msg({ id: "projects.assetsTableSkeleton.type", message: "TYPE" }),
+    align: "left" as const,
+  },
+  {
+    message: msg({
+      id: "projects.assetsTableSkeleton.creator",
+      message: "CREATOR",
+    }),
+    align: "left" as const,
+  },
+  {
+    message: msg({
+      id: "projects.assetsTableSkeleton.createdTime",
+      message: "CREATED TIME",
+    }),
+    align: "left" as const,
+  },
+  {
+    message: msg({
+      id: "projects.assetsTableSkeleton.actions",
+      message: "ACTIONS",
+    }),
+    align: "right" as const,
+  },
+];
+
+type SkeletonHeader = { text: string; align: "left" | "right" };
 
 export type AssetsTableSkeletonProps = {
   /**
@@ -70,7 +79,10 @@ export type AssetsTableSkeletonProps = {
 // `bg-surface-basic shadow-m rounded-2xl`, so the card doesn't appear on resolve.
 // `bare` drops the card shell (a parent already provides it). Plain helper (not a
 // component) so `react/no-multi-comp` never fires.
-function renderSkeletonTableCard(bare: boolean): React.JSX.Element {
+function renderSkeletonTableCard(
+  bare: boolean,
+  headers: SkeletonHeader[],
+): React.JSX.Element {
   const table = (
     // `group/table` mirrors the real table wrapper so the pinned columns'
     // `group-data-[scroll-*]/table:` fade variants resolve here too. The static
@@ -84,22 +96,22 @@ function renderSkeletonTableCard(bare: boolean): React.JSX.Element {
       <Table aria-hidden="true">
         <TableHeader>
           <TableRow className="h-13">
-            {COLUMN_HEADERS.map((label, index) => (
+            {headers.map(({ text }, index) => (
               <TableHead
-                key={label}
-                aria-label={label === "ACTIONS" ? "Actions" : undefined}
+                key={text}
+                aria-label={index === 4 ? text : undefined}
                 // Mirror the real header's per-column sizing so the placeholder
                 // columns line up 1:1 with resolved content: CREATOR caps at the
                 // same 200px, ACTIONS hugs the row menu at `px-2` (not `px-6`).
                 className={cn(
                   "h-13 px-6 text-sm",
-                  label === "ACTIONS" && "px-2 text-right",
+                  index === 4 && "px-2 text-right",
                   index === 0 && PIN_HEAD_LEFT,
-                  label === "CREATOR" && CREATOR_MAX,
-                  label === "ACTIONS" && PIN_HEAD_RIGHT,
+                  index === 2 && CREATOR_MAX,
+                  index === 4 && PIN_HEAD_RIGHT,
                 )}
               >
-                {label === "ACTIONS" ? null : label}
+                {index === 4 ? null : text}
               </TableHead>
             ))}
           </TableRow>
@@ -156,10 +168,15 @@ export function AssetsTableSkeleton({
   asNestedBlock = false,
   variant = "full",
 }: AssetsTableSkeletonProps = {}): React.JSX.Element {
+  const { t, i18n } = useLingui();
+  const headers: SkeletonHeader[] = COLUMN_HEADERS.map((col) => ({
+    text: i18n._(col.message),
+    align: col.align,
+  }));
   const body = (
     <div className="flex min-h-0 flex-1 flex-col gap-6">
       {variant === "full" ? renderSkeletonToolbar() : null}
-      {renderSkeletonTableCard(variant === "bare")}
+      {renderSkeletonTableCard(variant === "bare", headers)}
     </div>
   );
   if (asNestedBlock) {
@@ -176,7 +193,10 @@ export function AssetsTableSkeleton({
   return (
     <div
       role="status"
-      aria-label="Loading assets"
+      aria-label={t({
+        id: "projects.assetsTableSkeleton.loadingAssets",
+        message: "Loading assets",
+      })}
       data-testid="assets-table-skeleton"
       className="flex min-h-0 flex-1"
     >

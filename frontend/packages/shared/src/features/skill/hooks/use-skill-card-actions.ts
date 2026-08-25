@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { t } from "@lingui/core/macro";
 import { toast } from "@sico/ui";
 
 import {
@@ -40,20 +19,82 @@ export type SkillCardSaveInput = {
   actions?: SkillAction[];
 };
 
+export type SkillCardSaveOptions = {
+  showToast?: boolean;
+  currentVersion?: string;
+};
+
 export type SkillCardActions = {
   downloadZip: () => void;
-  save: (changes: SkillCardSaveInput) => Promise<string | undefined>;
-  replaceConfirm: (files: File[]) => void;
+  save: (
+    changes: SkillCardSaveInput,
+    options?: SkillCardSaveOptions,
+  ) => Promise<string>;
+  replaceConfirm: (files: File[]) => Promise<void>;
   replacing: boolean;
 };
+
+function toastReplaceFailed(): void {
+  toast.error(
+    t({
+      id: "skill.cardActions.replaceFailed",
+      message: "Failed to replace skill",
+    }),
+  );
+}
+
+async function replaceWithAsset({
+  files,
+  uploadAsset,
+  updateSkill,
+  skill,
+  selectedVersion,
+  onReplaced,
+}: {
+  files: File[];
+  uploadAsset: ReturnType<typeof useUploadSkillAssetMutation>;
+  updateSkill: ReturnType<typeof useUpdateSkillMutation>;
+  skill: SkillItem;
+  selectedVersion: string;
+  onReplaced: (version: string) => void;
+}): Promise<void> {
+  const file = files[0];
+  if (!file) {
+    return;
+  }
+
+  try {
+    const assetId = await uploadAsset.mutateAsync(file);
+    const result = await updateSkill.mutateAsync({
+      id: skill.id,
+      currentVersion: selectedVersion,
+      assetId,
+    });
+    toast.success(
+      t({
+        id: "skill.cardActions.skillReplaced",
+        message: "Skill replaced",
+      }),
+      { invert: true },
+    );
+    onReplaced(result.version);
+  } catch (error) {
+    toastReplaceFailed();
+    throw error;
+  }
+}
 
 function triggerZipDownload(skill: SkillItem, version: SkillVersion): void {
   let href: string;
   try {
     href = assertSafeAssetUrl(version.url);
   } catch {
-    // assertSafeAssetUrl rejected an off-scheme URL (e.g. javascript:).
-    toast.error("This file can't be downloaded.");
+    toast.error(
+      t({
+        id: "skill.cardActions.downloadBlocked",
+        message: "This file can't be downloaded.",
+      }),
+    );
     return;
   }
   const anchor = document.createElement("a");
@@ -62,7 +103,6 @@ function triggerZipDownload(skill: SkillItem, version: SkillVersion): void {
   anchor.click();
 }
 
-// Single markdown skills round-trip as one SKILL.md file (legacy parity).
 function buildUpdateInput(
   skill: SkillItem,
   currentVersion: string,
@@ -83,25 +123,37 @@ function buildUpdateInput(
   };
 }
 
-async function saveWithToast(
+async function saveSkill(
   updateSkill: ReturnType<typeof useUpdateSkillMutation>,
   input: UpdateSkillInput,
-): Promise<string | undefined> {
-  const savingToastId = toast.loading("Saving changes ...");
+  showToast: boolean,
+): Promise<string> {
+  if (!showToast) {
+    return (await updateSkill.mutateAsync(input)).version;
+  }
+  const savingToastId = toast.loading(
+    t({ id: "skill.cardActions.saving", message: "Saving changes ..." }),
+  );
   try {
     const result = await updateSkill.mutateAsync(input);
     toast.dismiss(savingToastId);
-    toast.success("Skill saved", { invert: true });
+    toast.success(
+      t({ id: "skill.cardActions.saved", message: "Skill saved" }),
+      { invert: true },
+    );
     return result.version;
-  } catch {
+  } catch (error) {
     toast.dismiss(savingToastId);
-    toast.error("Failed to save skill");
-    return undefined;
+    toast.error(
+      t({
+        id: "skill.cardActions.saveFailed",
+        message: "Failed to save skill",
+      }),
+    );
+    throw error;
   }
 }
 
-// Mutation side of the skill card (legacy Skill.tsx onSaveChangeButtonClick /
-// download / replace). Kept in a hook so SkillCardContainer stays presentational.
 export function useSkillCardActions(
   skill: SkillItem,
   selectedVersion: string,
@@ -117,33 +169,28 @@ export function useSkillCardActions(
     }
   };
 
-  const save = (changes: SkillCardSaveInput): Promise<string | undefined> =>
-    saveWithToast(
+  const save = (
+    changes: SkillCardSaveInput,
+    {
+      showToast = true,
+      currentVersion = selectedVersion,
+    }: SkillCardSaveOptions = {},
+  ): Promise<string> =>
+    saveSkill(
       updateSkill,
-      buildUpdateInput(skill, selectedVersion, changes, activeVersion),
+      buildUpdateInput(skill, currentVersion, changes, activeVersion),
+      showToast,
     );
 
-  const replaceConfirm = (files: File[]): void => {
-    const file = files[0];
-    if (!file) {
-      return;
-    }
-    uploadAsset.mutate(file, {
-      onSuccess: (assetId) => {
-        updateSkill.mutate(
-          { id: skill.id, currentVersion: selectedVersion, assetId },
-          {
-            onSuccess: (result) => {
-              toast.success("Skill replaced", { invert: true });
-              onReplaced(result.version);
-            },
-            onError: () => toast.error("Failed to replace skill"),
-          },
-        );
-      },
-      onError: () => toast.error("Failed to upload skill"),
+  const replaceConfirm = (files: File[]): Promise<void> =>
+    replaceWithAsset({
+      files,
+      uploadAsset,
+      updateSkill,
+      skill,
+      selectedVersion,
+      onReplaced,
     });
-  };
 
   return {
     downloadZip,

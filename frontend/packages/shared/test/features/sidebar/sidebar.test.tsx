@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -27,7 +5,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { AxiosInstance } from "axios";
 import { createStore, Provider } from "jotai";
-import type { ReactElement, ReactNode } from "react";
+import { type ReactElement, type ReactNode, useId } from "react";
 import {
   afterEach,
   beforeAll,
@@ -39,16 +17,17 @@ import {
 } from "vitest";
 
 import { userAtom } from "@/atoms/auth-atom";
-import { userModeAtom } from "@/atoms/user-mode-atom";
+import { AgentStatusSchema } from "@/features/digital-worker/schemas/agent";
 import {
   sidebarCollapsedAtom,
   sidebarForcedCollapsedAtom,
 } from "@/features/sidebar/atoms/sidebar-atom";
-import { type NavItemData } from "@/features/sidebar/types";
 import { ApiClientProvider } from "@/services/api-client-context";
 
 // --- Mocks --------------------------------------------------------------
 const mockUseLocation = vi.fn();
+const mockUseMatches = vi.fn();
+const mockNavigate = vi.fn();
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
@@ -83,10 +62,14 @@ vi.mock("@tanstack/react-router", () => ({
     </a>
   ),
   useLocation: () => mockUseLocation(),
+  useMatches: () => mockUseMatches(),
+  useNavigate: () => mockNavigate,
 }));
 
 const mockUseAgentsQuery = vi.fn();
+const mockUseAgentQuery = vi.fn();
 vi.mock("@/features/digital-worker/hooks/use-agents-query", () => ({
+  useAgentQuery: (...args: unknown[]) => mockUseAgentQuery(...args),
   useAgentsQuery: (opts: unknown) => mockUseAgentsQuery(opts),
   AGENTS_QUERY_KEY_PREFIX: ["agents"] as const,
   // DwConversationNav reads the DW identity via this options factory + a
@@ -94,6 +77,11 @@ vi.mock("@/features/digital-worker/hooks/use-agents-query", () => ({
   agentQueryOptions: (agentId: number) => ({
     queryKey: ["agents", "detail", agentId] as const,
   }),
+}));
+
+const mockUseOrganizationPermission = vi.fn();
+vi.mock("@/features/rbac/hooks/use-organization-permission", () => ({
+  useOrganizationPermission: () => mockUseOrganizationPermission(),
 }));
 
 const mockUseLogout = vi.fn();
@@ -145,22 +133,36 @@ vi.mock("@tanstack/react-query", async (importActual) => {
   };
 });
 
+// The sidebar now renders `NotificationNavItem` inline, which drives
+// `useNotifications` (react-query `useQuery`/`useMutation`). These sidebar
+// tests don't exercise notifications, so stub the hook with an inert empty
+// state — avoids needing a real QueryClientProvider around every render.
+vi.mock("@/features/notifications/hooks/use-notifications", () => ({
+  useNotifications: () => ({
+    notifications: [],
+    unreadCount: 0,
+    markRead: vi.fn(),
+    markAllRead: vi.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+}));
+
 // Import after mocks so vi.mock registrations apply. `useActiveNav` is NOT
 // mocked — it's pure over `useLocation` (mocked above), so tests drive
 // active state by setting the pathname.
 const { Sidebar } = await import("@/features/sidebar/components/sidebar");
+const { SidebarAccountMenu } =
+  await import("@/features/sidebar/components/sidebar-account-menu");
 
 // --- Helpers ------------------------------------------------------------
 const apiClient = {} as AxiosInstance;
 const fakeUser = {
   id: 1,
   email: "me@sico.ai",
-  roles: [] as {
-    id: number;
-    roleCode: string;
-    scopeType: string;
-    scopeId: number;
-  }[],
+  roles: [],
 };
 
 function withStore(
@@ -174,7 +176,12 @@ function withStore(
   const store = createStore();
   store.set(userAtom, fakeUser);
   if (opts?.mode) {
-    store.set(userModeAtom, opts.mode);
+    mockUseLocation.mockReturnValue({
+      pathname: opts.mode === "developer" ? "/studio" : "/digital-worker",
+    });
+    mockUseMatches.mockReturnValue([
+      { staticData: { workspaceMode: opts.mode } },
+    ]);
   }
   if (opts?.collapsed) {
     store.set(sidebarCollapsedAtom, true);
@@ -211,7 +218,24 @@ const logoutMutate = vi.fn();
 
 beforeEach(() => {
   mockUseLocation.mockReturnValue({ pathname: "/" });
+  mockUseMatches.mockReturnValue([]);
+  mockUseOrganizationPermission.mockReturnValue({
+    canEnterStudio: true,
+    canRenameOrganization: true,
+    canManageOrganizationMembers: true,
+    canManageOrganizationDevices: true,
+    canManage: true,
+    currentUserId: 1,
+    isPending: false,
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: vi.fn(),
+  });
   mockUseLogout.mockReturnValue({ mutate: logoutMutate, isPending: false });
+  mockUseAgentQuery.mockReturnValue({
+    data: { id: 1, name: "Arena", status: 3 },
+  });
   mockUseAgentsQuery.mockReturnValue({
     isPending: false,
     isError: false,
@@ -269,10 +293,44 @@ describe("<Sidebar> landmark + structure", () => {
 });
 
 describe("<Sidebar> developer mode", () => {
+  it("expanded: places one Notifications control before Studio", () => {
+    render(withStore(<Sidebar />, { mode: "developer" }));
+    const list = screen.getByTestId("sidebar-nav-list");
+    const notificationName = /^Notifications(?:, \d+ unread)?$/;
+    expect(
+      within(list).getAllByRole("button", { name: notificationName }),
+    ).toHaveLength(1);
+    const notification = within(list).getByRole("button", {
+      name: notificationName,
+    });
+    const studio = within(list).getByRole("link", { name: "Studio" });
+
+    expect(notification.compareDocumentPosition(studio)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  it("collapsed: places one Notifications control before Studio", () => {
+    render(withStore(<Sidebar />, { mode: "developer", collapsed: true }));
+    const rail = screen.getByTestId("sidebar-rail");
+    const notificationName = /^Notifications(?:, \d+ unread)?$/;
+    expect(
+      within(rail).getAllByRole("button", { name: notificationName }),
+    ).toHaveLength(1);
+    const notification = within(rail).getByRole("button", {
+      name: notificationName,
+    });
+    const studio = within(rail).getByRole("link", { name: "Studio" });
+
+    expect(notification.compareDocumentPosition(studio)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
   it("expanded: renders a single Studio nav item, no Digital Workers or Projects", () => {
     render(withStore(<Sidebar />, { mode: "developer" }));
     const links = screen.getAllByRole("link");
-    expect(links.some((l) => l.getAttribute("data-to") === "/studio")).toBe(
+    expect(links.some((l) => l.getAttribute("data-to") === "/studio/all")).toBe(
       true,
     );
     expect(
@@ -287,7 +345,7 @@ describe("<Sidebar> developer mode", () => {
     render(withStore(<Sidebar />, { mode: "developer", collapsed: true }));
     const rail = screen.getByTestId("sidebar-rail");
     const links = within(rail).getAllByRole("link");
-    expect(links.some((l) => l.getAttribute("data-to") === "/studio")).toBe(
+    expect(links.some((l) => l.getAttribute("data-to") === "/studio/all")).toBe(
       true,
     );
     expect(
@@ -304,7 +362,7 @@ describe("<Sidebar> developer mode", () => {
     expect(
       links.some((l) => l.getAttribute("data-to") === "/digital-worker"),
     ).toBe(true);
-    expect(links.some((l) => l.getAttribute("data-to") === "/studio")).toBe(
+    expect(links.some((l) => l.getAttribute("data-to") === "/studio/all")).toBe(
       false,
     );
   });
@@ -318,205 +376,6 @@ describe("<Sidebar> developer mode", () => {
     expect(
       within(screen.getByTestId("sidebar-logo")).getByAltText("SICO"),
     ).toBeInTheDocument();
-  });
-
-  it("expanded: does not render extraNavItems (operator-only injection)", () => {
-    const teamItem: NavItemData = {
-      to: "/my-team",
-      label: "My Team",
-      icon: <span>icon</span>,
-    };
-    render(
-      withStore(<Sidebar extraNavItems={[teamItem]} />, { mode: "developer" }),
-    );
-    expect(screen.queryByText("My Team")).not.toBeInTheDocument();
-  });
-
-  it("expanded: does not render menuTopExtras (operator-only injection)", () => {
-    const topRow = (
-      <button type="button" data-testid="nav-top-row">
-        n
-      </button>
-    );
-    render(
-      withStore(<Sidebar menuTopExtras={topRow} />, { mode: "developer" }),
-    );
-    expect(screen.queryByTestId("nav-top-row")).not.toBeInTheDocument();
-  });
-
-  it("collapsed: does not render extraNavItems (operator-only injection)", () => {
-    const teamItem: NavItemData = {
-      to: "/my-team",
-      label: "My Team",
-      icon: <span>icon</span>,
-    };
-    render(
-      withStore(<Sidebar extraNavItems={[teamItem]} />, {
-        mode: "developer",
-        collapsed: true,
-      }),
-    );
-    const rail = screen.getByTestId("sidebar-rail");
-    expect(
-      within(rail)
-        .queryAllByRole("link")
-        .some((l) => l.getAttribute("data-to") === "/my-team"),
-    ).toBe(false);
-  });
-
-  it("collapsed: does not render menuTopExtras (operator-only injection)", () => {
-    const topRow = (
-      <button type="button" data-testid="nav-top-row">
-        n
-      </button>
-    );
-    render(
-      withStore(<Sidebar menuTopExtras={topRow} />, {
-        mode: "developer",
-        collapsed: true,
-      }),
-    );
-    expect(screen.queryByTestId("nav-top-row")).not.toBeInTheDocument();
-  });
-});
-
-describe("<Sidebar> extraNavItems (data-driven downstream injection)", () => {
-  const makeTeamItem = (): NavItemData => ({
-    to: "/my-team",
-    label: "My Team",
-    icon: <span data-testid="nav-extra-icon">icon</span>,
-  });
-
-  it("renders no extras by default (sico)", () => {
-    render(withStore(<Sidebar />));
-    expect(screen.queryByText("My Team")).not.toBeInTheDocument();
-  });
-
-  it("expanded: renders an extra item after Projects", () => {
-    render(withStore(<Sidebar extraNavItems={[makeTeamItem()]} />));
-    const links = screen.getAllByRole("link");
-    const projectsIdx = links.findIndex(
-      (l) => l.getAttribute("data-to") === "/project",
-    );
-    const extraIdx = links.findIndex(
-      (l) => l.getAttribute("data-to") === "/my-team",
-    );
-    expect(extraIdx).toBeGreaterThanOrEqual(0);
-    // The extra follows Projects in document order.
-    expect(projectsIdx).toBeLessThan(extraIdx);
-  });
-
-  it("collapsed: renders the extra item in the rail, not the expanded row", () => {
-    render(
-      withStore(<Sidebar extraNavItems={[makeTeamItem()]} />, {
-        collapsed: true,
-      }),
-    );
-    const rail = screen.getByTestId("sidebar-rail");
-    const railExtra = within(rail)
-      .getAllByRole("link")
-      .find((l) => l.getAttribute("data-to") === "/my-team");
-    // Rail item is labeled (aria-label), not a text row.
-    expect(railExtra).toHaveAttribute("aria-label", "My Team");
-  });
-
-  it("active when pathname matches the extra item's `to`", () => {
-    mockUseLocation.mockReturnValue({ pathname: "/my-team" });
-    render(withStore(<Sidebar extraNavItems={[makeTeamItem()]} />));
-    const extra = screen
-      .getAllByRole("link")
-      .find((l) => l.getAttribute("data-to") === "/my-team");
-    expect(extra).toHaveAttribute("aria-current", "page");
-    expect(extra).toHaveAttribute("data-active");
-  });
-});
-
-describe("<Sidebar> headerExtras (data-driven downstream injection)", () => {
-  const bell = (
-    <button type="button" data-testid="nav-header-bell">
-      bell
-    </button>
-  );
-
-  it("renders no header slot by default (sico)", () => {
-    render(withStore(<Sidebar />));
-    expect(screen.queryByTestId("nav-header-bell")).not.toBeInTheDocument();
-  });
-
-  it("expanded: renders headerExtras after the Collapse-sidebar toggle", () => {
-    render(withStore(<Sidebar headerExtras={bell} />));
-    const toggle = screen.getByRole("button", { name: "Collapse sidebar" });
-    const slot = screen.getByTestId("nav-header-bell");
-    // Header slot sits to the RIGHT of the collapse toggle (mirrors legacy dwp).
-    expect(
-      // eslint-disable-next-line no-bitwise -- compareDocumentPosition returns a bitmask
-      toggle.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-  });
-
-  it("collapsed: renders headerExtras in the rail before the nav items", () => {
-    render(withStore(<Sidebar headerExtras={bell} />, { collapsed: true }));
-    const rail = screen.getByTestId("sidebar-rail");
-    const slot = within(rail).getByTestId("nav-header-bell");
-    const firstNavLink = within(rail)
-      .getAllByRole("link")
-      .find((l) => l.getAttribute("data-to") === "/digital-worker");
-    if (!firstNavLink) {
-      throw new Error("expected a /digital-worker rail link");
-    }
-    // Header slot precedes the first rail nav item (top-of-rail position).
-    expect(
-      // eslint-disable-next-line no-bitwise -- compareDocumentPosition returns a bitmask
-      slot.compareDocumentPosition(firstNavLink) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-  });
-});
-
-describe("<Sidebar> menuTopExtras (free-form downstream injection)", () => {
-  const topRow = (
-    <button type="button" data-testid="nav-top-row">
-      notification
-    </button>
-  );
-
-  it("renders no top slot by default (sico)", () => {
-    render(withStore(<Sidebar />));
-    expect(screen.queryByTestId("nav-top-row")).not.toBeInTheDocument();
-  });
-
-  it("expanded: renders menuTopExtras above the Digital Workers row", () => {
-    render(withStore(<Sidebar menuTopExtras={topRow} />));
-    const list = screen.getByTestId("sidebar-nav-list");
-    const slot = within(list).getByTestId("nav-top-row");
-    const dwHeader = within(list)
-      .getAllByRole("link")
-      .find((l) => l.getAttribute("data-to") === "/digital-worker");
-    if (!dwHeader) {
-      throw new Error("expected a /digital-worker nav link");
-    }
-    // Top slot precedes the first built-in nav item.
-    expect(
-      // eslint-disable-next-line no-bitwise -- compareDocumentPosition returns a bitmask
-      slot.compareDocumentPosition(dwHeader) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-  });
-
-  it("collapsed: renders menuTopExtras above the Digital Workers rail item", () => {
-    render(withStore(<Sidebar menuTopExtras={topRow} />, { collapsed: true }));
-    const rail = screen.getByTestId("sidebar-rail");
-    const slot = within(rail).getByTestId("nav-top-row");
-    const firstNavLink = within(rail)
-      .getAllByRole("link")
-      .find((l) => l.getAttribute("data-to") === "/digital-worker");
-    if (!firstNavLink) {
-      throw new Error("expected a /digital-worker rail link");
-    }
-    expect(
-      // eslint-disable-next-line no-bitwise -- compareDocumentPosition returns a bitmask
-      slot.compareDocumentPosition(firstNavLink) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
   });
 });
 
@@ -652,6 +511,24 @@ describe("<Sidebar> mutex active state (R11)", () => {
       ),
     ).toBeDefined();
   });
+
+  it("collapsed inactive conversation mode renders a disabled New session Button", () => {
+    mockUseLocation.mockReturnValue({ pathname: "/digital-worker/1" });
+    mockUseAgentQuery.mockReturnValue({
+      data: { id: 1, name: "Arena", status: AgentStatusSchema.enum.INACTIVE },
+    });
+
+    render(withStore(<Sidebar />, { collapsed: true }));
+
+    const newSession = screen.getByRole("button", { name: "New session" });
+    expect(newSession).toBeDisabled();
+    expect(newSession).toHaveAttribute("data-slot", "button");
+    expect(newSession).toHaveClass(
+      "disabled:bg-button-subtle-fill-disabled",
+      "disabled:text-button-subtle-foreground-disabled",
+      "disabled:pointer-events-none",
+    );
+  });
 });
 
 describe("<Sidebar> DW list states (§4)", () => {
@@ -753,6 +630,158 @@ describe("<Sidebar> footer (T-B4 — Figma pill)", () => {
     ).toBeVisible();
   });
 
+  it("expanded: hides both access items when the bound organization is unavailable", async () => {
+    mockUseOrganizationPermission.mockReturnValue({
+      canEnterStudio: false,
+      canRenameOrganization: false,
+      canManageOrganizationMembers: false,
+      canManageOrganizationDevices: false,
+      canManage: false,
+      currentUserId: 1,
+      isPending: true,
+      isLoading: true,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />));
+
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    expect(
+      screen.queryByRole("menuitem", { name: "Manage Organization" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: "Go to SICO.Dev" }),
+    ).toBeNull();
+    expect(
+      await screen.findByRole("menuitem", { name: "Language" }),
+    ).toBeVisible();
+    expect(screen.getByRole("menuitem", { name: "Log out" })).toBeVisible();
+  });
+
+  it("expanded: hides both access items when RBAC fails", async () => {
+    mockUseOrganizationPermission.mockReturnValue({
+      canEnterStudio: false,
+      canRenameOrganization: false,
+      canManageOrganizationMembers: false,
+      canManageOrganizationDevices: false,
+      canManage: false,
+      currentUserId: 1,
+      isPending: false,
+      isLoading: false,
+      isError: true,
+      error: new Error("Permission request failed"),
+      refetch: vi.fn(),
+    });
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />));
+
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: "Manage Organization" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: "Go to SICO.Dev" }),
+    ).toBeNull();
+    expect(
+      await screen.findByRole("menuitem", { name: "Language" }),
+    ).toBeVisible();
+    expect(screen.getByRole("menuitem", { name: "Log out" })).toBeVisible();
+  });
+
+  it("expanded: hides organization management from ordinary members", async () => {
+    mockUseOrganizationPermission.mockReturnValue({
+      canEnterStudio: false,
+      canRenameOrganization: false,
+      canManageOrganizationMembers: false,
+      canManageOrganizationDevices: false,
+      canManage: false,
+      currentUserId: 1,
+      isPending: false,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />));
+
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    expect(
+      screen.queryByRole("menuitem", { name: "Manage Organization" }),
+    ).toBeNull();
+  });
+
+  it("expanded: gates organization management on the aggregate capability", async () => {
+    mockUseOrganizationPermission.mockReturnValue({
+      canEnterStudio: false,
+      canRenameOrganization: true,
+      canManageOrganizationMembers: false,
+      canManageOrganizationDevices: false,
+      canManage: false,
+      currentUserId: 1,
+      isPending: false,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />));
+
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    expect(
+      screen.queryByRole("menuitem", { name: "Manage Organization" }),
+    ).toBeNull();
+  });
+
+  it("expanded: shows Studio but hides organization management from developers", async () => {
+    mockUseOrganizationPermission.mockReturnValue({
+      canEnterStudio: true,
+      canRenameOrganization: false,
+      canManageOrganizationMembers: false,
+      canManageOrganizationDevices: false,
+      canManage: false,
+      currentUserId: 1,
+      isPending: false,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />, { mode: "operator" }));
+
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    expect(
+      screen.queryByRole("menuitem", { name: "Manage Organization" }),
+    ).toBeNull();
+    expect(
+      await screen.findByRole("menuitem", { name: "Go to SICO.Dev" }),
+    ).toBeVisible();
+  });
+
+  it("expanded: shows both access items for a matching administrator", async () => {
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />, { mode: "operator" }));
+
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Manage Organization" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("menuitem", { name: "Go to SICO.Dev" }),
+    ).toBeVisible();
+  });
+
   it("expanded: account menu button opens a menu with a Log out item", async () => {
     const user = userEvent.setup();
     render(withStore(<Sidebar />));
@@ -760,6 +789,154 @@ describe("<Sidebar> footer (T-B4 — Figma pill)", () => {
     expect(
       await screen.findByRole("menuitem", { name: "Log out" }),
     ).toBeVisible();
+  });
+
+  it("expanded: account menu shows Language above Log out", async () => {
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />));
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    const items = await screen.findAllByRole("menuitem");
+    const names = items.map((item) => item.textContent);
+
+    expect(names.indexOf("Language")).toBeLessThan(names.indexOf("Log out"));
+  });
+
+  it("expanded: account menu follows the Figma item order", async () => {
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />));
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    const items = await screen.findAllByRole("menuitem");
+    expect(items.map((item) => item.textContent)).toEqual([
+      "Manage Organization",
+      "Go to SICO.Dev",
+      "Language",
+      "Log out",
+    ]);
+  });
+
+  it("expanded: account menu uses the Figma width", async () => {
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />));
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    expect(await screen.findByRole("menu")).toHaveClass("w-49");
+  });
+
+  it("expanded: Go to SICO.Dev replace-navigates to Studio", async () => {
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />));
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Go to SICO.Dev" }),
+    );
+
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/studio/all",
+      replace: true,
+    });
+  });
+
+  it("account menu uses one unified permission hook site across rerenders", () => {
+    const hookSites = new Set<string>();
+    mockUseOrganizationPermission.mockImplementation(() => {
+      hookSites.add(useId());
+      return {
+        canEnterStudio: true,
+        canRenameOrganization: true,
+        canManageOrganizationMembers: true,
+        canManageOrganizationDevices: true,
+        canManage: true,
+        currentUserId: 1,
+        isPending: false,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+    });
+    const { rerender } = render(
+      withStore(<SidebarAccountMenu />, { mode: "developer" }),
+    );
+
+    rerender(withStore(<SidebarAccountMenu />, { mode: "developer" }));
+
+    expect(hookSites.size).toBe(1);
+  });
+
+  it("expanded: Studio mode shows both items", async () => {
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />, { mode: "developer" }));
+
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Manage Organization" }),
+    ).toBeVisible();
+    expect(screen.getByRole("menuitem", { name: "Go to SICO" })).toBeVisible();
+  });
+
+  it("expanded: Studio mode hides Manage Organization without an organization", async () => {
+    mockUseOrganizationPermission.mockReturnValue({
+      canEnterStudio: false,
+      canRenameOrganization: false,
+      canManageOrganizationMembers: false,
+      canManageOrganizationDevices: false,
+      canManage: false,
+      currentUserId: 1,
+      isPending: false,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />, { mode: "developer" }));
+
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    expect(
+      screen.queryByRole("menuitem", { name: "Manage Organization" }),
+    ).toBeNull();
+    expect(
+      await screen.findByRole("menuitem", { name: "Go to SICO" }),
+    ).toBeVisible();
+  });
+
+  it("expanded: Go to SICO replace-navigates to the workspace", async () => {
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />, { mode: "developer" }));
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Go to SICO" }),
+    );
+
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/digital-worker",
+      replace: true,
+    });
+  });
+
+  it("expanded: Manage Organization navigates to the management route", async () => {
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />));
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Manage Organization" }),
+    );
+
+    expect(mockNavigate).toHaveBeenCalledWith({ to: "/organization" });
+  });
+
+  it("expanded: Log out uses destructive styling and an icon", async () => {
+    const user = userEvent.setup();
+    render(withStore(<Sidebar />));
+    await user.click(screen.getByRole("button", { name: "Account options" }));
+
+    const logoutItem = await screen.findByRole("menuitem", { name: "Log out" });
+    expect(logoutItem).toHaveAttribute("data-variant", "destructive");
+    expect(screen.getByTestId("sidebar-logout-icon")).toHaveClass("size-3");
   });
 
   it("expanded: choosing Log out from the menu calls logout.mutate", async () => {
@@ -894,7 +1071,7 @@ describe("<Sidebar> expanded nav structure (T-B3)", () => {
     // New DwSection: a static "Digital workers" caplabel (a span, not a link)
     // plus a separate "all" affordance that links to the full list. Sentence
     // case at the source; CSS `uppercase` renders it all-caps.
-    expect(screen.getByText("Digital workers")).toBeInTheDocument();
+    expect(screen.getByText("Digital Workers")).toBeInTheDocument();
     const allLink = screen
       .getAllByRole("link")
       .find((l) => l.getAttribute("data-to") === "/digital-worker");
@@ -902,7 +1079,7 @@ describe("<Sidebar> expanded nav structure (T-B3)", () => {
     expect(allLink).toHaveAttribute("aria-label", "View all digital workers");
   });
 
-  it("renders Projects ABOVE the DW group in order (R3: no Notification, no My Team)", () => {
+  it("renders Notification and Projects above the DW group, in that order", () => {
     render(withStore(<Sidebar />));
     const indent = screen.getByTestId("dw-list-container");
     const list = screen.getByTestId("sidebar-nav-list");
@@ -916,19 +1093,21 @@ describe("<Sidebar> expanded nav structure (T-B3)", () => {
     expect(dwHeader).not.toBeUndefined();
     expect(indent).toBeVisible();
     expect(projects).not.toBeUndefined();
-    const buttons = within(list).queryAllByRole("button");
-    expect(
-      buttons.find((b) => b.getAttribute("aria-label") === "Notification"),
-    ).toBeUndefined();
-    expect(
-      buttons.find((b) => b.getAttribute("aria-label") === "My team"),
-    ).toBeUndefined();
-    // DOM order: projects < dwHeader < indent (Projects sits above the DW group)
+    // Notification is now a built-in nav row (not a downstream injection),
+    // rendered as a popover trigger at the top of the menu.
+    const notification = within(list)
+      .getAllByRole("button")
+      .find((b) => b.getAttribute("aria-label")?.startsWith("Notifications"));
+    if (!notification) {
+      throw new Error("expected a Notifications nav row");
+    }
+    // DOM order: notification < projects < dwHeader < indent.
     const follows = (a: Node, b: Node): boolean =>
       Boolean(
         // eslint-disable-next-line no-bitwise -- Node.compareDocumentPosition returns a bitmask
         a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING,
       );
+    expect(follows(notification, projects)).toBe(true);
     expect(follows(projects, dwHeader)).toBe(true);
     expect(follows(dwHeader, indent)).toBe(true);
   });

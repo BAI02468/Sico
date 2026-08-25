@@ -1,35 +1,5 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-import {
-  AUTH_EXPIRES_AT_LS,
-  AUTH_TOKEN_LS,
-  AUTH_USER_LS,
-  userModeAtom,
-} from "@sico/shared";
-import {
-  setItemToLocalStorage,
-  USER_MODE_LS,
-} from "@sico/shared/utils/local-storage.ts";
+import { AUTH_EXPIRES_AT_LS, AUTH_TOKEN_LS, AUTH_USER_LS } from "@sico/shared";
+import { setItemToLocalStorage } from "@sico/shared/utils/local-storage.ts";
 import { toast } from "@sico/ui";
 import { QueryClient } from "@tanstack/react-query";
 import type { RegisteredRouter } from "@tanstack/react-router";
@@ -41,8 +11,6 @@ import {
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Provider as JotaiProvider } from "jotai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-import { router as appRouter } from "@/router";
 
 import { routeTree } from "../../src/routeTree.gen";
 import { store } from "../../src/store";
@@ -57,12 +25,20 @@ vi.mock("@sico/shared/features/rbac-login/components/login-form.tsx", () => ({
   LoginForm: vi.fn(
     (props: {
       onSuccess?: (data: unknown, mode: "operator" | "developer") => void;
+      onRegister?: (mode: "operator" | "developer") => void;
     }) => (
-      <button
-        data-testid="login-form"
-        type="button"
-        onClick={() => props.onSuccess?.({}, "developer")}
-      />
+      <>
+        <button
+          data-testid="login-form"
+          type="button"
+          onClick={() => props.onSuccess?.({}, "developer")}
+        />
+        <button
+          data-testid="register-link"
+          type="button"
+          onClick={() => props.onRegister?.("developer")}
+        />
+      </>
     ),
   ),
 }));
@@ -79,19 +55,12 @@ vi.mock("@sico/ui", async (importActual) => {
 
 const mockedToastError = vi.mocked(toast.error);
 
-// `login.tsx`'s onSuccess navigates via the module-singleton router
-// (`@/router`), not the test-rendered router. Mock it so the success path
-// can run without touching the real app router, and assert the target.
-vi.mock("@/router", () => ({
-  router: { navigate: vi.fn() },
-}));
-
 function renderAt(initialPath: string): { router: RegisteredRouter } {
   const history = createMemoryHistory({ initialEntries: [initialPath] });
   const router = createRouter({
     routeTree,
     history,
-    context: { queryClient: new QueryClient(), apiClient: {} as never },
+    context: { queryClient: new QueryClient(), apiClient: {} as never, store },
   });
   render(
     <JotaiProvider store={store}>
@@ -104,8 +73,6 @@ function renderAt(initialPath: string): { router: RegisteredRouter } {
 describe("/login route", () => {
   beforeEach(() => {
     clearAuthStorage();
-    // Drop any cached mode so each test starts from the operator default.
-    store.set(userModeAtom, "operator");
     clearAuthStorage();
     mockedToastError.mockReset();
   });
@@ -137,45 +104,28 @@ describe("/login route", () => {
     expect(screen.queryByTestId("login-form")).not.toBeInTheDocument();
   });
 
-  it("redirects authed developer to /studio", async () => {
-    setItemToLocalStorage(AUTH_TOKEN_LS, "fake-token");
-    setItemToLocalStorage(
-      AUTH_USER_LS,
-      JSON.stringify({ id: 1, email: "u@example.test", roles: [] }),
-    );
-    setItemToLocalStorage(AUTH_EXPIRES_AT_LS, "9999999999999");
-    setItemToLocalStorage(USER_MODE_LS, "developer");
-
+  it("navigates a developer login submission to /studio/all", async () => {
     const { router } = renderAt("/login");
-
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/studio");
-    });
-    expect(screen.queryByTestId("login-form")).not.toBeInTheDocument();
-  });
-
-  it("on developer login success, updates userModeAtom immediately (not just LS) and navigates to /studio", async () => {
-    const mockedNavigate = vi.mocked(appRouter.navigate);
-    mockedNavigate.mockClear();
-
-    renderAt("/login");
     const form = await screen.findByTestId("login-form");
 
-    // Baseline: cached atom is the operator default before success.
-    expect(store.get(userModeAtom)).toBe("operator");
-
-    // Drive the mocked LoginForm's onSuccess(data, "developer").
     fireEvent.click(form);
 
-    // The atom must flip synchronously via the write — subscribers
-    // (ModeGuard + sidebar) re-render without a page refresh. This is the
-    // regression: writing LS alone left the atom stale until a refresh.
-    expect(store.get(userModeAtom)).toBe("developer");
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe("/studio/all");
+    });
+  });
 
-    // Landing branch resolves to the developer home.
-    expect(mockedNavigate).toHaveBeenCalledWith({
-      to: "/studio",
-      replace: true,
+  it("preserves developer mode when opening registration", async () => {
+    const { router } = renderAt("/login?mode=developer");
+
+    expect(await screen.findByRole("img", { name: "SICO.Dev" })).toBeVisible();
+    fireEvent.click(screen.getByTestId("register-link"));
+
+    await waitFor(() => {
+      expect(router.state.location).toMatchObject({
+        pathname: "/register",
+        search: { mode: "developer" },
+      });
     });
   });
 

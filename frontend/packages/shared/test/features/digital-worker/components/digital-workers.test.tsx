@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   type AnyRouter,
@@ -30,13 +8,15 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { AxiosError, AxiosHeaders, type AxiosInstance } from "axios";
 import type { ReactElement, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ZodError } from "zod";
 
 import { DigitalWorkers } from "@/features/digital-worker/components/digital-workers";
+import type { ScheduledTasksDialogProps } from "@/features/scheduled-task";
 import { ApiClientProvider } from "@/services/api-client-context";
 
 function axiosErrorWithStatus(status: number): AxiosError {
@@ -63,14 +43,37 @@ function axiosErrorNoResponse(): AxiosError {
 // The suspense hook either returns data, throws a Promise (pending), or
 // throws an Error (rejected). Tests configure the mock to do exactly
 // one of those three.
-const mockSuspense = vi.fn();
+const { mockScheduledTasksDialog, mockSuspense } = vi.hoisted(() => ({
+  mockScheduledTasksDialog: vi.fn(),
+  mockSuspense: vi.fn(),
+}));
+
+vi.mock("@/features/scheduled-task", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/features/scheduled-task")>();
+  const ActualScheduledTasksDialog = actual.ScheduledTasksDialog;
+  return {
+    ...actual,
+    ScheduledTasksDialog: ({
+      onOpenChange,
+      open,
+    }: ScheduledTasksDialogProps) => {
+      mockScheduledTasksDialog({ onOpenChange, open });
+      return (
+        <ActualScheduledTasksDialog open={open} onOpenChange={onOpenChange} />
+      );
+    },
+  };
+});
+
 vi.mock("@/features/digital-worker/hooks/use-agents-query", async () => {
   const actual = await vi.importActual<
     typeof import("@/features/digital-worker/hooks/use-agents-query")
   >("@/features/digital-worker/hooks/use-agents-query");
   return {
     ...actual,
-    useSuspenseAgentsInfiniteQuery: () => mockSuspense(),
+    useSuspenseAgentsInfiniteQuery: (params?: { showInactive?: boolean }) =>
+      mockSuspense(params),
   };
 });
 
@@ -81,6 +84,24 @@ function returnPages(pages: { items: unknown[]; hasNext: boolean }[]): void {
     hasNextPage: false,
     fetchNextPage: vi.fn(),
   }));
+}
+
+// Distinct page sets per filter — mirrors the server, which returns only active
+// DWs when `showInactive` is false and all DWs when true. Lets a test assert the
+// toggle drives a re-query rather than a client-side filter.
+function returnPagesByFilter(byFilter: {
+  hide: { items: unknown[]; hasNext: boolean }[];
+  show: { items: unknown[]; hasNext: boolean }[];
+}): void {
+  mockSuspense.mockImplementation((params?: { showInactive?: boolean }) => {
+    const pages = params?.showInactive ? byFilter.show : byFilter.hide;
+    return {
+      data: { pages: pages.map((p) => ({ ...p, total: p.items.length })) },
+      isFetchingNextPage: false,
+      hasNextPage: false,
+      fetchNextPage: vi.fn(),
+    };
+  });
 }
 
 function throwError(error: unknown): void {
@@ -144,6 +165,7 @@ function renderPage(): void {
 }
 
 beforeEach(() => {
+  mockScheduledTasksDialog.mockClear();
   mockSuspense.mockReset();
   vi.stubGlobal(
     "IntersectionObserver",
@@ -156,6 +178,64 @@ beforeEach(() => {
 });
 
 describe("<DigitalWorkers>", () => {
+  it("keeps scheduled task management mounted while controlled closed", async () => {
+    returnPages([{ items: [], hasNext: false }]);
+    renderPage();
+
+    await screen.findByRole("heading", { name: "Digital Workers" });
+    expect(mockScheduledTasksDialog).toHaveBeenCalledWith(
+      expect.objectContaining({ open: false }),
+    );
+  });
+
+  it("opens and closes scheduled task management without affecting add worker", async () => {
+    const user = userEvent.setup();
+    returnPages([{ items: [], hasNext: false }]);
+    renderPage();
+    const heading = await screen.findByRole("heading", {
+      name: "Digital Workers",
+    });
+    const titleGroup = heading.parentElement;
+    expect(titleGroup).not.toHaveClass("blur-xs");
+
+    const scheduledTask = screen.getByRole("button", {
+      name: "Scheduled task",
+    });
+    const actions = screen.getByRole("button", {
+      name: "Digital Worker actions",
+    });
+    expect(scheduledTask).toHaveClass("bg-button-subtle-fill-rest");
+    expect(scheduledTask).toAppearBefore(actions);
+    expect(
+      screen.queryByRole("button", { name: "Add Digital Worker" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(scheduledTask);
+    await screen.findByRole("dialog", { name: "Scheduled task" });
+    expect(titleGroup).toHaveClass("blur-xs");
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(titleGroup).not.toHaveClass("blur-xs");
+
+    await user.click(actions);
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Digital Worker" }),
+    );
+    const dialog = await screen.findByRole("dialog", {
+      name: "Add Digital Worker",
+    });
+    expect(dialog).toBeVisible();
+    expect(titleGroup).toHaveClass("blur-xs");
+
+    const description = screen.getByText(
+      "You'll be the Human Operator for this Digital Worker.",
+    );
+    expect(description).toHaveClass("text-sm");
+    expect(description.closest('[data-slot="dialog-header"]')).toHaveClass(
+      "gap-1",
+    );
+  });
+
   it("renders 12 skeletons while suspending", async () => {
     throwPending();
     renderPage();
@@ -182,32 +262,51 @@ describe("<DigitalWorkers>", () => {
     expect(links[0]?.textContent).toContain("First");
   });
 
-  it("renders empty state when items array is empty", async () => {
+  it("shows the onboarding CTA and the inactive toggle when the list is empty", async () => {
+    // Empty in either filter → the onboarding empty state (Add-DW CTA) renders
+    // inline, so a brand-new user reaches it, while the reveal toggle stays
+    // mounted below for a user whose only workers are inactive.
     returnPages([{ items: [], hasNext: false }]);
     renderPage();
     await screen.findByText("Your crew is one hire away");
+    expect(
+      screen.getByRole("button", { name: /show inactive digital workers/i }),
+    ).toBeInTheDocument();
   });
 
-  it("hides inactive DWs behind a toggle that reveals them on click", async () => {
-    returnPages([
-      {
-        items: [
-          { id: 1, name: "ActiveOne", status: 3 },
-          { id: 2, name: "GoneOne", status: 4 },
-        ],
-        hasNext: false,
-      },
-    ]);
+  it("hides inactive workers by default and supports a show-hide round trip", async () => {
+    const user = userEvent.setup();
+    // Server-side filter: hide returns only active; show returns all. The
+    // toggle flips `showInactive`, which re-queries — not a client-side filter.
+    returnPagesByFilter({
+      hide: [
+        { items: [{ id: 1, name: "ActiveOne", status: 3 }], hasNext: false },
+      ],
+      show: [
+        {
+          items: [
+            { id: 1, name: "ActiveOne", status: 3 },
+            { id: 2, name: "GoneOne", status: 4 },
+          ],
+          hasNext: false,
+        },
+      ],
+    });
     renderPage();
-    // Active shows immediately; inactive is hidden until the toggle is used.
     await screen.findByText("ActiveOne");
     expect(screen.queryByText("GoneOne")).not.toBeInTheDocument();
 
-    const toggle = screen.getByRole("button", {
-      name: /show 1 inactive digital workers/i,
-    });
-    toggle.click();
-    await screen.findByText("GoneOne");
+    await user.click(
+      screen.getByRole("button", { name: /show inactive digital workers/i }),
+    );
+    expect(await screen.findByText("GoneOne")).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", { name: /hide inactive digital workers/i }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByText("GoneOne")).not.toBeInTheDocument(),
+    );
   });
 
   it("renders network copy for AxiosError without response", async () => {

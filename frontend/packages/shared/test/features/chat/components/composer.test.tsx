@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import { toast } from "@sico/ui";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -29,6 +7,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   activeConversationIdAtom,
+  type Attachment,
+  attachmentsAtom,
   conversationsAtom,
 } from "@/features/chat/atoms/chat-atom";
 import { Composer } from "@/features/chat/components/composer";
@@ -86,6 +66,94 @@ describe("Composer", () => {
     render(<Composer agentInstanceId={1} />, { wrapper: withStore(store) });
     await userEvent.type(screen.getByLabelText("Message input"), "hi");
     expect(screen.getByRole("button", { name: "Send message" })).toBeEnabled();
+  });
+
+  it("disables message and attachment input in read-only mode", () => {
+    const store = createStore();
+    render(<Composer agentInstanceId={1} disabled />, {
+      wrapper: withStore(store),
+    });
+
+    expect(screen.getByLabelText("Message input")).toBeDisabled();
+    expect(screen.getByLabelText("Attach a file")).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Add attachment" }),
+    ).toBeDisabled();
+    const composerShell = screen
+      .getByLabelText("Message input")
+      .closest('[data-slot="input-group"]');
+    expect(composerShell).toHaveAttribute("aria-disabled", "true");
+    expect(composerShell).toHaveClass(
+      "has-disabled:bg-input-fill-disabled",
+      "has-disabled:text-foreground-disabled",
+      "has-disabled:border-input-stroke-disabled",
+      "hover:border-input-stroke-disabled",
+      "focus-within:border-input-stroke-disabled",
+      "cursor-not-allowed",
+      "shadow-none",
+    );
+    expect(screen.getByLabelText("Message input")).toHaveClass(
+      "disabled:text-foreground-disabled",
+      "disabled:placeholder:text-foreground-disabled",
+    );
+  });
+
+  it("explains the inactive state when the disabled composer is hovered", async () => {
+    const store = createStore();
+    render(<Composer agentInstanceId={1} disabled />, {
+      wrapper: withStore(store),
+    });
+
+    await userEvent.hover(screen.getByLabelText("Inactive Digital Worker"));
+
+    expect(await screen.findByRole("tooltip")).toHaveTextContent(
+      "This Digital Worker is inactive and cannot receive new tasks.",
+    );
+  });
+
+  it("shows a visible focus treatment for the inactive explanation", async () => {
+    const user = userEvent.setup();
+    const store = createStore();
+    render(<Composer agentInstanceId={1} disabled />, {
+      wrapper: withStore(store),
+    });
+
+    await user.tab();
+    const trigger = screen.getByLabelText("Inactive Digital Worker");
+    expect(trigger).toHaveFocus();
+    expect(trigger).toHaveClass(
+      "focus-visible:outline-focus-rest",
+      "focus-visible:outline-2",
+      "focus-visible:outline-offset-2",
+    );
+    expect(await screen.findByRole("tooltip")).toBeVisible();
+  });
+
+  it("disables removal for a seeded attachment in read-only mode", async () => {
+    const store = createStore();
+    const attachment: Attachment = {
+      localId: "existing",
+      file: new File(["x"], "existing.pdf", { type: "application/pdf" }),
+      status: "ready",
+      assetRef: {
+        name: "existing.pdf",
+        size: 1,
+        type: "application/pdf",
+        uri: "asset://existing",
+      },
+    };
+    store.set(attachmentsAtom, [attachment]);
+    render(<Composer agentInstanceId={1} disabled />, {
+      wrapper: withStore(store),
+    });
+
+    const remove = screen.getByRole("button", { name: "Remove attachment" });
+    expect(remove).toBeDisabled();
+    const user = userEvent.setup();
+    await user.tab();
+    expect(screen.getByLabelText("Inactive Digital Worker")).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(store.get(attachmentsAtom)).toEqual([attachment]);
   });
 
   it("rejects an over-cap file with an inline message", async () => {

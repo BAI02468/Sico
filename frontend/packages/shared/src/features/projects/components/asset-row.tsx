@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import {
   Button,
   DropdownMenu,
@@ -28,9 +7,6 @@ import {
   DropdownMenuTrigger,
   TableCell,
   TableRow,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
 } from "@sico/ui";
 import { cn } from "@sico/ui/lib/utils.ts";
 import {
@@ -44,9 +20,11 @@ import {
 import { createElement } from "react";
 import type * as React from "react";
 
+import { AssetTypeCell } from "./asset-type-cell";
 import { CreatorCell } from "./creator-cell";
+import { GatedMenuItem } from "./gated-menu-item";
 import { CREATOR_MAX, PIN_LEFT, PIN_RIGHT } from "./pinned-columns";
-import { FAILED_TEXT, FAILED_TIP, ShimmerName } from "./poll-indicator";
+import { ShimmerName } from "./poll-indicator";
 import { iconForFilename } from "../../../utils/file-icon";
 import { DocumentTypeSchema, ExtractionStatusSchema } from "../schemas/asset";
 import type { AssetRow as AssetRowData } from "../types";
@@ -62,6 +40,14 @@ import { formatDateTime } from "../utils/format-date-time";
  */
 export type AssetActionKind = "edit" | "download" | "open-link" | "delete";
 
+type AssetActionCopy = {
+  actions: string;
+  edit: string;
+  download: string;
+  delete: string;
+  deleteDenied: string;
+};
+
 export type AssetRowProps = {
   row: AssetRowData;
   /**
@@ -75,6 +61,10 @@ export type AssetRowProps = {
    * consumer wires the items' dialogs / download.
    */
   onAction?: (kind: AssetActionKind) => void;
+  /** Whether the viewer may delete THIS asset (asset.manage, or
+   * asset.manage.own when they created it). The Delete item stays visible but
+   * is gated (greyed + reason tooltip) when false. */
+  canDelete?: boolean;
 };
 
 // Display name (§8 C): `name`, falling back to the link URL — then to an
@@ -123,38 +113,6 @@ function isNavigable(row: AssetRowData): boolean {
     row.documentType === DocumentTypeSchema.enum.FILE &&
     row.status === ExtractionStatusSchema.enum.INGESTED
   );
-}
-
-// The TYPE column content. A FAILED Knowledge extraction replaces the plain
-// "Knowledge" label with a red `Extraction failed` unit + re-upload tooltip
-// (§5 / §6 dec 3); otherwise the plain type label per row kind. Plain helper (no
-// hooks) so the row component stays under the line ceiling.
-function renderTypeCell(
-  rowType: AssetRowData["type"],
-  isFailed: boolean,
-): React.JSX.Element | string {
-  if (isFailed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger
-          // The row is a button; a click on this tooltip must not also navigate.
-          onClick={(event) => event.stopPropagation()}
-          className="text-status-error-foreground inline-flex items-center gap-1.5 text-sm"
-        >
-          <TriangleAlert className="size-4" />
-          {FAILED_TEXT}
-        </TooltipTrigger>
-        <TooltipContent>{FAILED_TIP}</TooltipContent>
-      </Tooltip>
-    );
-  }
-  if (rowType === "experience") {
-    return "Experience";
-  }
-  if (rowType === "deliverable") {
-    return "Deliverable";
-  }
-  return "Knowledge";
 }
 
 // The leading artifact tile. A FAILED Knowledge extraction shows a red alert
@@ -251,13 +209,16 @@ function renderNameCell(
 // the menu, but React replays its events through the component tree back to the
 // row. `items` are the per-kind menu items. Plain helper (no hooks) so the row
 // stays under the line ceiling.
-function renderActionsMenu(items: React.ReactNode): React.JSX.Element {
+function renderActionsMenu(
+  items: React.ReactNode,
+  actionsLabel: string,
+): React.JSX.Element {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         onClick={(event) => event.stopPropagation()}
         render={
-          <Button variant="subtle" size="icon-sm" aria-label="Asset actions" />
+          <Button variant="subtle" size="icon-sm" aria-label={actionsLabel} />
         }
       >
         <Ellipsis />
@@ -280,8 +241,23 @@ function renderActionsMenu(items: React.ReactNode): React.JSX.Element {
 // the line ceiling.
 function renderActionsCell(
   row: AssetRowData,
+  copy: AssetActionCopy,
   onAction?: (kind: AssetActionKind) => void,
+  canDelete = true,
 ): React.JSX.Element {
+  // Delete always shows; it's gated (greyed + reason tooltip) when the viewer
+  // isn't an admin and didn't create the asset — discoverable, not hidden.
+  const deleteItem = (
+    <GatedMenuItem
+      allowed={canDelete}
+      variant="destructive"
+      deniedTooltip={copy.deleteDenied}
+      onSelect={() => onAction?.("delete")}
+    >
+      <Trash2 />
+      {copy.delete}
+    </GatedMenuItem>
+  );
   let menu: React.JSX.Element;
   if (row.type === "knowledge") {
     const isLink = row.documentType === DocumentTypeSchema.enum.LINK;
@@ -289,7 +265,7 @@ function renderActionsCell(
       <>
         <DropdownMenuItem onClick={() => onAction?.("edit")}>
           <Pencil />
-          Edit
+          {copy.edit}
         </DropdownMenuItem>
         {isLink ? null : (
           // Downloads the uploaded blob via the browser (its same-origin
@@ -300,14 +276,12 @@ function renderActionsCell(
             onClick={() => onAction?.("download")}
           >
             <Download />
-            Download
+            {copy.download}
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={() => onAction?.("delete")}>
-          <Trash2 />
-          Delete
-        </DropdownMenuItem>
+        {deleteItem}
       </>,
+      copy.actions,
     );
   } else if (row.type === "deliverable") {
     // The published file, saved straight from the browser. `fileSasUrl` is a
@@ -321,22 +295,16 @@ function renderActionsCell(
           onClick={() => onAction?.("download")}
         >
           <Download />
-          Download
+          {copy.download}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onAction?.("delete")}>
-          <Trash2 />
-          Delete
-        </DropdownMenuItem>
+        {deleteItem}
       </>,
+      copy.actions,
     );
   } else {
-    // Experience — the playbook body is read-only, but the row can be deleted.
-    menu = renderActionsMenu(
-      <DropdownMenuItem onClick={() => onAction?.("delete")}>
-        <Trash2 />
-        Delete
-      </DropdownMenuItem>,
-    );
+    // Experience — the playbook body is read-only, so its only action is Delete
+    // (gated, but always shown).
+    menu = renderActionsMenu(deleteItem, copy.actions);
   }
   return (
     <TableCell className={cn("px-2 text-right", PIN_RIGHT)}>{menu}</TableCell>
@@ -366,7 +334,19 @@ export function AssetRow({
   row,
   onOpen,
   onAction,
+  canDelete = true,
 }: AssetRowProps): React.JSX.Element {
+  const { t } = useLingui();
+  const actionCopy: AssetActionCopy = {
+    actions: t({ id: "projects.assetRow.actions", message: "Asset actions" }),
+    edit: t({ id: "common.action.edit", message: "Edit" }),
+    download: t({ id: "common.action.download", message: "Download" }),
+    delete: t({ id: "common.action.delete", message: "Delete" }),
+    deleteDenied: t({
+      id: "projects.assetRow.deleteDenied",
+      message: "You can only delete items you created.",
+    }),
+  };
   const name = resolveName(row);
   const navigable = isNavigable(row);
   const isKnowledge = row.type === "knowledge";
@@ -412,16 +392,16 @@ export function AssetRow({
       )}
     >
       <TableCell className={cn("px-6", PIN_LEFT)}>{nameCell}</TableCell>
-      <TableCell className="leading-body text-foreground-primary px-6">
-        {renderTypeCell(row.type, isFailed)}
+      <TableCell className="text-foreground-primary leading-body px-6">
+        <AssetTypeCell rowType={row.type} isFailed={isFailed} />
       </TableCell>
       <TableCell className={cn("px-6", CREATOR_MAX)}>
         <CreatorCell creator={row.creator} />
       </TableCell>
-      <TableCell className="leading-body text-foreground-primary px-6 whitespace-nowrap">
+      <TableCell className="text-foreground-primary leading-body px-6 whitespace-nowrap">
         {formatDateTime(row.createdAt)}
       </TableCell>
-      {renderActionsCell(row, onAction)}
+      {renderActionsCell(row, actionCopy, onAction, canDelete)}
     </TableRow>
   );
 }

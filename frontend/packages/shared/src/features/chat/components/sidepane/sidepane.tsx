@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import { cn } from "@sico/ui/lib/utils.ts";
 import { type JSX } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -29,12 +8,6 @@ import { ErrorView } from "../../../../components/error-view";
 import { useRetainedContent } from "../../hooks/use-retained-content";
 import { useSidepane } from "../../hooks/use-sidepane";
 import { useSidepaneA11y } from "../../hooks/use-sidepane-a11y";
-
-// Verbatim §-copy (no i18n layer in this repo — peer sidepane components inline
-// their own COPY const the same way). Key: `sidepane.region.label`.
-const COPY = {
-  regionLabel: "Preview panel",
-} as const;
 
 /**
  * The Sidepane shell — base-UI panel with ZERO content-type knowledge (design
@@ -53,6 +26,7 @@ const COPY = {
  * lingering `shown`, not the live `content`) and unmounts once the slide ends.
  */
 export function Sidepane(): JSX.Element {
+  const { t } = useLingui();
   const { content, maximized, close } = useSidepane();
   const shown = useRetainedContent(content);
   const isOpen = content !== null;
@@ -86,7 +60,10 @@ export function Sidepane(): JSX.Element {
               context. */}
           <section
             ref={regionRef}
-            aria-label={COPY.regionLabel}
+            aria-label={t({
+              id: "chat.sidepane.regionLabel",
+              message: "Preview panel",
+            })}
             // CE3 / axe `scrollable-region-focusable`: a scroll container MUST be
             // keyboard-reachable. jsx-a11y's blanket rule conflicts with that here.
             // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- CE3: the scrollable preview region must be keyboard-focusable

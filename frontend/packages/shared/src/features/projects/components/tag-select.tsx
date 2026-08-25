@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Button,
   DropdownMenu,
@@ -53,11 +32,13 @@ export type TagSelectProps = {
  * Reads its list via `useKnowledgeTagsQuery`, which SUSPENDS — the consumer owns
  * the `<Suspense>` + error boundary.
  */
+// eslint-disable-next-line max-lines-per-function -- The component incorporates multiple states and hooks
 export function TagSelect({
   projectId,
   value,
   onChange,
 }: TagSelectProps): React.JSX.Element {
+  const { t } = useLingui();
   const { items } = useKnowledgeTagsQuery(projectId).data;
   const { create } = useKnowledgeTagMutation(projectId);
   const [creating, setCreating] = useState(false);
@@ -84,7 +65,12 @@ export function TagSelect({
         // Keep the typed name + open input on failure so the user can retry,
         // rather than the spinner vanishing with no signal (silent failure).
         onError: () => {
-          toast.error("We couldn't create the tag. Try again.");
+          toast.error(
+            t({
+              id: "projects.tagSelect.createError",
+              message: "We couldn't create the tag. Try again.",
+            }),
+          );
         },
       },
     );
@@ -94,7 +80,7 @@ export function TagSelect({
     <DropdownMenu onOpenChange={(open) => !open && setCreating(false)}>
       <DropdownMenuTrigger render={<Button variant="subtle" size="sm" />}>
         <Plus />
-        Add tag
+        <Trans id="projects.tagSelect.addTag">Add tag</Trans>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-h-70 w-72" align="start">
         {creating ? (
@@ -102,8 +88,14 @@ export function TagSelect({
             <input
               autoFocus
               type="text"
-              aria-label="Tag name"
-              placeholder="Input label name"
+              aria-label={t({
+                id: "projects.tagSelect.nameLabel",
+                message: "Tag name",
+              })}
+              placeholder={t({
+                id: "projects.tagSelect.namePlaceholder",
+                message: "Input label name",
+              })}
               value={name}
               disabled={create.isPending}
               onChange={(e) => setName(e.target.value)}
@@ -129,12 +121,12 @@ export function TagSelect({
             className="text-foreground-link-rest focus:text-foreground-link-hover"
           >
             <Plus />
-            Create new tag
+            <Trans id="projects.tagSelect.createNew">Create new tag</Trans>
           </DropdownMenuItem>
         )}
         {items.length === 0 ? (
           <div className="text-foreground-tertiary flex h-10 items-center px-3 text-sm select-none">
-            No tags yet.
+            <Trans id="projects.tagSelect.empty">No tags yet.</Trans>
           </div>
         ) : (
           items.map((tag) => (

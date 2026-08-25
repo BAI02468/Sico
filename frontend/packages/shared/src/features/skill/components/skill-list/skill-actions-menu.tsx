@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import {
   Button,
   DropdownMenu,
@@ -31,18 +10,30 @@ import { ArrowUp, Download, MoreHorizontal, Trash2 } from "lucide-react";
 import type { ReactElement } from "react";
 
 export function SkillActionsMenu({
+  editable = true,
   onReplace,
   onDownloadZip,
   onDelete,
 }: {
+  editable?: boolean;
   onReplace: () => void;
   onDownloadZip: () => void;
   onDelete: () => void;
 }): ReactElement {
+  const { t } = useLingui();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={<Button variant="subtle" size="icon" aria-label="Actions" />}
+        render={
+          <Button
+            variant="subtle"
+            size="icon"
+            aria-label={t({
+              id: "skill.skillActionsMenu.actions",
+              message: "Actions",
+            })}
+          />
+        }
       >
         <MoreHorizontal />
       </DropdownMenuTrigger>
@@ -50,17 +41,20 @@ export function SkillActionsMenu({
         align="end"
         className="shadow-l min-w-40 rounded-lg p-1"
       >
-        <DropdownMenuItem onClick={onReplace}>
+        <DropdownMenuItem disabled={!editable} onClick={onReplace}>
           <ArrowUp />
-          Replace
+          {t({ id: "skill.skillActionsMenu.replace", message: "Replace" })}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onDownloadZip}>
           <Download />
-          Download ZIP
+          {t({
+            id: "skill.skillActionsMenu.downloadZip",
+            message: "Download ZIP",
+          })}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onDelete}>
+        <DropdownMenuItem disabled={!editable} onClick={onDelete}>
           <Trash2 />
-          Delete
+          {t({ id: "skill.skillActionsMenu.delete", message: "Delete" })}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

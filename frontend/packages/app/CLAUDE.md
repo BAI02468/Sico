@@ -8,12 +8,6 @@ Thin route-only scaffold. Features live in `@sico/shared/features/{name}/` so DW
 
 `npm run dev` / `build` / `preview` / `lint` / `test` / `test:build` / `e2e` (Playwright builds first).
 
-`VITE_BACKEND` (`sico` default | `dwp`) picks the backend profile in `services/backend-profile.ts` (axios `baseURL` + chat endpoints + `SicoConfig` flags); unknown value throws at startup.
-
-```bash
-VITE_BACKEND=dwp pnpm build   # or pnpm dev — sico is the default
-```
-
 
 ## Structure
 

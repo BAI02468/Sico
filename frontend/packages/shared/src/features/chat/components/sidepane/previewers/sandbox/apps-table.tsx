@@ -1,25 +1,4 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { useLingui } from "@lingui/react/macro";
 import {
   Button,
   DropdownMenu,
@@ -59,6 +38,7 @@ export function AppsTable({
   hasMultipleDevices,
   onUninstall,
 }: AppsTableProps): JSX.Element {
+  const { t } = useLingui();
   if (apps.length === 0) {
     return <SandboxAppsEmpty />;
   }
@@ -66,9 +46,15 @@ export function AppsTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="text-sm">Name</TableHead>
-          <TableHead className="text-sm">Version</TableHead>
-          <TableHead className="text-right text-sm">Actions</TableHead>
+          <TableHead className="text-sm">
+            {t({ id: "chat.appsTable.name", message: "Name" })}
+          </TableHead>
+          <TableHead className="text-sm">
+            {t({ id: "chat.appsTable.version", message: "Version" })}
+          </TableHead>
+          <TableHead className="text-right text-sm">
+            {t({ id: "chat.appsTable.actions", message: "Actions" })}
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -95,7 +81,10 @@ export function AppsTable({
                     <Button
                       variant="subtle"
                       size="icon-xs"
-                      aria-label={`Actions for ${app.appName}`}
+                      aria-label={t({
+                        id: "chat.appsTable.actionsForApp",
+                        message: `Actions for ${app.appName}`,
+                      })}
                     />
                   }
                 >
@@ -104,14 +93,20 @@ export function AppsTable({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => onUninstall(app, false)}>
                     <Trash2 aria-hidden="true" />
-                    Uninstall
+                    {t({
+                      id: "chat.appsTable.uninstall",
+                      message: "Uninstall",
+                    })}
                   </DropdownMenuItem>
                   {hasMultipleDevices ? (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => onUninstall(app, true)}>
                         <Trash2 aria-hidden="true" />
-                        Uninstall for all devices
+                        {t({
+                          id: "chat.appsTable.uninstallForAllDevices",
+                          message: "Uninstall for all devices",
+                        })}
                       </DropdownMenuItem>
                     </>
                   ) : null}

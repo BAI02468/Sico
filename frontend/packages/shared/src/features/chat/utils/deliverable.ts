@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 import {
   type FileTypeIcon,
   iconForFilename,
@@ -126,6 +104,7 @@ function fileUriFromRaw(raw: object): string | undefined {
 function toRenderable(
   raw: unknown,
   index: number,
+  previewLabel: string,
 ): RenderableDeliverable | null {
   if (typeof raw !== "object" || raw === null || !("type" in raw)) {
     return null;
@@ -135,7 +114,7 @@ function toRenderable(
     const url = "webPreviewSasUrl" in raw ? raw.webPreviewSasUrl : undefined;
     return {
       id,
-      label: "Preview Page",
+      label: previewLabel,
       isPreview: true,
       kind: "webpage",
       url: typeof url === "string" ? url : undefined,
@@ -176,12 +155,15 @@ function toRenderable(
 // Narrow a raw `unknown[]` of wire deliverables to the renderable shape both the
 // per-step `<Deliverable>` chips and the turn-level `<PlanSummary>` cards draw
 // from. Single source of truth for the enum + label derivation. Drops malformed
-// entries; survivors keep their source-array index as `id`.
+// entries; survivors keep their source-array index as `id`. `previewLabel` — the
+// web-preview card label (previews carry no wire title), resolved by the caller's
+// subscribed `useLingui()` `t` so this stays a pure, locale-agnostic transform.
 export function toRenderableDeliverables(
   deliverables: unknown[],
+  previewLabel: string,
 ): RenderableDeliverable[] {
   return deliverables
-    .map(toRenderable)
+    .map((raw, index) => toRenderable(raw, index, previewLabel))
     .filter((d): d is RenderableDeliverable => d !== null);
 }
 

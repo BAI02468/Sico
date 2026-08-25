@@ -1,0 +1,1 @@
+export const DEFAULT_SCHEDULED_TASKS_PAGE_SIZE = 10;

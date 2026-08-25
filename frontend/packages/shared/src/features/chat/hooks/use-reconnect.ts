@@ -1,41 +1,21 @@
-/**
- * Copyright (c) 2026 Sico Authors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+import { i18n } from "@lingui/core";
+import { t } from "@lingui/core/macro";
 import { toast } from "@sico/ui";
 import { type createStore, useStore } from "jotai";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 
 import { isAuthenticatedAtom, logoutAtom } from "../../../atoms/auth-atom";
-import { useSicoConfig } from "../../../services/sico-config-context";
+import { CHAT_STREAM_ENDPOINTS } from "../../../constants/endpoints";
 import { assertNever } from "../../../utils/assert-never";
 import {
   activeConversationAtom,
+  isFreshHomeSend,
   isStreamingAiMessage,
   isStreamingAtom,
   lastActivityAtom,
 } from "../atoms/chat-atom";
 import { HANDOFF_ABORT_REASON, SEND_FAILED_COPY } from "../constants";
 import { type ChatEvent } from "../schemas/chat-event";
-import { resolveChatEndpoints } from "../services/chat-endpoints";
 import {
   type Command,
   initialState,
@@ -51,7 +31,6 @@ import { settleTurn } from "../services/replay";
 
 type Store = ReturnType<typeof createStore>;
 
-const RECONNECT_TOAST_COPY = "Reconnecting…";
 // Stable id → sonner keeps ONE persistent toast for the whole drop episode (the
 // machine's `toastShown` gate raises it once), and dismiss clears it on exit.
 const RECONNECT_TOAST_ID = "chat-reconnect";
@@ -78,9 +57,16 @@ const STALE_ACTIVITY_MS = 20000;
 const HEARTBEAT_MS = 30000;
 
 type UseReconnectOptions = {
+  enabled?: boolean;
   // In isolation an omitted handler is a correct no-op — the machine still
   // coalesces the buffer.
   onReplay?: (events: ChatEvent[]) => void;
+  // Reconnect stream opened / ended — drive the Thinking… placeholder that
+  // mirrors the live send. Both are owned by the same `createOnReplay` instance
+  // as `onReplay`, so the row lifecycle (mint on open, claim on first frame, drop
+  // on unclaimed end) stays in one place. Omitted → no-op (stories/tests).
+  onOpen?: () => void;
+  onStreamEnd?: () => void;
   // Fired once when a reconnect-resumed turn reaches a terminal state, symmetric
   // with the live-send path's `onSettle` (chat.ts). The caller invalidates the
   // history cache so a later remount refetches the now-persisted turn instead of
@@ -122,6 +108,10 @@ class ReconnectController {
     private readonly getters: {
       onReplay: () => ((events: ChatEvent[]) => void) | undefined;
       onSettle: () => (() => void) | undefined;
+      // Reconnect stream opened / ended — drive the Thinking… placeholder that
+      // mirrors the live send (createOnReplay owns the row lifecycle).
+      onOpen: () => (() => void) | undefined;
+      onStreamEnd: () => (() => void) | undefined;
       reconnectUrl: () => string;
     },
   ) {}
@@ -147,6 +137,7 @@ class ReconnectController {
     }
   };
 
+  // eslint-disable-next-line max-lines-per-function -- The switch statement needs all options for exhaustion
   private runCommand(command: Command): void {
     switch (command.type) {
       case "openStream":
@@ -173,10 +164,13 @@ class ReconnectController {
         this.controller?.abort();
         return;
       case "showToast":
-        toast.loading(RECONNECT_TOAST_COPY, {
-          id: RECONNECT_TOAST_ID,
-          duration: Infinity,
-        });
+        toast.loading(
+          t({ id: "chat.reconnect.reconnecting", message: "Reconnecting…" }),
+          {
+            id: RECONNECT_TOAST_ID,
+            duration: Infinity,
+          },
+        );
         return;
       case "dismissToast":
         toast.dismiss(RECONNECT_TOAST_ID);
@@ -208,7 +202,7 @@ class ReconnectController {
   private settle(command: Extract<Command, { type: "settle" }>): void {
     settleTurn(this.store, command.turnId, command.state);
     if (command.state === "error") {
-      toast.error(SEND_FAILED_COPY);
+      toast.error(i18n._(SEND_FAILED_COPY));
     }
     this.getters.onSettle()?.();
   }
@@ -227,7 +221,14 @@ class ReconnectController {
       {
         url: this.getters.reconnectUrl(),
         signal: own.signal,
-        onOpen: () => this.dispatch({ type: "open" }),
+        onOpen: () => {
+          // Mirror the live send: on stream open, seed a Thinking… placeholder
+          // so the resumed turn shows immediately, before the (possibly slow)
+          // first frame. `createOnReplay` gates it (B) so a completed-turn
+          // revisit doesn't flash one.
+          this.getters.onOpen()?.();
+          this.dispatch({ type: "open" });
+        },
         // `onLive` fires on every frame (keepalive included) — pure liveness.
         onLive: () => {
           // Keep the shared activity clock fresh so the hook's staleness
@@ -236,41 +237,57 @@ class ReconnectController {
           this.store.set(lastActivityAtom, Date.now());
           this.dispatch({ type: "keepalive" });
         },
-        onEvent: (event) => {
-          // Terminal frames drive the settle path (symmetric with done); a
-          // data frame appends to the replay buffer. An error frame carries no
-          // Part (reduceFrame ignores it), so routing it to `error` rather than
-          // `frame` loses nothing and keeps the terminal handling in one place.
-          if (event.event === "done") {
-            this.dispatch({ type: "done", event });
-          } else if (event.event === "error") {
-            this.dispatch({ type: "error" });
-          } else {
-            this.dispatch({ type: "frame", event });
-          }
-        },
+        onEvent: (event) => this.onStreamEvent(event),
       },
     )
-      .then(() => {
-        if (this.controller !== own || this.terminated) {
-          return;
-        }
-        this.dispatch({ type: "close" });
-      })
-      .catch((err: unknown) => {
-        if (this.controller !== own) {
-          return;
-        }
-        // A dead session (401) exits via the logout flow, never backoff.
-        if (err instanceof ChatStreamHttpError && err.status === 401) {
-          this.dispatch({ type: "http401" });
-          return;
-        }
-        if (this.terminated) {
-          return;
-        }
-        this.dispatch({ type: "close" });
-      });
+      .then(() => this.onStreamClose(own))
+      .catch((err: unknown) => this.onStreamError(own, err));
+  }
+
+  // Route one transport frame. Terminal frames mark the stream `terminated` (the
+  // `.then` close handler then skips its `onStreamEnd`), so they drop any
+  // unclaimed placeholder here — the completed-turn revisit (open → placeholder →
+  // done with no turnId to claim it). A claimed row carries a turnId and is left
+  // intact by createOnReplay. A data frame appends to the replay buffer.
+  private onStreamEvent(event: ChatEvent): void {
+    if (event.event === "done") {
+      this.getters.onStreamEnd()?.();
+      this.dispatch({ type: "done", event });
+    } else if (event.event === "error") {
+      this.getters.onStreamEnd()?.();
+      this.dispatch({ type: "error" });
+    } else {
+      this.dispatch({ type: "frame", event });
+    }
+  }
+
+  // Clean close / caller-abort. Drop a never-claimed placeholder so no stuck
+  // Thinking… lingers, then feed the machine — guarded by controller identity so
+  // a superseded stream's late settle is ignored.
+  private onStreamClose(own: AbortController): void {
+    if (this.controller !== own || this.terminated) {
+      return;
+    }
+    this.getters.onStreamEnd()?.();
+    this.dispatch({ type: "close" });
+  }
+
+  // Transport failure. A dead session (401) exits via the logout flow, never
+  // backoff. Both paths drop a never-claimed placeholder first.
+  private onStreamError(own: AbortController, err: unknown): void {
+    if (this.controller !== own) {
+      return;
+    }
+    if (err instanceof ChatStreamHttpError && err.status === 401) {
+      this.getters.onStreamEnd()?.();
+      this.dispatch({ type: "http401" });
+      return;
+    }
+    if (this.terminated) {
+      return;
+    }
+    this.getters.onStreamEnd()?.();
+    this.dispatch({ type: "close" });
   }
 
   private clearStall(): void {
@@ -404,20 +421,15 @@ export function useReconnect(
   options?: UseReconnectOptions,
 ): { stop: () => void } {
   const store = useStore();
-  const { chatEndpoints } = useSicoConfig();
-  // Keep the latest reconnect URL + `onReplay` in refs without re-arming the
-  // live loop (config is stable in practice, but a change must not tear it
-  // down). Written in an effect, not the render body — React 19 concurrent
-  // rendering can discard a render pass, leaving a render-time ref write
-  // desynced (mirrors use-infinite-scroll-sentinel).
-  const { reconnectStreamUrl } = resolveChatEndpoints(chatEndpoints);
-  const reconnectUrlRef = useRef(reconnectStreamUrl);
-  const onReplayRef = useRef(options?.onReplay);
-  const onSettleRef = useRef(options?.onSettle);
+  const optionsRef = useRef(options);
+  const enabledRef = useRef(options?.enabled !== false);
+  // Commit before the previous passive effect's cleanup, so that cleanup sees a
+  // committed disable transition without a discarded render mutating the ref.
+  useLayoutEffect(() => {
+    enabledRef.current = options?.enabled !== false;
+  });
   useEffect(() => {
-    reconnectUrlRef.current = reconnectStreamUrl;
-    onReplayRef.current = options?.onReplay;
-    onSettleRef.current = options?.onSettle;
+    optionsRef.current = options;
   });
 
   // `stop` is exposed through a ref so the handle stays stable across renders
@@ -426,32 +438,42 @@ export function useReconnect(
   const stop = useCallback(() => stopRef.current(), []);
 
   useEffect(() => {
+    if (options?.enabled === false) {
+      stopRef.current = () => {};
+      return undefined;
+    }
     const controller = new ReconnectController(
       store,
       { agentInstanceId, conversationId },
       {
-        onReplay: () => onReplayRef.current,
-        onSettle: () => onSettleRef.current,
-        reconnectUrl: () => reconnectUrlRef.current,
+        onReplay: () => optionsRef.current?.onReplay,
+        onSettle: () => optionsRef.current?.onSettle,
+        onOpen: () => optionsRef.current?.onOpen,
+        onStreamEnd: () => optionsRef.current?.onStreamEnd,
+        reconnectUrl: () => CHAT_STREAM_ENDPOINTS.reconnect,
       },
     );
 
     stopRef.current = () => controller.dispatch({ type: "stop" });
     const disposeTriggers = installTriggers(store, controller);
 
-    // One probe on mount — the entry trigger into the machine. A terminal frame
-    // (done/error) settles the loop, so a turn that's already finished (or an
-    // empty conversation) probes once and stops rather than spinning.
-    controller.dispatch({ type: "probe" });
+    // Entry probe — skipped for a home-originated first send (isFreshHomeSend).
+    if (!isFreshHomeSend(store, agentInstanceId, conversationId)) {
+      controller.dispatch({ type: "probe" });
+    }
 
     return () => {
       disposeTriggers();
-      // Terminal teardown: the machine's `unmount` commands abort the in-flight
-      // stream and clear every timer.
+      if (!enabledRef.current) {
+        // A mounted view becoming read-only needs full stream UI cleanup before
+        // terminal teardown; a genuine unmount keeps the existing silent path.
+        optionsRef.current?.onStreamEnd?.();
+        controller.dispatch({ type: "stop" });
+      }
       controller.dispatch({ type: "unmount" });
       stopRef.current = () => {};
     };
-  }, [store, agentInstanceId, conversationId]);
+  }, [store, agentInstanceId, conversationId, options?.enabled]);
 
   return { stop };
 }
