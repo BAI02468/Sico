@@ -16,8 +16,6 @@
 
 </div>
 
-https://github.com/user-attachments/assets/fd7e5155-4749-400b-9e30-016967474a3e
-
 ## Recent Updates
  
 | Date | Type | Update |
@@ -27,6 +25,8 @@ https://github.com/user-attachments/assets/fd7e5155-4749-400b-9e30-016967474a3e
 | **20260708** | Model | Released [**GELab-Zero-4B-preview-Sico-Evolution**](https://huggingface.co/microsoft/GELab-Zero-4B-preview-Sico-Evolution), an open-source GUI foundation model on HuggingFace. |
 
 ## What is Sico?
+
+https://github.com/user-attachments/assets/fd7e5155-4749-400b-9e30-016967474a3e
 
 Sico — Symbiotic Intelligence for CO-evolution— is an open-source platform for building, managing, and evolving **Digital Workers**: structured AI labor units that co-evolve with human operators through real production work, particularly in BPO (Business Process Outsourcing) scenarios.
 
